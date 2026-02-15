@@ -1,0 +1,354 @@
+/* * File: css/style.css
+ * Theme: Clean, Maritime Blue for "IsdaLog"
+ * Purpose: Meets "UI clarity and organization" requirement
+ */
+
+/* * IsdaLog 2.0 - Modern Ocean Theme 
+ * Features: CSS Variables, Flexbox Grid, Glassmorphism, Clean Typography
+ */
+
+:root {
+    /* Palette: Deep Ocean */
+    --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    --primary-color: #0f4c75; /* Navy Blue */
+    --accent-color: #3282b8;  /* Bright Blue */
+    --highlight-color: #bbe1fa; /* Light Blue */
+    --success-color: #28a745; /* Sea Green */
+    --warning-color: #ffc107; /* Sun Yellow */
+    --danger-color: #ff6b6b;  /* Coral Red */
+    --text-main: #1b262c;
+    --text-muted: #576574;
+    
+    /* Effects */
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+    --radius-lg: 16px;
+    --radius-sm: 8px;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    color: var(--text-main);
+    margin: 0;
+    padding: 40px 20px;
+}
+
+/* --- Layout & Container --- */
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* --- Brand Header --- */
+.brand-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+h1 {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin: 0;
+    letter-spacing: -1px;
+}
+
+.subtitle {
+    display: block;
+    font-size: 1rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    letter-spacing: 0;
+    margin-top: 5px;
+}
+
+/* --- Stats Grid (New Feature) --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: var(--glass-bg);
+    padding: 20px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    border-left: 5px solid var(--accent-color);
+    transition: transform 0.2s ease;
+}
+
+.stat-card:hover { transform: translateY(-3px); }
+
+.stat-title {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-top: 5px;
+}
+
+.stat-value.highlight { color: var(--success-color); }
+.stat-value small { font-size: 1rem; color: var(--text-muted); }
+
+/* --- Search & Controls --- */
+.controls-bar {
+    margin-bottom: 20px;
+}
+
+.search-form {
+    position: relative;
+    max-width: 400px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 15px 20px;
+    padding-right: 40px;
+    border: none;
+    border-radius: 50px;
+    background: white;
+    box-shadow: var(--shadow-soft);
+    font-size: 1rem;
+    transition: box-shadow 0.2s;
+}
+
+.search-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(50, 130, 184, 0.3);
+}
+
+.btn-clear {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    text-decoration: none;
+    color: var(--text-muted);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+/* --- Modern Table --- */
+.table-wrapper {
+    background: var(--glass-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden; /* For rounded corners */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+th {
+    padding: 18px;
+    font-weight: 600;
+    text-align: left;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+td {
+    padding: 16px 18px;
+    border-bottom: 1px solid #eee;
+    color: var(--text-main);
+    font-size: 0.95rem;
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover { background-color: rgba(50, 130, 184, 0.05); }
+
+/* --- Buttons --- */
+.btn {
+    padding: 10px 24px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.btn-primary { 
+    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+    color: white;
+}
+.btn-primary:hover {
+    box-shadow: 0 5px 15px rgba(15, 76, 117, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    margin-right: 5px;
+}
+.btn-warning:hover { background-color: #ffeeba; }
+
+.btn-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+}
+.btn-danger:hover { background-color: #f5c6cb; }
+
+/* --- Forms (Create/Edit Pages) --- */
+/* --- Enhanced Modern Forms (Create/Edit Pages) --- */
+
+/* The main card holding the form */
+.form-container {
+    background: var(--glass-bg); /* Subtle transparency */
+    padding: 50px; /* More breathing room */
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-hover); /* Stronger shadow so it "floats" */
+    max-width: 650px;
+    margin: 40px auto; /* Center on page */
+    border-top: 4px solid var(--accent-color); /* Ocean blue accent bar at top */
+}
+
+/* Form headings */
+.form-container h2 {
+    color: var(--primary-color);
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 2rem;
+    letter-spacing: -0.5px;
+}
+
+/* Labels */
+.form-group label {
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 12px;
+    display: block;
+    font-size: 0.95rem;
+}
+
+/* Modern Inputs */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+    width: 100%;
+    padding: 16px 20px; /* Big, comfortable padding */
+    border: 2px solid #e9ecef; /* Subtle light gray border initially */
+    background-color: #f8f9fa; /* Slight off-white background */
+    border-radius: 12px; /* Modern rounded corners */
+    font-size: 1rem;
+    color: var(--text-main);
+    transition: all 0.3s ease; /* Smooth transition for focus state */
+    box-sizing: border-box;
+    font-family: inherit; /* Ensure font matches body */
+}
+
+/* The "Ocean Glow" Focus State */
+input:focus, select:focus, textarea:focus {
+    border-color: var(--accent-color); /* Turn border bright blue */
+    background-color: white;
+    box-shadow: 0 0 0 5px rgba(50, 130, 184, 0.15); /* Subtle blue glow ring */
+    outline: none;
+}
+
+/* Error States */
+.is-invalid {
+    border-color: var(--danger-color) !important;
+    background-color: #fff0f0 !important; /* Light red tint */
+}
+
+.error-msg {
+    color: var(--danger-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+}
+/* Add a little alert icon before error text using CSS pseudo-element */
+.error-msg::before {
+    content: "⚠️ ";
+    margin-right: 5px;
+}
+
+/* Modernizing the Form Buttons */
+
+/* Target the main submit button in forms */
+.form-container button[type="submit"] {
+    width: 100%;
+    padding: 18px;
+    font-size: 1.2rem;
+    margin-top: 30px;
+    /* Use the same ocean gradient as the dashboard */
+    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+    color: white;
+    border: none;
+    border-radius: 50px; /* Pill shape */
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(15, 76, 117, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+/* Hover effect for submit button */
+.form-container button[type="submit"]:hover {
+    transform: translateY(-3px); /* Lift up slightly */
+    box-shadow: 0 10px 25px rgba(15, 76, 117, 0.5); /* Stronger shadow below */
+}
+
+/* The "Cancel" Link */
+.back-link {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+    margin-top: 25px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 10px;
+    border-radius: 50px;
+    transition: all 0.2s;
+}
+
+.back-link:hover {
+    color: var(--primary-color);
+    background-color: rgba(50, 130, 184, 0.1); /* Subtle blue background on hover */
+}
+
+/* Mobile responsiveness for forms */
+@media (max-width: 768px) {
+    .form-container {
+        padding: 25px;
+        margin: 20px auto;
+    }
+    /* On mobile, stack the side-by-side inputs */
+    .form-container div[style*="display: flex"] {
+        flex-direction: column;
+        gap: 0 !important;
+    }
+}
