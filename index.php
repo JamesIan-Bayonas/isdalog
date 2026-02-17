@@ -1,45 +1,84 @@
 <?php
 /* * File: index.php
- * Purpose: The main dashboard. displays the list of catches and handles search.
- * Industrial Practice: "Server-Side Rendering" (SSR).
+ * Purpose: Main dashboard with Search, Sort, and Statistics
+ * Security: Uses Whitelisting for Sort Columns to prevent SQL Injection
  */
 
-// Include the secure connection file we made in Step 2
 require_once 'includes/db_connect.php';
 
-// Handle Search Logic (If user typed something)
-$search = $_GET['search'] ?? ''; // Null coalescing operator (PHP 7+)
+// HANDLE SEARCH & SORT PARAMETERS 
+$search = $_GET['search'] ?? ''; 
+
+// Default Sort State
+$sort_column = 'catch_date';
+$sort_order = 'DESC';
+
+// SECURITY WHITELIST: Only allow specific columns to be sorted
+// This strictly prevents SQL Injection via ORDER BY clauses
+$allowed_columns = ['catch_date', 'species_name', 'weight_kg', 'price_per_kg'];
+$allowed_orders = ['ASC', 'DESC'];
+
+// Validate 'sort' parameter
+if (isset($_GET['sort']) && in_array($_GET['sort'], $allowed_columns)) {
+    $sort_column = $_GET['sort'];
+}
+
+// Validate 'order' parameter
+if (isset($_GET['order']) && in_array(strtoupper($_GET['order']), $allowed_orders)) {
+    $sort_order = strtoupper($_GET['order']);
+}
+
+// Helper Function: Generates the URL for sorting links
+function getSortLink($col, $current_col, $current_order) {
+    // Toggle direction: If currently DESC, switch to ASC, else DESC
+    $new_order = ($current_col === $col && $current_order === 'DESC') ? 'ASC' : 'DESC';
+    
+    // Preserve search query if it exists
+    global $search;
+    $query_string = "?sort=$col&order=$new_order";
+    if ($search) {
+        $query_string .= "&search=" . urlencode($search);
+    }
+    
+    return $query_string;
+}
+
+// New Helper: Generates the CSS class for the sort icon
+function getSortClass($col, $current_col, $current_order) {
+    if ($col !== $current_col) return ''; // No sort active
+    return $current_order === 'ASC' ? 'sorted-asc' : 'sorted-desc';
+}
 
 try {
-    // Prepare the SQL Query
-    // We use a flexible query that changes if a search term exists
+    // BUILD THE SECURE QUERY 
+    $sql = "SELECT * FROM catches";
+    
+    // Add Search Conditions
     if ($search) {
-        $sql = "SELECT * FROM catches 
-                WHERE species_name LIKE :search 
-                OR location LIKE :search 
-                ORDER BY catch_date DESC";
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindValue(':search', "%$search%"); // Wildcard search
-    } else {
-        // Default: Show all, newest first
-        $sql = "SELECT * FROM catches ORDER BY catch_date DESC";
-        $stmt = $pdo->prepare($sql);
+        $sql .= " WHERE species_name LIKE :search OR location LIKE :search";
+    }
+
+    // Add Sorting (Safe because $sort_column is whitelisted)
+    $sql .= " ORDER BY $sort_column $sort_order";
+
+    $stmt = $pdo->prepare($sql);
+
+    // Bind Search Parameters
+    if ($search) {
+        $stmt->bindValue(':search', "%$search%");
     }
 
     $stmt->execute();
-    $catches = $stmt->fetchAll(); // Fetch all rows as an associative array
+    $catches = $stmt->fetchAll(); 
 
 } catch (PDOException $e) {
     die("Query Failed: " . $e->getMessage());
 }
 
-// Dashboard Statistics
-// We calculate totals to show a "Heads-Up Display"
+// DASHBOARD STATISTICS
 $total_weight = 0;
 $total_value = 0;
-$top_species = 'None';
 
-// Calculate totals from the fetched data (saves a second DB query!)
 foreach ($catches as $c) {
     $total_weight += $c['weight_kg'];
     $total_value += ($c['weight_kg'] * $c['price_per_kg']);
@@ -60,9 +99,48 @@ foreach ($catches as $c) {
 
 <div class="container">
     <div class="container">
+    <?php if (isset($_GET['status'])): ?>
+        <?php
+            $status = $_GET['status'];
+            $msg = "";
+            $icon = "";
+            $alertClass = "";
+
+            if ($status == 'success') {
+                $msg = "Success! New catch recorded successfully.";
+                $icon = "✅";
+                $alertClass = "alert-success";
+            } elseif ($status == 'updated') {
+                $msg = "Update Complete! The catch record has been modified.";
+                $icon = "✏️";
+                $alertClass = "alert-warning"; // Matches your yellow Edit theme
+            } elseif ($status == 'deleted') {
+                $msg = "Record Deleted. The catch has been removed permanently.";
+                $icon = "🗑️";
+                $alertClass = "alert-danger"; // Matches your red Delete theme
+            }
+        ?>
+        
+        <?php if ($msg): ?>
+            <div class="alert <?php echo $alertClass; ?>">
+                <span class="alert-icon"><?php echo $icon; ?></span>
+                <span class="alert-text"><?php echo $msg; ?></span>
+                <a href="index.php" class="alert-close">&times;</a>
+            </div>
+        <?php endif; ?>
+    <?php endif; ?>
+
+
     <div class="brand-header">
         <h1>🌊 IsdaLog <span class="subtitle">Catch & Sales Tracker</span></h1>
-        <a href="create.php" class="btn btn-primary btn-glow">+ Record Catch</a>
+        
+        <div>
+            <button onclick="window.print()" class="btn" style="background: white; color: var(--primary-color); border: 2px solid var(--primary-color); margin-right: 10px; font-weight:bold;">
+                🖨️ Print Report
+            </button>
+            
+            <a href="create.php" class="btn btn-primary btn-glow">+ Record Catch</a>
+        </div>
     </div>
 
     <div class="stats-grid">
@@ -80,20 +158,11 @@ foreach ($catches as $c) {
         </div>
     </div>
 
-    <div class="controls-bar">
-        <form method="GET" action="index.php" class="search-form">
-            <input type="text" name="search" class="search-input" placeholder="🔍 Search species or location..." value="<?php echo htmlspecialchars($search); ?>">
-            <?php if($search): ?>
-                <a href="index.php" class="btn-clear">×</a>
-            <?php endif; ?>
-        </form>
-    </div>
-
     <div class="table-wrapper">
         </div>
 </div>
 
-    <form method="GET" action="index.php" style="margin-bottom: 20px;">
+    <form method="GET" action="index.php" style="margin-bottom: 20px;" class="search-form">
         <div class="search-box">
             <input type="text" name="search" placeholder="Search species or location..." value="<?php echo htmlspecialchars($search); ?>">
             <button type="submit" class="btn btn-primary">Search</button>
@@ -106,11 +175,36 @@ foreach ($catches as $c) {
     <table>
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Species</th>
+                <th>
+                    <a href="<?php echo getSortLink('catch_date', $sort_column, $sort_order); ?>" class="sortable-header <?php echo getSortClass('catch_date', $sort_column, $sort_order); ?>">
+                        Date 
+                        <span class="sort-icon"></span>
+                    </a>
+                </th>
+                
+                <th>
+                    <a href="<?php echo getSortLink('species_name', $sort_column, $sort_order); ?>" class="sortable-header <?php echo getSortClass('species_name', $sort_column, $sort_order); ?>">
+                        Species 
+                        <span class="sort-icon"></span>
+                    </a>
+                </th>
+                
                 <th>Method</th>
-                <th>Weight (kg)</th>
-                <th>Price/kg</th>
+                
+                <th>
+                    <a href="<?php echo getSortLink('weight_kg', $sort_column, $sort_order); ?>" class="sortable-header <?php echo getSortClass('weight_kg', $sort_column, $sort_order); ?>">
+                        Weight (kg) 
+                        <span class="sort-icon"></span>
+                    </a>
+                </th>
+                
+                <th>
+                    <a href="<?php echo getSortLink('price_per_kg', $sort_column, $sort_order); ?>" class="sortable-header <?php echo getSortClass('price_per_kg', $sort_column, $sort_order); ?>">
+                        Price/kg 
+                        <span class="sort-icon"></span>
+                    </a>
+                </th>
+                
                 <th>Total Value</th>
                 <th>Actions</th>
             </tr>
