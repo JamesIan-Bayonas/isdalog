@@ -99,7 +99,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 ':method' => $method,
                 ':location' => $location,
                 ':notes' => $notes,
-                ':id' => $id // Don't forget the ID!
+                ':id' => $id
             ]);
 
             // Redirect with success message

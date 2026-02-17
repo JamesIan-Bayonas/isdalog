@@ -11,7 +11,7 @@ require_once 'includes/db_connect.php';
 if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     
     $id = $_GET['id'];
-
+    
     try {
         // Prepare the DELETE Statement
         // Strict Rule #5: Must use prepared statements

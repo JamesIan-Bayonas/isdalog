@@ -24,7 +24,7 @@ CREATE TABLE catches (
     -- Categorical Data (ENUM)
     -- Restricts input to specific domain values, preventing typos like "Nett" or "LineFishing"
     catch_method ENUM('Net', 'Line', 'Trap', 'Spear', 'Trawl') NOT NULL,
-    
+        
     -- Metadata (VARCHAR & TEXT)
     location VARCHAR(150) NOT NULL COMMENT 'Specific fishing zone or coordinates',
     fisherman_notes TEXT COMMENT 'Weather conditions, tide, or buyer details',

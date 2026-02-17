@@ -11,10 +11,10 @@ require_once 'includes/db_connect.php';
 $species = $weight = $price = $date = $method = $location = $notes = '';
 $errors = [];
 
-// 1. THE "GUARD": Check if form was submitted
+// THE "GUARD": Check if form was submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    // 2. THE "FILTER": Sanitize and Validate Input
+    // THE "FILTER": Sanitize and Validate Input
     // We use trim() to remove accidental whitespace
     $species = trim($_POST['species_name']);
     $weight = trim($_POST['weight_kg']);
@@ -61,7 +61,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors['location'] = "Location is required.";
     }
 
-    // 3. THE "ACTION": Insert if no errors
+    // THE "ACTION": Insert if no errors
     if (empty($errors)) {
         try {
             // SQL Pattern: Named Placeholders (:name) for Security (Strict Rule #5)
@@ -81,7 +81,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 ':notes' => $notes
             ]);
 
-            // 4. THE "ESCAPE": Redirect on success
+            // THE "ESCAPE": Redirect on success
             header("Location: index.php?status=success");
             exit();
 
@@ -101,25 +101,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Catch - IsdaLog</title>
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        /* Scoped CSS for Form Layout */
-        .form-container { max-width: 600px; margin: 20px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; }
-        input[type="text"], input[type="number"], input[type="date"], select, textarea {
-            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; box-sizing: border-box; /* Fixes padding width issue */
-        }
-        input:focus, select:focus, textarea:focus { border-color: #007bff; outline: none; }
-        .error-msg { color: #dc3545; font-size: 0.85em; margin-top: 5px; }
-        .is-invalid { border-color: #dc3545 !important; }
-        .btn-block { width: 100%; display: block; text-align: center; padding: 12px; font-size: 18px; }
-        .back-link { display: block; text-align: center; margin-top: 15px; text-decoration: none; color: #6c757d; }
-    </style>
 </head>
 <body>
 
 <div class="form-container">
-    <h2 style="text-align:center; margin-bottom: 25px;">🐟 Record New Catch</h2>
+    <h2 style="text-align:center; margin-bottom: 25px;">Record New Catch</h2>
 
     <?php if (isset($errors['db'])): ?>
         <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 20px;">
