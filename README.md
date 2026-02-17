@@ -70,11 +70,3 @@ This application serves as a digital logbook for maritime activities. It allows 
 * `includes/db_connect.php`: Secure PDO database connection string.
 * `css/style.css`: Main stylesheet including responsive design and print layout.
 * `database.sql`: SQL schema and data seeding script.
-
----
-
-## 🛡️ Requirements Met
-This submission fulfills the following requirements:
-* ✅ **Source Code:** Complete zipped project folder.
-* ✅ **Database:** Included `database.sql` with `CREATE` and `INSERT` statements.
-* ✅ **Documentation:** This `README.md` containing description and setup steps.
