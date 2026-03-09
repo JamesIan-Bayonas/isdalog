@@ -24,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $location = trim($_POST['location']);
     $notes = trim($_POST['fisherman_notes']);
 
-    // --- Validation Rules (Strict Rule #6) ---
+    // Validation Rules (Strict Rule #6) 
     
     // Species: Required
     if (empty($species)) {

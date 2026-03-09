@@ -8,7 +8,7 @@ require_once 'includes/db_connect.php';
 
 // HANDLE SEARCH & SORT PARAMETERS 
 $search = $_GET['search'] ?? ''; 
-
+        
 // Default Sort State
 $sort_column = 'catch_date';
 $sort_order = 'DESC';

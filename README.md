@@ -6,12 +6,18 @@ IsdaLog is a web-based dashboard designed to help fishermen and fishery managers
 
 ---
 
+![Isdalog Dashboard](./img/sample.png)
+
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 ##  Project Description
 
 This application serves as a digital logbook for maritime activities. It allows users to perform full **CRUD** (Create, Read, Update, Delete) operations on catch records while providing real-time statistics on total weight and earnings.
 
 ### Key Features
-* **Secure CRUD Operations:**
+* **Secure CRUD Operations:**   
     * **Create:** Record new catches with strict validation for species, weight, and price.
     * **Read:** View a paginated dashboard with dynamic sorting and search filtering.
     * **Update:** Modify existing records using a "sticky" form state.
