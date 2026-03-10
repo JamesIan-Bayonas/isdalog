@@ -1,78 +1,59 @@
-# IsdaLog: Catch & Sales Tracker
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-> **A secure, vanilla PHP application for managing maritime catch records.**
+<p align="center">
+<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+</p>
 
-IsdaLog is a web-based dashboard designed to help fishermen and fishery managers record, track, and analyze daily catch data. This project demonstrates a **Vanilla PHP** implementation (no frameworks) with a strong focus on **security**, **data integrity**, and **modern UI/UX**.
+## About Laravel
 
----
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-![Isdalog Dashboard](./img/sample.png)
+- [Simple, fast routing engine](https://laravel.com/docs/routing).
+- [Powerful dependency injection container](https://laravel.com/docs/container).
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+- [Robust background job processing](https://laravel.com/docs/queues).
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
-<<<<<<< Updated upstream
-=======
+Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
->>>>>>> Stashed changes
-##  Project Description
+## Learning Laravel
 
-This application serves as a digital logbook for maritime activities. It allows users to perform full **CRUD** (Create, Read, Update, Delete) operations on catch records while providing real-time statistics on total weight and earnings.
+Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
 
-### Key Features
-* **Secure CRUD Operations:**   
-    * **Create:** Record new catches with strict validation for species, weight, and price.
-    * **Read:** View a paginated dashboard with dynamic sorting and search filtering.
-    * **Update:** Modify existing records using a "sticky" form state.
-    * **Delete:** Securely remove records with confirmation dialogs.
-* **Security Architecture:**
-    * **SQL Injection Protection:** Uses `PDO` prepared statements for all database interactions.
-    * **Whitelisting:** Sort parameters are strictly validated against an allowed list to prevent injection via `ORDER BY`.
-    * **XSS Prevention:** All output is sanitized using `htmlspecialchars()`.
-* **Modern UI/UX:**
-    * **Glassmorphism Theme:** Custom CSS with translucent cards and a maritime color palette.
-    * **Print Optimization:** Dedicated `@media print` styles for generating clean physical reports.
-    * **Feedback System:** Visual alerts for success, update, and deletion events.
+If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
----
+## Laravel Sponsors
 
-## ⚙️ Setup Instructions
+We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
 
-### 1. Prerequisites
-* A local web server environment (XAMPP, WAMP, or LAMP).
-* PHP 8.0 or higher.
-* MySQL or MariaDB.
+### Premium Partners
 
-### 2. Database Installation
-1.  Open your database management tool (e.g., phpMyAdmin).
-2.  Import the provided SQL file located in the root directory:
-    * File: `database.sql`
-3.  This script will:
-    * Create the database `isdalog_db`.
-    * Create the `catches` table.
-    * Seed the table with initial sample data for testing.
+- **[Vehikl](https://vehikl.com)**
+- **[Tighten Co.](https://tighten.co)**
+- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
+- **[64 Robots](https://64robots.com)**
+- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
+- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
+- **[Redberry](https://redberry.international/laravel-development)**
+- **[Active Logic](https://activelogic.com)**
 
-### 3. Application Configuration
-1.  Navigate to the `includes/` folder.
-2.  Open `db_connect.php`.
-3.  Verify the database credentials match your local setup:
-    ```php
-    $host = 'localhost';
-    $db_name = 'isdalog_db';
-    $username = 'root'; // Default XAMPP user
-    $password = '';     // Default XAMPP password
-    ```
+## Contributing
 
-### 4. Running the Project
-1.  Place the project folder into your server's root directory (e.g., `htdocs` for XAMPP).
-2.  Open your browser and navigate to:
-    `http://localhost/isdalog/`
+Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
----
+## Code of Conduct
 
-## 📂 File Structure
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-* `index.php`: Main dashboard with statistics, search, and the records table.
-* `create.php`: Form for adding new catch records.
-* `update.php`: Form for editing existing records.
-* `delete.php`: Backend logic for deleting records.
-* `includes/db_connect.php`: Secure PDO database connection string.
-* `css/style.css`: Main stylesheet including responsive design and print layout.
-* `database.sql`: SQL schema and data seeding script.
+## Security Vulnerabilities
+
+If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+
+## License
+
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
