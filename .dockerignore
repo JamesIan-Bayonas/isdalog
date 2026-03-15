@@ -1,0 +1,16 @@
+/vendor
+/node_modules
+/public/storage
+/storage/*.key
+/.env
+/.env.*
+/.git
+/.github
+/docker-compose.yml
+/.vscode
+Homestead.json
+Homestead.yaml
+.idea
+*.log
+.DS_Store
+# Don't ignore composer.json or composer.lock
