@@ -17,6 +17,11 @@ return new class extends Migration
             $table->string('species');
             $table->decimal('weight', 8, 2);
             $table->string('location')->default('Dipolog City Port');
+            
+            // Phase 2: Geospatial Coordinates
+            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('longitude', 11, 8)->nullable();
+            
             $table->timestamp('logged_at')->useCurrent();
             $table->timestamps();
         });
