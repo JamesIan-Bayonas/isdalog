@@ -31,15 +31,18 @@ RUN apt-get update && apt-get install -y \
     python3 \
     make \
     g++ \
+    nodejs \
+    npm \
     && rm -rf /var/lib/apt/lists/*
-
-RUN npm install --production
 
 # 6. Install Composer (The PHP package manager)
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # 7. Copy your project files into the container
 COPY . .
+
+# 7.5 Install Node dependencies (Requires package.json to be copied first)
+RUN npm install --production
 
 # 8. Set permissions so Laravel can write to logs and storage
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
