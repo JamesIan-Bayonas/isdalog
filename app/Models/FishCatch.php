@@ -9,7 +9,15 @@ class FishCatch extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'species', 'weight', 'location', 'logged_at'];
+    protected $fillable = [
+        'user_id', 
+        'species', 
+        'weight', 
+        'location', 
+        'latitude', 
+        'longitude', 
+        'logged_at'
+    ];
 
     // Relationship to User
     public function user()
