@@ -1,9 +1,8 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CatchController;
-use App\Http\Controllers\Api\UserController;  // We'll create this
 
-Route::post('/handshake', [UserController::class, 'handshake']);
+// The endpoints your Bot is going to call to log catches and perform the handshake
+Route::post('/handshake', [CatchController::class, 'handshake']);
 Route::post('/catches', [CatchController::class, 'store']);

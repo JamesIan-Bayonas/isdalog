@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-class UserController extends Controller
+class UserController extends \App\Http\Controllers\Controller
 {
     public function handshake(Request $request)
     {
