@@ -8,6 +8,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
+use App\Models\MarketPrice;
+use App\Models\RestrictedSpecies;
 class CatchController extends \App\Http\Controllers\Controller
 {
     public function handshake(Request $request)
@@ -35,35 +37,30 @@ class CatchController extends \App\Http\Controllers\Controller
 
     public function store(Request $request)
     {
-        // Added latitude and longitude validation
-        $validated = $request->validate([
-            'telegram_chat_id' => 'required|string',
-            'species' => 'required|string|max:255',
-            'weight' => 'required|numeric|min:0.1',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-        ]);
+        $user = User::where('telegram_id', $request->telegram_id)->firstOrFail();
 
-        $user = User::where('telegram_chat_id', $validated['telegram_chat_id'])->first();
+        // 1. Query the Market Engine for Price
+        $priceRecord = MarketPrice::where('species', 'LIKE', '%' . $request->species . '%')->first();
+        $estimatedValue = $priceRecord ? ($priceRecord->price_per_kg * $request->weight) : 0;
 
-        // Determine a text location based on coordinates (Mock logic for later expansion)
-        $locationText = (isset($validated['latitude']) && isset($validated['longitude'])) 
-            ? 'GPS Pinned Location' 
-            : 'Dipolog City Port';
+        // 2. Query the Regulatory Engine for Warnings
+        $restriction = RestrictedSpecies::where('species', 'LIKE', '%' . $request->species . '%')->first();
+        $warningFlag = $restriction ? $restriction->restriction_type : null;
 
-        $catch = FishCatch::create([
-            'user_id' => $user ? $user->id : null,
-            'species' => $validated['species'],
-            'weight' => $validated['weight'],
-            'location' => $locationText,
-            'latitude' => $validated['latitude'] ?? null,
-            'longitude' => $validated['longitude'] ?? null,
-        ]);
+        // 3. Save Catch to Database
+        $catch = new FishCatch();
+        $catch->user_id = $user->id;
+        $catch->species = $request->species;
+        $catch->weight = $request->weight;
+        $catch->latitude = $request->latitude;
+        $catch->longitude = $request->longitude;
+        $catch->save();
 
+        // 4. Send the enriched logistics data back to the Telegram Bot
         return response()->json([
-            'status' => 'success',
-            'message' => 'Geospatial catch securely logged',
-            'data' => $catch
+            'message' => 'Catch logged successfully',
+            'estimated_value' => $estimatedValue,
+            'warning_flag' => $warningFlag
         ], 201);
     }
 }
