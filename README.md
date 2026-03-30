@@ -8,7 +8,7 @@ This repository represents the backend infrastructure. It is designed to be high
 ## Ecosystem Dependency & Architecture
 The IsdaLog engine is half of a microservice architecture. 
 
-* **The Client (Data Ingestion):** In a production environment, this API is consumed by the [Fisheries AI](link-to-your-fisheries-ai-repo) service—a Node.js Telegram bot equipped with an Edge-AI vision model (LLaVA). The bot identifies the fish species in the field and securely transmits the structured JSON payload to this IsdaLog API.
+* **The Client (Data Ingestion):** In a production environment, this API is consumed by the [Fisheries AI](https://github.com/JamesIan-Bayonas/fisheries-ai.git) service—a Node.js Telegram bot equipped with an Edge-AI vision model (LLaVA). The bot identifies the fish species in the field and securely transmits the structured JSON payload to this IsdaLog API.
 * **The Engine (Data Processing):** Once IsdaLog receives the payload, it cross-references the species against the `market_prices` table to calculate economic value, checks the `restricted_species` table for Bureau of Fisheries and Aquatic Resources (BFAR) compliance, and persists the data to MySQL.
 
 ## Employer Evaluation Guide (Fast-Track Testing)
