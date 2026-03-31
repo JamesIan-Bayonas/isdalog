@@ -9,6 +9,9 @@ class FishCatch extends Model
 {
     use HasFactory;
 
+    // Explicitly tell Laravel which table to connect to
+    protected $table = 'catches';
+
     protected $fillable = [
         'user_id', 
         'species', 
