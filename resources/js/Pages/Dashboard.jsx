@@ -1,9 +1,26 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react'; // <-- Added useForm here
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ScaleIcon, DocumentChartBarIcon, SignalIcon } from '@heroicons/react/24/outline';
 
 export default function Dashboard({ auth, totalWeight, totalCatches, recentCatches, chartData }) {
+    
+    // --- NEW: Inertia Form Logic for Creating an Auction ---
+    const { data, setData, post, processing, errors, reset } = useForm({
+        fish_name: '',
+        weight_kg: '',
+        starting_price: '',
+        location: '',
+    });
+
+    const submitAuction = (e) => {
+        e.preventDefault();
+        post(route('listings.store'), {
+            onSuccess: () => reset(), // Clears the form after successful submission
+        });
+    };
+    // -------------------------------------------------------
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -11,11 +28,10 @@ export default function Dashboard({ auth, totalWeight, totalCatches, recentCatch
         >
             <Head title="Logistics Dashboard" />
 
-            {/* Subtle slate background for the whole page */}
             <div className="py-10 bg-slate-50 min-h-screen">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
                     
-                    {/* KPI Metric Cards */}
+                    {/* KPI Metric Cards (Kept exactly as you designed them) */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* Volume Card */}
                         <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow duration-200 relative overflow-hidden">
@@ -56,7 +72,6 @@ export default function Dashboard({ auth, totalWeight, totalCatches, recentCatch
                             </div>
                             <div className="flex items-center space-x-4">
                                 <div className="p-3 bg-cyan-50 text-cyan-600 rounded-xl relative">
-                                    {/* Pulsing online indicator */}
                                     <span className="flex h-3 w-3 absolute top-0 right-0 -mt-1 -mr-1">
                                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
                                       <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
@@ -71,7 +86,7 @@ export default function Dashboard({ auth, totalWeight, totalCatches, recentCatch
                         </div>
                     </div>
 
-                    {/* Catch Trend Chart (Upgraded to Gradient Area Chart) */}
+                    {/* Catch Trend Chart (Kept exactly as you designed it) */}
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-slate-800">7-Day Catch Trends</h3>
@@ -106,50 +121,114 @@ export default function Dashboard({ auth, totalWeight, totalCatches, recentCatch
                         </div>
                     </div>
 
-                    {/* Recent Catches Table (Upgraded styling) */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                        <div className="px-6 py-5 border-b border-slate-100">
-                            <h3 className="text-xl font-bold text-slate-800">Recent Logistics Logs</h3>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-slate-100">
-                                <thead className="bg-slate-50/50">
-                                    <tr>
-                                        <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Date</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Species</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Weight</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Coordinates</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-slate-50">
-                                    {recentCatches.map((catchLog) => (
-                                        <tr key={catchLog.id} className="hover:bg-slate-50/80 transition-colors">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-medium">
-                                                {new Date(catchLog.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-                                                    {catchLog.species}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 font-bold">
-                                                {catchLog.weight} kg
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                                <a 
-                                                    href={`https://maps.google.com/?q=${catchLog.latitude},${catchLog.longitude}`} 
-                                                    target="_blank" 
-                                                    rel="noreferrer"
-                                                    className="text-blue-500 hover:text-blue-700 hover:underline font-medium inline-flex items-center"
-                                                >
-                                                    View on Map
-                                                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                                </a>
-                                            </td>
+                    {/* TWO-COLUMN LAYOUT: Recent Catches & Create Auction Form */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        
+                        {/* Recent Catches Table (Takes up 2/3 of the screen width) */}
+                        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                            <div className="px-6 py-5 border-b border-slate-100">
+                                <h3 className="text-xl font-bold text-slate-800">Recent Logistics Logs</h3>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-slate-100">
+                                    <thead className="bg-slate-50/50">
+                                        <tr>
+                                            <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Date</th>
+                                            <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Species</th>
+                                            <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Weight</th>
+                                            <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Coordinates</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-slate-50">
+                                        {recentCatches.map((catchLog) => (
+                                            <tr key={catchLog.id} className="hover:bg-slate-50/80 transition-colors">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-medium">
+                                                    {new Date(catchLog.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                                                        {catchLog.species}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 font-bold">
+                                                    {catchLog.weight} kg
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                    <a 
+                                                        href={`https://maps.google.com/?q=$${catchLog.latitude},${catchLog.longitude}`} 
+                                                        target="_blank" 
+                                                        rel="noreferrer"
+                                                        className="text-blue-500 hover:text-blue-700 hover:underline font-medium inline-flex items-center"
+                                                    >
+                                                        View on Map
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* NEW SECTION: Start a New Auction Form (Takes up 1/3 of the screen width) */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                            <h3 className="text-xl font-bold text-slate-800 mb-6">Start a New Auction</h3>
+                            <form onSubmit={submitAuction}>
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Fish Species</label>
+                                    <input 
+                                        type="text" 
+                                        value={data.fish_name} 
+                                        onChange={e => setData('fish_name', e.target.value)}
+                                        className="w-full border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="e.g. Lapu-Lapu"
+                                    />
+                                    {errors.fish_name && <div className="text-red-500 text-xs mt-1">{errors.fish_name}</div>}
+                                </div>
+
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Weight (kg)</label>
+                                    <input 
+                                        type="number" 
+                                        step="0.1"
+                                        value={data.weight_kg} 
+                                        onChange={e => setData('weight_kg', e.target.value)}
+                                        className="w-full border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                    {errors.weight_kg && <div className="text-red-500 text-xs mt-1">{errors.weight_kg}</div>}
+                                </div>
+
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Starting Price (₱)</label>
+                                    <input 
+                                        type="number" 
+                                        value={data.starting_price} 
+                                        onChange={e => setData('starting_price', e.target.value)}
+                                        className="w-full border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                    {errors.starting_price && <div className="text-red-500 text-xs mt-1">{errors.starting_price}</div>}
+                                </div>
+
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Pickup Location</label>
+                                    <input 
+                                        type="text" 
+                                        value={data.location} 
+                                        onChange={e => setData('location', e.target.value)}
+                                        className="w-full border-slate-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="e.g. Dipolog Port"
+                                    />
+                                    {errors.location && <div className="text-red-500 text-xs mt-1">{errors.location}</div>}
+                                </div>
+
+                                <button 
+                                    type="submit" 
+                                    disabled={processing}
+                                    className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                                >
+                                    {processing ? 'Publishing...' : 'Publish to Marketplace'}
+                                </button>
+                            </form>
                         </div>
                     </div>
 
