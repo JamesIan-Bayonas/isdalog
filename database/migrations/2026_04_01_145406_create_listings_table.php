@@ -14,13 +14,18 @@ return new class extends Migration
     {
         Schema::create('listings', function (Blueprint $table) {
             $table->id();
-            // This automatically links to the ID in the users table
-            $table->foreignId('fisherman_id')->constrained('users')->onDelete('cascade'); 
-            $table->string('catch_details'); // e.g., "20kg Tulingan"
-            $table->decimal('starting_bid', 10, 2);
-            $table->string('landing_site'); 
+            // Changed to user_id to match your Controller/Model logic
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); 
+            
+            // Added these columns to match your "Start Auction" form
+            $table->string('fish_name'); 
+            $table->decimal('weight_kg', 8, 2);
+            $table->decimal('starting_price', 10, 2);
+            $table->decimal('current_bid', 10, 2);
+            $table->string('location'); 
+            
             $table->enum('status', ['active', 'pending_logistics', 'completed'])->default('active');
-            $table->timestamp('ends_at');
+            $table->timestamp('ends_at')->nullable(); // Made nullable for testing
             $table->timestamps();
         });
     }
