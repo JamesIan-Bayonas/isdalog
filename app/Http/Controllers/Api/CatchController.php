@@ -37,26 +37,29 @@ class CatchController extends \App\Http\Controllers\Controller
 
     public function store(Request $request)
     {
-        $user = User::where('telegram_id', $request->telegram_id)->firstOrFail();
+        // 1. FIXED: Changed 'telegram_id' to 'telegram_chat_id' to match the Bot's payload
+        $user = User::where('telegram_chat_id', $request->telegram_chat_id)->firstOrFail();
 
-        // 1. Query the Market Engine for Price
+        // 2. Query the Market Engine for Price
         $priceRecord = MarketPrice::where('species', 'LIKE', '%' . $request->species . '%')->first();
         $estimatedValue = $priceRecord ? ($priceRecord->price_per_kg * $request->weight) : 0;
 
-        // 2. Query the Regulatory Engine for Warnings
+        // 3. Query the Regulatory Engine for Warnings
         $restriction = RestrictedSpecies::where('species', 'LIKE', '%' . $request->species . '%')->first();
         $warningFlag = $restriction ? $restriction->restriction_type : null;
 
-        // 3. Save Catch to Database
+        // 4. Save Catch to Database
         $catch = new FishCatch();
         $catch->user_id = $user->id;
         $catch->species = $request->species;
         $catch->weight = $request->weight;
-        $catch->latitude = $request->latitude;
-        $catch->longitude = $request->longitude;
+        
+        // 5. FIXED: Changed 'latitude' and 'longitude' to 'lat' and 'lon' to match the Bot's payload
+        $catch->latitude = $request->lat;
+        $catch->longitude = $request->lon;
         $catch->save();
 
-        // 4. Send the enriched logistics data back to the Telegram Bot
+        // 6. Send the enriched logistics data back to the Telegram Bot
         return response()->json([
             'message' => 'Catch logged successfully',
             'estimated_value' => $estimatedValue,
