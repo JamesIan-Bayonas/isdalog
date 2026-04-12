@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
         // 2. Give each fisherman 4 active listings
         foreach ($fishermen as $fisherman) {
             Listing::factory(4)->create([
-                'fisherman_id' => $fisherman->id,
+                'user_id' => $fisherman->id,
             ]);
         }
 
