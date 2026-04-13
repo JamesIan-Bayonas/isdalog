@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\BidController;
 use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\ListingController;
@@ -58,6 +59,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/listings', [ListingController::class, 'store'])->name('listings.store');
     Route::post('/listings/{listing}/bid', [BidController::class, 'store'])->name('bids.store');
     Route::get('/marketplace', [MarketplaceController::class, 'index'])->name('marketplace.index');
+    Route::post('/listings/{listing}/fulfill', [OrderController::class, 'store'])->name('orders.store');
 });
 
 require __DIR__.'/auth.php';
