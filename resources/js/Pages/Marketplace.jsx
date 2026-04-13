@@ -1,20 +1,24 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
-import { ClockIcon } from '@heroicons/react/24/outline'; // Let's add a nice icon!
+import { ClockIcon } from '@heroicons/react/24/outline';
+import Modal from '@/Components/Modal'; // Bringing in the built-in Modal
+import PrimaryButton from '@/Components/PrimaryButton';
+import SecondaryButton from '@/Components/SecondaryButton';
 
 export default function Marketplace({ auth, initialListings }) {
     const [listings, setListings] = useState(initialListings);
     const [now, setNow] = useState(new Date().getTime());
+    
+    // NEW: State to control the Logistics Modal
+    const [fulfillListing, setFulfillListing] = useState(null);
 
     // --- THE HEARTBEAT & WEBSOCKETS ---
     useEffect(() => {
-        // 1. Start the Ticking Clock (Updates the 'now' state every 1 second)
         const timer = setInterval(() => {
             setNow(new Date().getTime());
         }, 1000);
 
-        // 2. Tune into the Reverb Radio Station
         const channel = window.Echo.channel('marketplace');
         channel.listen('CatchBidUpdated', (e) => {
             setListings(currentListings => 
@@ -26,34 +30,44 @@ export default function Marketplace({ auth, initialListings }) {
             );
         });
 
-        // Cleanup when leaving the page
         return () => {
             clearInterval(timer);
             window.Echo.leaveChannel('marketplace');
         };
     }, []);
 
-    // --- HELPER: FORMAT THE COUNTDOWN ---
     const formatTimeLeft = (endTimeString) => {
         const endTime = new Date(endTimeString).getTime();
         const distance = endTime - now;
 
-        if (distance < 0) {
-            return "AUCTION CLOSED";
-        }
+        if (distance < 0) return "AUCTION CLOSED";
 
         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        // Pad with zeros (e.g., 05m 09s)
         return `${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
     };
 
-    // --- BIDDING LOGIC ---
     const placeBid = (listingId, currentBid) => {
         const newBid = parseFloat(currentBid) + 50; 
         router.post(route('bids.store', listingId), { bid_amount: newBid }, { preserveScroll: true });
+    };
+
+    // NEW: Function to send the logistics choice to our OrderController
+    const handleLogistics = (type) => {
+        if (!fulfillListing) return;
+
+        router.post(route('orders.store', fulfillListing.id), {
+            logistics_type: type
+        }, {
+            onSuccess: () => {
+                setFulfillListing(null); // Close modal on success
+                // Remove the fulfilled listing from the active board
+                setListings(listings.filter(l => l.id !== fulfillListing.id));
+            },
+            preserveScroll: true
+        });
     };
 
     return (
@@ -68,14 +82,12 @@ export default function Marketplace({ auth, initialListings }) {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {listings.map((listing) => {
-                            // Calculate if the auction is over for this specific card
                             const isClosed = new Date(listing.ends_at).getTime() - now < 0;
 
                             return (
-                                <div key={listing.id} className={`rounded-xl shadow-md overflow-hidden border transition-all ${isClosed ? 'bg-slate-50 border-slate-300 opacity-75' : 'bg-white border-slate-200 hover:shadow-lg'}`}>
+                                <div key={listing.id} className={`rounded-xl shadow-md overflow-hidden border transition-all ${isClosed ? 'bg-amber-50 border-amber-300' : 'bg-white border-slate-200 hover:shadow-lg'}`}>
                                     
-                                    {/* Header */}
-                                    <div className={`p-4 text-white flex justify-between items-center ${isClosed ? 'bg-slate-500' : 'bg-blue-600'}`}>
+                                    <div className={`p-4 text-white flex justify-between items-center ${isClosed ? 'bg-amber-600' : 'bg-blue-600'}`}>
                                         <h3 className="text-xl font-bold">{listing.fish_name}</h3>
                                         {!isClosed && <span className="bg-blue-800 text-xs px-2 py-1 rounded-full animate-pulse">Live</span>}
                                     </div>
@@ -90,42 +102,65 @@ export default function Marketplace({ auth, initialListings }) {
                                             <span className="font-medium">{listing.location}</span>
                                         </div>
                                         
-                                        {/* THE TICKING CLOCK */}
                                         <div className={`flex items-center justify-center space-x-2 py-2 rounded-lg font-mono font-bold text-lg ${isClosed ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'}`}>
                                             <ClockIcon className="w-6 h-6" />
                                             <span>{formatTimeLeft(listing.ends_at)}</span>
                                         </div>
                                         
-                                        {/* THE LIVE PRICE */}
                                         <div className="pt-2 text-center">
-                                            <span className="text-sm text-slate-500 uppercase tracking-widest font-bold">Current Bid</span>
-                                            <div className={`text-4xl font-extrabold transition-colors duration-300 ${isClosed ? 'text-slate-500' : 'text-emerald-600'}`}>
+                                            <span className="text-sm text-slate-500 uppercase tracking-widest font-bold">Winning Bid</span>
+                                            <div className={`text-4xl font-extrabold transition-colors duration-300 ${isClosed ? 'text-amber-600' : 'text-emerald-600'}`}>
                                                 ₱{parseFloat(listing.current_bid).toLocaleString()}
                                             </div>
                                         </div>
 
-                                        {/* The Bid Button (Disables if closed!) */}
-                                        <button 
-                                            onClick={() => placeBid(listing.id, listing.current_bid)}
-                                            disabled={isClosed}
-                                            className={`w-full mt-4 font-bold py-3 rounded-lg shadow-sm transition-all active:scale-95 ${isClosed ? 'bg-slate-300 text-slate-500 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-600 text-white'}`}
-                                        >
-                                            {isClosed ? 'Auction Ended' : 'Bid +₱50'}
-                                        </button>
+                                        {/* THE SMART BUTTON */}
+                                        {isClosed ? (
+                                            <button 
+                                                onClick={() => setFulfillListing(listing)}
+                                                className="w-full mt-4 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-lg shadow-sm transition-transform active:scale-95"
+                                            >
+                                                📦 Arrange Logistics
+                                            </button>
+                                        ) : (
+                                            <button 
+                                                onClick={() => placeBid(listing.id, listing.current_bid)}
+                                                className="w-full mt-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg shadow-sm transition-transform active:scale-95"
+                                            >
+                                                Bid +₱50
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             );
                         })}
-                        
-                        {listings.length === 0 && (
-                            <div className="col-span-full text-center py-20 text-slate-500">
-                                No active auctions right now. Waiting for the fleet...
-                            </div>
-                        )}
                     </div>
 
                 </div>
             </div>
+
+            {/* THE LOGISTICS MODAL */}
+            <Modal show={fulfillListing !== null} onClose={() => setFulfillListing(null)}>
+                <div className="p-8">
+                    <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                        🎉 Auction Won!
+                    </h2>
+                    <p className="text-md text-slate-600 mb-6">
+                        Congratulations! You secured the <strong>{fulfillListing?.weight_kg}kg {fulfillListing?.fish_name}</strong> for <strong>₱{parseFloat(fulfillListing?.current_bid).toLocaleString()}</strong>. 
+                        How would you like to receive this order from {fulfillListing?.location}?
+                    </p>
+                    
+                    <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4">
+                        <SecondaryButton onClick={() => handleLogistics('self_pickup')} className="justify-center py-3">
+                            🚙 Self Pick-Up
+                        </SecondaryButton>
+                        <PrimaryButton onClick={() => handleLogistics('request_rider')} className="justify-center py-3 bg-emerald-600 hover:bg-emerald-700">
+                            🛵 Request Delivery Rider
+                        </PrimaryButton>
+                    </div>
+                </div>
+            </Modal>
+
         </AuthenticatedLayout>
     );
 }
