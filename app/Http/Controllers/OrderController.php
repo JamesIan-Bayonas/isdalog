@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Listing;
+use Illuminate\Support\Facades\Auth; // Make sure this is at the top!
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +14,7 @@ class OrderController extends Controller
     public function store(Request $request, Listing $listing)
     {
         // 1. Validate the logistics choice
-        dd($listing); // Let's simplify and inspect the $listing variable
+        // dd($listing); // Let's simplify and inspect the $listing variable
 
         $request->validate([
             'logistics_type' => 'required|in:self_pickup,request_rider',
@@ -31,7 +32,7 @@ class OrderController extends Controller
             // 3. Create the Logistics Record (Matches your orders_logistics_table migration)
             DB::table('orders_logistics')->insert([
                 'listing_id' => $listing->id,
-                'buyer_id' => auth()->id(),
+                'buyer_id' => Auth::id(),
                 'delivery_type' => $request->logistics_type,
                 'status' => 'finding_rider', // Initial state
                 'created_at' => now(),
