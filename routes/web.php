@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DispatchController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\BidController;
 use App\Http\Controllers\MarketplaceController;
@@ -60,6 +61,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/listings/{listing}/bid', [BidController::class, 'store'])->name('bids.store');
     Route::get('/marketplace', [MarketplaceController::class, 'index'])->name('marketplace.index');
     Route::post('/listings/{listing}/fulfill', [OrderController::class, 'store'])->name('orders.store');
+    Route::get('/dispatch', [DispatchController::class, 'index'])->name('dispatch.index');
+    Route::post('/dispatch/{orderId}/accept', [DispatchController::class, 'accept'])->name('dispatch.accept');
 });
 
 require __DIR__.'/auth.php';
