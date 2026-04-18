@@ -2,64 +2,42 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Listing;
-use Illuminate\Support\Facades\Auth; // Make sure this is at the top!
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use App\Models\Listing;
 
 class OrderController extends Controller
 {
-    public function store(Request $request, Listing $listing)
+    public function checkout(Request $request, $id)
     {
-        // 1. Validate the logistics choice
-        // dd($listing); // Let's simplify and inspect the $listing variable
+        $listing = Listing::findOrFail($id);
 
-        $request->validate([
-            'logistics_type' => 'required|in:self_pickup,request_rider',
+        // Merchant locks in the delivery request
+        DB::table('orders_logistics')->insert([
+            'listing_id' => $listing->id,
+            'status' => 'finding_rider',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
-        // We use a Database Transaction to ensure either EVERYTHING saves, or NOTHING saves
-        DB::beginTransaction();
+        return redirect()->route('marketplace.index')->with('success', 'Logistics arranged! Waiting for a rider.');
+    }
 
-        try {
-            // 2. Update the Listing Status so it drops off the active market
-            $listing->update([
-                'status' => 'pending_logistics'
-            ]);
+    public function confirmReceipt(Request $request, $orderId)
+    {
+        // This is the data anchor for your future AI model!
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5'
+        ]);
 
-            // 3. Create the Logistics Record (Matches your orders_logistics_table migration)
-            DB::table('orders_logistics')->insert([
-                'listing_id' => $listing->id,
-                'buyer_id' => Auth::id(),
-                'delivery_type' => $request->logistics_type,
-                'status' => 'finding_rider', // Initial state
-                'created_at' => now(),
+        DB::table('orders_logistics')
+            ->where('id', $orderId)
+            ->update([
+                'status' => 'completed',
+                'rating' => $request->rating, // Saves the 1-5 star rating
                 'updated_at' => now(),
             ]);
 
-            // 4. THE REVERSE HANDSHAKE (Ping the Node.js Telegram Bot!)
-            // We send the good news back to the bot so the fisherman gets a message
-            try {
-                Http::timeout(5)->post('http://localhost:3000/api/notify-fisherman', [
-                    'listing_id' => $listing->id,
-                    'fish_name' => $listing->fish_name,
-                    'final_price' => $listing->current_bid,
-                    'logistics_type' => $request->logistics_type,
-                ]);
-            } catch (\Exception $e) {
-                // If the bot is offline, we log the error but don't crash the user's checkout
-                Log::error('Failed to ping Node.js Bot: ' . $e->getMessage());
-            }
-
-            DB::commit();
-
-            return redirect()->back()->with('success', 'Order confirmed! Logistics have been arranged.');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->withErrors(['error' => 'Something went wrong processing your order.']);
-        }
+        return redirect()->back()->with('success', 'Transaction complete. Thank you for rating!');
     }
 }
