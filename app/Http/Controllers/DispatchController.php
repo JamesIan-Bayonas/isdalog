@@ -8,11 +8,10 @@ use Inertia\Inertia;
 
 class DispatchController extends Controller
 {
-    // 1. Show the Live Jobs Board
     public function index()
     {
-        // We join the logistics table with the listings table to get the fish details
-        $jobs = DB::table('orders_logistics')
+        // 1. Fetch jobs waiting for a rider
+        $availableJobs = DB::table('orders_logistics')
             ->join('listings', 'orders_logistics.listing_id', '=', 'listings.id')
             ->where('orders_logistics.status', 'finding_rider')
             ->select(
@@ -26,12 +25,27 @@ class DispatchController extends Controller
             ->orderBy('orders_logistics.created_at', 'desc')
             ->get();
 
+        // 2. Fetch jobs the rider is currently delivering
+        $activeJobs = DB::table('orders_logistics')
+            ->join('listings', 'orders_logistics.listing_id', '=', 'listings.id')
+            ->where('orders_logistics.status', 'en_route')
+            ->select(
+                'orders_logistics.id as order_id',
+                'listings.fish_name',
+                'listings.weight_kg',
+                'listings.location as pickup_location',
+                'listings.current_bid as final_price',
+                'orders_logistics.updated_at'
+            )
+            ->orderBy('orders_logistics.updated_at', 'desc')
+            ->get();
+
         return Inertia::render('Dispatch', [
-            'availableJobs' => $jobs
+            'availableJobs' => $availableJobs,
+            'activeJobs' => $activeJobs
         ]);
     }
 
-    // 2. The Rider Accepts the Job
     public function accept(Request $request, $orderId)
     {
         DB::table('orders_logistics')
@@ -39,10 +53,20 @@ class DispatchController extends Controller
             ->update([
                 'status' => 'en_route',
                 'updated_at' => now(),
-                // In a real app, you would attach the logged-in rider's ID here:
-                // 'rider_id' => auth()->id() 
             ]);
 
         return redirect()->back()->with('success', 'Job Accepted! Head to the pickup location.');
+    }
+
+    public function markDelivered(Request $request, $orderId)
+    {
+        DB::table('orders_logistics')
+            ->where('id', $orderId)
+            ->update([
+                'status' => 'delivered',
+                'updated_at' => now(),
+            ]);
+
+        return redirect()->back()->with('success', 'Fish handed over securely!');
     }
 }
