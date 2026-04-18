@@ -63,6 +63,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/listings/{listing}/fulfill', [OrderController::class, 'store'])->name('orders.store');
     Route::get('/dispatch', [DispatchController::class, 'index'])->name('dispatch.index');
     Route::post('/dispatch/{orderId}/accept', [DispatchController::class, 'accept'])->name('dispatch.accept');
+    Route::post('/dispatch/{orderId}/delivered', [App\Http\Controllers\DispatchController::class, 'markDelivered'])->name('dispatch.delivered');
+    Route::post('/orders/{orderId}/receipt', [App\Http\Controllers\OrderController::class, 'confirmReceipt'])->name('orders.receipt');
 });
 
 require __DIR__.'/auth.php';
