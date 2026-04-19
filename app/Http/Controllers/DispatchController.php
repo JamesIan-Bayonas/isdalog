@@ -58,15 +58,15 @@ class DispatchController extends Controller
         return redirect()->back()->with('success', 'Job Accepted! Head to the pickup location.');
     }
 
-    public function markDelivered(Request $request, $orderId)
+    public function markDelivered($orderId)
     {
-        DB::table('orders_logistics')
+        \Illuminate\Support\Facades\DB::table('orders_logistics')
             ->where('id', $orderId)
             ->update([
                 'status' => 'delivered',
-                'updated_at' => now(),
+                'updated_at' => now()
             ]);
 
-        return redirect()->back()->with('success', 'Fish handed over securely!');
-    }
+        return redirect()->back()->with('success', 'Handover complete! Waiting for Merchant confirmation.');
+    }   
 }

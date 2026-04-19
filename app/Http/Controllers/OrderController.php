@@ -23,21 +23,21 @@ class OrderController extends Controller
         return redirect()->route('marketplace.index')->with('success', 'Logistics arranged! Waiting for a rider.');
     }
 
-    public function confirmReceipt(Request $request, $orderId)
+    // 4. Merchant Confirms & Rates the Delivery
+    public function confirmReceipt(\Illuminate\Http\Request $request, $orderId)
     {
-        // This is the data anchor for your future AI model!
         $request->validate([
             'rating' => 'required|integer|min:1|max:5'
         ]);
 
-        DB::table('orders_logistics')
+        \Illuminate\Support\Facades\DB::table('orders_logistics')
             ->where('id', $orderId)
             ->update([
                 'status' => 'completed',
-                'rating' => $request->rating, // Saves the 1-5 star rating
-                'updated_at' => now(),
+                'merchant_rating' => $request->rating,
+                'updated_at' => now()
             ]);
 
-        return redirect()->back()->with('success', 'Transaction complete. Thank you for rating!');
+        return redirect()->back()->with('success', 'Transaction completely closed! Thank you.');
     }
 }
