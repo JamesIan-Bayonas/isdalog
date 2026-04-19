@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders_logistics', function (Blueprint $table) {
-            //
+            // This will hold our 1 to 5 star rating
+            $table->integer('merchant_rating')->nullable()->after('status');
         });
     }
 
