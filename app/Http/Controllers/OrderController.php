@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Listing;
 
 class OrderController extends Controller
@@ -12,25 +13,29 @@ class OrderController extends Controller
     {
         $listing = Listing::findOrFail($id);
 
-        // Merchant locks in the delivery request
+        // Merchant locks in the delivery request. We MUST record Auth::id() as the merchant.
         DB::table('orders_logistics')->insert([
             'listing_id' => $listing->id,
+            'merchant_id' => Auth::id(), 
             'status' => 'finding_rider',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
+        // Remove the listing from the active marketplace
+        $listing->update(['status' => 'sold']);
+
         return redirect()->route('marketplace.index')->with('success', 'Logistics arranged! Waiting for a rider.');
     }
 
-    // 4. Merchant Confirms & Rates the Delivery
-    public function confirmReceipt(\Illuminate\Http\Request $request, $orderId)
+    // 4. Merchant Confirms & Rates the Delivery (The Trust Ledger)
+    public function confirmReceipt(Request $request, $orderId)
     {
         $request->validate([
             'rating' => 'required|integer|min:1|max:5'
         ]);
 
-        \Illuminate\Support\Facades\DB::table('orders_logistics')
+        DB::table('orders_logistics')
             ->where('id', $orderId)
             ->update([
                 'status' => 'completed',
