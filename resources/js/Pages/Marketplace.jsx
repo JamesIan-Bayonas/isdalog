@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
-import { ClockIcon, CheckBadgeIcon, TruckIcon } from '@heroicons/react/24/outline';
+import { ClockIcon, CheckBadgeIcon, TruckIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon } from '@heroicons/react/24/outline';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
@@ -12,7 +12,6 @@ export default function Marketplace({ auth, initialListings, activeOrders = [] }
     const [fulfillListing, setFulfillListing] = useState(null);
     const [rating, setRating] = useState(5);
 
-    // --- THE HEARTBEAT & WEBSOCKETS ---
     useEffect(() => {
         const timer = setInterval(() => {
             setNow(new Date().getTime());
@@ -24,7 +23,12 @@ export default function Marketplace({ auth, initialListings, activeOrders = [] }
                 setListings(currentListings => 
                     currentListings.map(listing => 
                         listing.id === e.listing_id 
-                            ? { ...listing, current_bid: e.current_bid } 
+                            ? { 
+                                ...listing, 
+                                current_bid: e.current_bid,
+                                // Recalculate trend when bid goes up
+                                trend_percentage: listing.market_average > 0 ? (((e.current_bid - listing.market_average) / listing.market_average) * 100).toFixed(1) : 0
+                              } 
                             : listing
                     )
                 );
@@ -59,10 +63,7 @@ export default function Marketplace({ auth, initialListings, activeOrders = [] }
 
     const handleLogistics = (type) => {
         if (!fulfillListing) return;
-
-        router.post(route('orders.store', fulfillListing.id), {
-            logistics_type: type
-        }, {
+        router.post(route('orders.store', fulfillListing.id), { logistics_type: type }, {
             onSuccess: () => {
                 setFulfillListing(null);
                 setListings(listings.filter(l => l.id !== fulfillListing.id));
@@ -85,7 +86,7 @@ export default function Marketplace({ auth, initialListings, activeOrders = [] }
             <div className="py-12 bg-slate-100 min-h-screen">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
                     
-                    {/* --- THE RECEIVING BAY (Phase 5 Handover) --- */}
+                    {/* --- THE RECEIVING BAY --- */}
                     {activeOrders.length > 0 && (
                         <div className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
                             <div className="bg-slate-800 text-white p-4">
@@ -97,7 +98,6 @@ export default function Marketplace({ auth, initialListings, activeOrders = [] }
                             <div className="p-4 space-y-4">
                                 {activeOrders.map(order => (
                                     <div key={order.order_id} className={`p-5 rounded-lg border ${order.status === 'delivered' ? 'bg-emerald-50 border-emerald-200' : 'bg-blue-50 border-blue-200'}`}>
-                                        
                                         {order.status === 'en_route' ? (
                                             <div className="flex justify-between items-center">
                                                 <div>
@@ -110,28 +110,20 @@ export default function Marketplace({ auth, initialListings, activeOrders = [] }
                                             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                                                 <div>
                                                     <p className="font-bold text-emerald-800 text-lg flex items-center gap-2">
-                                                        <CheckBadgeIcon className="w-6 h-6" />
-                                                        Rider has Arrived!
+                                                        <CheckBadgeIcon className="w-6 h-6" /> Rider has Arrived!
                                                     </p>
                                                     <p className="text-emerald-600">Please confirm receipt of your {order.fish_name} to release funds.</p>
                                                 </div>
                                                 
                                                 <div className="flex items-center gap-3 bg-white p-2 rounded-lg shadow-sm border border-emerald-100">
-                                                    <select 
-                                                        value={rating} 
-                                                        onChange={(e) => setRating(e.target.value)}
-                                                        className="rounded-lg border-slate-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
-                                                    >
+                                                    <select value={rating} onChange={(e) => setRating(e.target.value)} className="rounded-lg border-slate-300 shadow-sm focus:ring-emerald-500 focus:border-emerald-500">
                                                         <option value="5">⭐⭐⭐⭐⭐ (Perfect)</option>
                                                         <option value="4">⭐⭐⭐⭐ (Good)</option>
                                                         <option value="3">⭐⭐⭐ (Average)</option>
                                                         <option value="2">⭐⭐ (Poor)</option>
                                                         <option value="1">⭐ (Unacceptable)</option>
                                                     </select>
-                                                    <button 
-                                                        onClick={() => submitRating(order.order_id)}
-                                                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold shadow transition-transform active:scale-95"
-                                                    >
+                                                    <button onClick={() => submitRating(order.order_id)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold shadow transition-transform active:scale-95">
                                                         Confirm & Rate
                                                     </button>
                                                 </div>
@@ -152,7 +144,8 @@ export default function Marketplace({ auth, initialListings, activeOrders = [] }
                         ) : (
                             listings.map((listing) => {
                                 const isClosed = new Date(listing.ends_at).getTime() - now < 0;
-
+                                const isBelowAverage = listing.trend_percentage < 0;
+                                
                                 return (
                                     <div key={listing.id} className={`rounded-xl shadow-md overflow-hidden border transition-all ${isClosed ? 'bg-amber-50 border-amber-300' : 'bg-white border-slate-200 hover:shadow-lg'}`}>
                                         
@@ -162,7 +155,16 @@ export default function Marketplace({ auth, initialListings, activeOrders = [] }
                                         </div>
                                         
                                         <div className="p-6 space-y-4">
-                                            <div className="flex justify-between border-b pb-2">
+                                            
+                                            {/* MARKET INTELLIGENCE BADGE */}
+                                            {!isClosed && listing.market_average > 0 && (
+                                                <div className={`flex items-center gap-2 p-2 rounded-lg text-sm font-bold justify-center ${isBelowAverage ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                                                    {isBelowAverage ? <ArrowTrendingDownIcon className="w-5 h-5" /> : <ArrowTrendingUpIcon className="w-5 h-5" />}
+                                                    {Math.abs(listing.trend_percentage)}% {isBelowAverage ? 'Below' : 'Above'} 30-Day Average
+                                                </div>
+                                            )}
+
+                                            <div className="flex justify-between border-b pb-2 mt-2">
                                                 <span className="text-slate-500">Weight</span>
                                                 <span className="font-bold">{listing.weight_kg} kg</span>
                                             </div>
@@ -184,17 +186,11 @@ export default function Marketplace({ auth, initialListings, activeOrders = [] }
                                             </div>
 
                                             {isClosed ? (
-                                                <button 
-                                                    onClick={() => setFulfillListing(listing)}
-                                                    className="w-full mt-4 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-lg shadow-sm transition-transform active:scale-95"
-                                                >
+                                                <button onClick={() => setFulfillListing(listing)} className="w-full mt-4 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-lg shadow-sm transition-transform active:scale-95">
                                                     📦 Arrange Logistics
                                                 </button>
                                             ) : (
-                                                <button 
-                                                    onClick={() => placeBid(listing.id, listing.current_bid)}
-                                                    className="w-full mt-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg shadow-sm transition-transform active:scale-95"
-                                                >
+                                                <button onClick={() => placeBid(listing.id, listing.current_bid)} className="w-full mt-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg shadow-sm transition-transform active:scale-95">
                                                     Bid +₱50
                                                 </button>
                                             )}
@@ -210,21 +206,14 @@ export default function Marketplace({ auth, initialListings, activeOrders = [] }
             {/* THE LOGISTICS MODAL */}
             <Modal show={fulfillListing !== null} onClose={() => setFulfillListing(null)}>
                 <div className="p-8">
-                    <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                        🎉 Auction Won!
-                    </h2>
+                    <h2 className="text-2xl font-bold text-slate-900 mb-2">🎉 Auction Won!</h2>
                     <p className="text-md text-slate-600 mb-6">
                         Congratulations! You secured the <strong>{fulfillListing?.weight_kg}kg {fulfillListing?.fish_name}</strong> for <strong>₱{parseFloat(fulfillListing?.current_bid).toLocaleString()}</strong>. 
                         How would you like to receive this order from {fulfillListing?.location}?
                     </p>
-                    
                     <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4">
-                        <SecondaryButton onClick={() => handleLogistics('self_pickup')} className="justify-center py-3">
-                            🚙 Self Pick-Up
-                        </SecondaryButton>
-                        <PrimaryButton onClick={() => handleLogistics('request_rider')} className="justify-center py-3 bg-emerald-600 hover:bg-emerald-700">
-                            🛵 Request Delivery Rider
-                        </PrimaryButton>
+                        <SecondaryButton onClick={() => handleLogistics('self_pickup')} className="justify-center py-3">🚙 Self Pick-Up</SecondaryButton>
+                        <PrimaryButton onClick={() => handleLogistics('request_rider')} className="justify-center py-3 bg-emerald-600 hover:bg-emerald-700">🛵 Request Delivery Rider</PrimaryButton>
                     </div>
                 </div>
             </Modal>
