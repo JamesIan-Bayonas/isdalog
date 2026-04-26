@@ -39,7 +39,6 @@ class HistoricalListingsSeeder extends Seeder
                 'fish_name' => $fish,
                 'weight_kg' => rand(5, 25),
                 'location' => $locations[array_rand($locations)],
-                'starting_price' => $basePrice, // <-- THE FIX: Added the missing required column
                 'current_bid' => $soldPrice,
                 'status' => 'sold',
                 'ends_at' => $randomDate,
