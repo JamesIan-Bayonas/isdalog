@@ -30,6 +30,24 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Dashboard
                                 </NavLink>
+                                {/* NEW: Marketplace / Live Trading Floor */}
+                                <NavLink 
+                                    href={route('marketplace.index')} 
+                                    active={route().current('marketplace.index')}
+                                >
+                                    Live Trading Floor
+                                </NavLink>
+
+                                {/* NEW: The Smart Admin Link */}
+                                {user.role === 'admin' && (
+                                    <NavLink 
+                                        href={route('bfar.dashboard')} 
+                                        active={route().current('bfar.dashboard')} 
+                                        className="text-emerald-600 font-bold"
+                                    >
+                                        🛡️ BFAR Data Center
+                                    </NavLink>
+                                )}
                             </div>
                         </div>
 
@@ -134,6 +152,24 @@ export default function AuthenticatedLayout({ header, children }) {
                         >
                             Dashboard
                         </ResponsiveNavLink>
+
+                        <ResponsiveNavLink
+                            href={route('marketplace.index')}
+                            active={route().current('marketplace.index')}
+                        >
+                            Live Trading Floor
+                        </ResponsiveNavLink>
+
+                        {/* NEW: Mobile Admin Link */}
+                        {user.role === 'admin' && (
+                            <ResponsiveNavLink
+                                href={route('bfar.dashboard')}
+                                active={route().current('bfar.dashboard')}
+                                className="text-emerald-600 font-bold"
+                            >
+                                🛡️ BFAR Data Center
+                            </ResponsiveNavLink>
+                        )}
                     </div>
 
                     <div className="border-t border-gray-200 pb-1 pt-4">

@@ -9,6 +9,7 @@ use App\Http\Controllers\ListingController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use App\Models\FishCatch;
 use Inertia\Inertia;
 
@@ -69,5 +70,21 @@ Route::middleware('auth')->group(function () {
     Route::post('/orders/{orderId}/confirm', [App\Http\Controllers\OrderController::class, 'confirmReceipt'])->name('orders.confirm');
 });
 
-require __DIR__.'/auth.php';
+// --- BFAR / LGU ADMIN ROUTES ---
+Route::middleware(['auth', 'verified'])->group(function () {
     
+    // Inject the Request object directly into the function
+    Route::get('/bfar/dashboard', function (Request $request) {
+        
+        // Use $request->user() instead of auth()->user()
+        if ($request->user()->role !== 'admin') {
+            abort(403, 'Unauthorized access. This area is restricted to BFAR and LGU Officials.');
+        }
+
+        return Inertia::render('BfarDashboard');
+        
+    })->name('bfar.dashboard');
+
+});
+
+require __DIR__.'/auth.php';
