@@ -17,14 +17,14 @@ class BfarDashboardController extends Controller
 
         // 2. Metric: Total Volume (KG) of Sold Fish this month
         $totalVolume = DB::table('listings')
-            ->where('status', 'sold')
+            ->where('status', 'completed')
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->sum('weight_kg');
 
         // 3. Metric: Total Market Value (PHP) 
         // This calculates the total economic movement in the port
         $marketValue = DB::table('listings')
-            ->where('status', 'sold')
+            ->where('status', 'completed')
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->sum('current_bid');
 
@@ -32,7 +32,7 @@ class BfarDashboardController extends Controller
         // Grouping by fish_name to see the most abundant catches
         $speciesDistribution = DB::table('listings')
             ->select('fish_name', DB::raw('SUM(weight_kg) as total_weight'))
-            ->where('status', 'sold')
+            ->where('status', 'completed')
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->groupBy('fish_name')
             ->orderByDesc('total_weight')
