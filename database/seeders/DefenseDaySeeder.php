@@ -15,15 +15,19 @@ class DefenseDaySeeder extends Seeder
 
         for ($i = 0; $i < 50; $i++) {
             $weight = rand(10, 150);
-            $basePrice = rand(800, 3500);
+            
+            // Create realistic pricing data
+            $startPrice = rand(800, 2500);
+            $currentBid = $startPrice + rand(100, 1000); 
             
             DB::table('listings')->insert([
                 'user_id' => 1, // Assumes user 1 is the fisherman
                 'fish_name' => $fishTypes[array_rand($fishTypes)],
                 'weight_kg' => $weight,
                 'location' => $locations[array_rand($locations)],
-                'current_bid' => $basePrice,
-                'status' => 'sold', // Marks them as completed sales for the BFAR charts
+                'starting_price' => $startPrice, // <-- Fixed: Added the required starting price
+                'current_bid' => $currentBid,
+                'status' => 'completed', // Marks them as completed sales for the BFAR charts
                 'created_at' => Carbon::now()->subDays(rand(1, 20)), // Scatters the data over the last 3 weeks
                 'updated_at' => Carbon::now()->subDays(rand(1, 20)),
             ]);
