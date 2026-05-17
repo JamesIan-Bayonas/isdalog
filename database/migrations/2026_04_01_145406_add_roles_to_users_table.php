@@ -13,7 +13,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->enum('role', ['fisherman', 'buyer', 'rider'])->default('buyer');
+            $table->enum('role', ['fisherman', 'buyer', 'rider', 'admin'])->default('buyer');
             $table->string('contact_number')->nullable();
         });
     }
