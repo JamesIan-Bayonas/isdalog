@@ -60,6 +60,14 @@ export default function UserManagement({ auth, users }) {
                                                 <option value="admin">Admin</option>
                                             </select>
                                         </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            {user.name} 
+                                            {user.requested_role && (
+                                                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                    Wants to be: {user.requested_role}
+                                                </span>
+                                            )}
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>

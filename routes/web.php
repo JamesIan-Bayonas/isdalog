@@ -71,6 +71,18 @@ Route::middleware('auth')->group(function () {
     Route::post('/orders/{orderId}/confirm', [App\Http\Controllers\OrderController::class, 'confirmReceipt'])->name('orders.confirm');
     Route::get('/admin/users', [AdminController::class, 'manageUsers'])->name('admin.users');
     Route::patch('/admin/users/{id}/role', [AdminController::class, 'updateRole'])->name('admin.users.update');
+    Route::post('/profile/upgrade-request', function (Request $request) {
+    $validated = $request->validate([
+        'requested_role' => 'required|in:fisherman,rider',
+        'contact_number' => 'required|string|max:20',
+        'bfar_registration_number' => 'nullable|string|max:255',
+        'vehicle_details' => 'nullable|string|max:255',
+    ]);
+
+    $request->user()->update($validated);
+
+    return redirect()->back()->with('success', 'Your upgrade request is under review by the Admin.');
+})->name('profile.upgrade.request');
 });
 
 // --- BFAR / LGU ADMIN ROUTES ---
