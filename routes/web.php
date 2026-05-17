@@ -6,6 +6,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\BidController;
 use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\ListingController;
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
@@ -68,6 +69,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/orders/{orderId}/receipt', [App\Http\Controllers\OrderController::class, 'confirmReceipt'])->name('orders.receipt');
     Route::post('/dispatch/{orderId}/delivered', [App\Http\Controllers\DispatchController::class, 'markDelivered'])->name('dispatch.delivered');
     Route::post('/orders/{orderId}/confirm', [App\Http\Controllers\OrderController::class, 'confirmReceipt'])->name('orders.confirm');
+    Route::get('/admin/users', [AdminController::class, 'manageUsers'])->name('admin.users');
+    Route::patch('/admin/users/{id}/role', [AdminController::class, 'updateRole'])->name('admin.users.update');
 });
 
 // --- BFAR / LGU ADMIN ROUTES ---
@@ -86,5 +89,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('bfar.dashboard');
 
 });
+
+Route::post('/dispatch/{id}/complete', [DispatchController::class, 'completeDelivery'])->name('dispatch.complete');
 
 require __DIR__.'/auth.php';
