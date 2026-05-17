@@ -10,6 +10,11 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+
+        $this->call([
+                AdminSeeder::class,
+            ]);
+
         // 1. Create 3 Fishermen
         $fishermen = User::factory(3)->create([
             'role' => 'fisherman',
