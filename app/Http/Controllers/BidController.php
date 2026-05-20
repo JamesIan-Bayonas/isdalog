@@ -21,14 +21,15 @@ class BidController extends Controller
             'current_bid' => $request->bid_amount
         ]);
 
-        // 3. Log it in the Bids ledger table (requires a bids() relationship in Listing.php)
+        // 3. Log it in the Bids ledger table
         $listing->bids()->create([
             'user_id' => Auth::id(),
             'amount' => $request->bid_amount,
         ]);
 
         // 4. SHOUT IT TO THE WORLD! (Triggers Reverb WebSockets instantly)
-        CatchBidUpdated::dispatch($listing->id, $request->bid_amount);
+        // We pass the entire $listing object to match the Event constructor
+        event(new CatchBidUpdated($listing));
 
         // Tell the bidder's screen that their bid was accepted
         return redirect()->back()->with('success', 'Bid placed successfully!');

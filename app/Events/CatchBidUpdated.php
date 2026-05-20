@@ -2,31 +2,49 @@
 
 namespace App\Events;
 
+use App\Models\Listing;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow; // <-- Crucial for instant speed
+use Illuminate\Broadcasting\PresenceChannel;
+use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class CatchBidUpdated implements ShouldBroadcastNow 
+class CatchBidUpdated implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $listing_id;
-    public $current_bid;
+    public $listing;
 
-    // We pass the listing and the new price into the megaphone
-    public function __construct($listing_id, $current_bid)
+    /**
+     * Create a new event instance.
+     */
+    public function __construct(Listing $listing)
     {
-        $this->listing_id = $listing_id;
-        $this->current_bid = $current_bid;
+        $this->listing = $listing;
     }
 
-    // We broadcast this to a public "marketplace" radio channel
+    /**
+     * Get the channels the event should broadcast on.
+     */
     public function broadcastOn(): array
     {
+        // We broadcast on a specific channel for this listing
         return [
-            new Channel('marketplace'),
+            new Channel('marketplace.' . $this->listing->id),
+        ];
+    }
+
+    /**
+     * The data to broadcast to React.
+     */
+    public function broadcastWith(): array
+    {
+        return [
+            'id' => $this->listing->id,
+            'current_bid' => $this->listing->current_bid,
+            'updated_at' => $this->listing->updated_at,
         ];
     }
 }
