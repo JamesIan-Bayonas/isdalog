@@ -9,6 +9,7 @@ export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
+        role: 'buyer', // 1. FIXED: Initialized the role data state with a clean baseline default
         password: '',
         password_confirmation: '',
     });
@@ -26,6 +27,7 @@ export default function Register() {
             <Head title="Register" />
 
             <form onSubmit={submit}>
+                {/* --- NAME CONTAINER INPUT --- */}
                 <div>
                     <InputLabel htmlFor="name" value="Name" />
 
@@ -43,6 +45,27 @@ export default function Register() {
                     <InputError message={errors.name} className="mt-2" />
                 </div>
 
+                {/* 2. FIXED: Injected the Ecosystem Role selector right beneath the Name block */}
+                <div className="mt-4">
+                    <InputLabel htmlFor="role" value="Account Type / Ecosystem Role" />
+                    
+                    <select
+                        id="role"
+                        name="role"
+                        value={data.role}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        onChange={(e) => setData('role', e.target.value)}
+                        required
+                    >
+                        <option value="buyer">Marketplace Buyer (Trade & Consignment)</option>
+                        <option value="fisherman">Local Fisherman (Harvest & Auction)</option>
+                        <option value="rider">Logistics Courier / Rider (Fleet Delivery)</option>
+                    </select>
+
+                    <InputError message={errors.role} className="mt-2" />
+                </div>
+
+                {/* --- EMAIL CONTAINER INPUT --- */}
                 <div className="mt-4">
                     <InputLabel htmlFor="email" value="Email" />
 
@@ -60,6 +83,7 @@ export default function Register() {
                     <InputError message={errors.email} className="mt-2" />
                 </div>
 
+                {/* --- PASSWORD CONTAINER INPUT --- */}
                 <div className="mt-4">
                     <InputLabel htmlFor="password" value="Password" />
 
@@ -77,6 +101,7 @@ export default function Register() {
                     <InputError message={errors.password} className="mt-2" />
                 </div>
 
+                {/* --- PASSWORD CONFIRMATION CONTAINER INPUT --- */}
                 <div className="mt-4">
                     <InputLabel
                         htmlFor="password_confirmation"
@@ -102,6 +127,7 @@ export default function Register() {
                     />
                 </div>
 
+                {/* --- SUBMISSION ACTIONS COMPONENT GROUP --- */}
                 <div className="mt-4 flex items-center justify-end">
                     <Link
                         href={route('login')}

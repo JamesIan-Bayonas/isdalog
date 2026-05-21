@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
-import { MapPinIcon, ScaleIcon, CurrencyBanknotesIcon, CheckCircleIcon, TruckIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, ScaleIcon, BanknotesIcon, CheckCircleIcon, TruckIcon, CameraIcon } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react';
 
 export default function Dispatch({ auth, openJobs: initialJobs = [] }) {
@@ -92,7 +92,7 @@ export default function Dispatch({ auth, openJobs: initialJobs = [] }) {
                                                 <span>Origin Pickup: <strong className="text-slate-800">{job.location || 'Galas Port'}</strong></span>
                                             </div>
                                             <div className="flex items-center text-slate-600 gap-2.5 text-md">
-                                                <CurrencyBanknotesIcon className="w-5 h-5 text-slate-400 flex-shrink-0" />
+                                                <BanknotesIcon className="w-5 h-5 text-slate-400 flex-shrink-0" />
                                                 <span>Delivery Payout: <strong className="text-emerald-600">₱{parseFloat(job.final_price).toLocaleString()}</strong></span>
                                             </div>
                                         </div>
