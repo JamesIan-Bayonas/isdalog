@@ -36,17 +36,18 @@ class MarketplaceController extends Controller
         });
 
         // 3. Fetch active logistics orders for the Receiving Bay
-        $activeOrders = DB::table('orders_logistics')
+        // Inside app/Http/Controllers/MarketplaceController.php
+    $activeOrders = DB::table('orders_logistics')
             ->join('listings', 'orders_logistics.listing_id', '=', 'listings.id')
-            ->where('orders_logistics.merchant_id', Auth::id())
-            ->whereIn('orders_logistics.status', ['en_route', 'delivered'])
             ->select(
-                'orders_logistics.id as order_id',
+                'orders_logistics.order_id', // Uses 'order_id' to match your schema
                 'orders_logistics.status',
                 'listings.fish_name',
                 'listings.weight_kg',
                 'listings.current_bid as final_price'
             )
+            ->where('orders_logistics.user_id', Auth::id()) // FIXED: Changed from buyer_id to user_id to align with your migration
+            ->whereIn('orders_logistics.status', ['en_route', 'delivered'])
             ->get();
 
         return Inertia::render('Marketplace', [

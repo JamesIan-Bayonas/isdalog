@@ -34,7 +34,7 @@ export default function BfarDashboard({ auth }) {
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    
+
                     {loading ? (
                         <div className="text-center text-gray-500 py-20 font-bold animate-pulse">
                             Aggregating Port Data...

@@ -72,12 +72,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/users', [AdminController::class, 'manageUsers'])->name('admin.users');
     Route::patch('/admin/users/{id}/role', [AdminController::class, 'updateRole'])->name('admin.users.update');
     Route::post('/profile/upgrade-request', function (Request $request) {
-    $validated = $request->validate([
+    $validated = $request->validate([   
         'requested_role' => 'required|in:fisherman,rider',
         'contact_number' => 'required|string|max:20',
         'bfar_registration_number' => 'nullable|string|max:255',
         'vehicle_details' => 'nullable|string|max:255',
     ]);
+    Route::post('/orders/{listing}', [OrderController::class, 'store'])->name('orders.store');
+    Route::post('/orders/{id}/confirm', [OrderController::class, 'confirm'])->name('orders.confirm');
+    Route::get('/dispatch', [DispatchController::class, 'index'])->name('dispatch.index');
+    Route::post('/dispatch/{id}/claim', [DispatchController::class, 'claim'])->name('dispatch.claim');
 
     $request->user()->update($validated);
 

@@ -2,61 +2,104 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Listing;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\RedirectResponse;
 
 class OrderController extends Controller
 {
-    public function confirm(Request $request, $orderId)
+    public function store(Request $request, Listing $listing): RedirectResponse
     {
         $request->validate([
-            'rating' => 'required|integer|min:1|max:5',
+            'logistics_type' => 'required|in:self_pickup,request_rider'
         ]);
 
-        DB::beginTransaction();
+        /** @var \App\Models\User $buyer */
+        $buyer = Auth::user();
+        $finalPrice = (float) $listing->current_bid;
 
-        try {
-            // 1. Find the logistics order and the associated listing
-            $order = DB::table('orders_logistics')->where('id', $orderId)->first();
-            $listing = DB::table('listings')->where('id', $order->listing_id)->first();
+        if ($buyer->wallet_balance < $finalPrice) {
+            return redirect()->back()->withErrors(['error' => 'Insufficient wallet balance to secure escrow.']);
+        }
 
-            // 2. The Financial Math
-            $totalTransactionValue = $listing->current_bid;
-            
-            // Calculate the 3% IsdaLog Platform Fee
-            $platformFee = $totalTransactionValue * 0.03; 
-            
-            // Calculate the Fisherman's Final Earnings
-            $fishermanEarnings = $totalTransactionValue - $platformFee;
+        // Variable to hold order details for broadcasting
+        $broadcastOrder = null;
 
-            // 3. Release Funds to the Fisherman's Wallet
-            $fisherman = User::find($listing->user_id);
-            $fisherman->wallet_balance += $fishermanEarnings;
-            $fisherman->save();
+        DB::transaction(function () use ($listing, $buyer, $finalPrice, $request, &$broadcastOrder) {
+            $buyer->decrement('wallet_balance', $finalPrice);
 
-            // 4. Update the Order Status to reflect the completed financial handshake
-            DB::table('orders_logistics')->where('id', $orderId)->update([
-                'status' => 'completed',
-                'escrow_status' => 'released',
-                'platform_fee' => $platformFee,
-                'seller_earnings' => $fishermanEarnings,
-                'rating' => $request->rating,
+            // Insert into DB and grab the generated ID
+            $orderId = DB::table('orders_logistics')->insertGetId([
+                'listing_id' => $listing->id,
+                'user_id' => $buyer->id, 
+                'fisherman_id' => $listing->user_id,
+                'rider_id' => null,
+                'final_price' => $finalPrice,
+                'escrow_balance' => $finalPrice,
+                'logistics_type' => $request->logistics_type,
+                'status' => $request->logistics_type === 'request_rider' ? 'pending_dispatch' : 'completed',
+                'created_at' => now(),
                 'updated_at' => now(),
             ]);
 
-            DB::commit();
+            $listing->update(['status' => 'closed']);
 
-            // Log the revenue generation for your startup metrics!
-            Log::info("IsdaLog Revenue Generated: ₱{$platformFee} from Order ID: {$orderId}");
+            // Populate broadcast structure if a rider is requested
+            if ($request->logistics_type === 'request_rider') {
+                $broadcastOrder = (object) [
+                    'order_id' => $orderId,
+                    'fish_name' => $listing->fish_name,
+                    'weight_kg' => $listing->weight_kg,
+                    'final_price' => $finalPrice,
+                    'location' => $listing->location,
+                ];
+            }
+        });
 
-            return redirect()->back()->with('success', 'Order confirmed and funds released to the fisherman!');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error("Escrow Release Failed: " . $e->getMessage());
-            return redirect()->back()->withErrors('An error occurred while releasing the funds.');
+        // SHOUT IT TO THE RIDERS! Trigger WebSocket broadcast instantly
+        if ($broadcastOrder) {
+            event(new \App\Events\OrderDispatched($broadcastOrder));
         }
+
+        return redirect()->route('marketplace.index')->with('success', 'Funds successfully secured in Escrow!');
+    }
+
+    public function confirm(Request $request, int $orderId): RedirectResponse
+    {
+        $request->validate([
+            'rating' => 'required|integer|between:1,5'
+        ]);
+
+        // FIXED: Using $orderId argument constraint here directly
+        $order = DB::table('orders_logistics')->where('order_id', $orderId)->first();
+
+        if (!$order || $order->escrow_balance <= 0) {
+            return redirect()->back()->withErrors(['error' => 'Order invalid or escrow already released.']);
+        }
+
+        DB::transaction(function () use ($order, $request) {
+            $totalEscrow = (float) $order->escrow_balance;
+
+            // Compute platform fee architecture (3%)
+            $platformFee = $totalEscrow * 0.03;
+            $fishermanPayout = $totalEscrow - $platformFee;
+
+            // Credit the Fisherman's wallet
+            User::where('id', $order->fisherman_id)->increment('wallet_balance', $fishermanPayout);
+
+            // Update row layout status details and drain escrow tracker to 0
+            // FIXED: Changed from $order->id to $order->order_id to match your native migration schema
+            DB::table('orders_logistics')->where('order_id', $order->order_id)->update([
+                'status' => 'delivered',
+                'escrow_balance' => 0, // Cleared out safely
+                'rating' => $request->rating,
+                'updated_at' => now()
+            ]);
+        });
+
+        return redirect()->back()->with('success', 'Delivery confirmed. Payout successfully wired to Fisherman!');
     }
 }
