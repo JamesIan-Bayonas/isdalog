@@ -5,58 +5,65 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class BfarDashboardController extends Controller
 {
-    public function getAnalytics(Request $request)
+    /**
+     * Compute real-time municipal maritime catch analytics for administrative monitoring.
+     */
+    public function index(): Response
     {
-        // 1. Set the Timeframe (Current Month)
-        $startOfMonth = Carbon::now()->startOfMonth();
-        $endOfMonth = Carbon::now()->endOfMonth();
-
-        // 2. Metric: Total Volume (KG) of Sold Fish this month
-        $totalVolume = DB::table('listings')
-            ->where('status', 'completed')
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+        // 1. Calculate Aggregate Biomass volume (Total kilograms harvested)
+        $totalBiomassKg = (float) DB::table('listings')
+            ->whereIn('status', ['closed', 'completed'])
             ->sum('weight_kg');
 
-        // 3. Metric: Total Market Value (PHP) 
-        // This calculates the total economic movement in the port
-        $marketValue = DB::table('listings')
-            ->where('status', 'completed')
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->sum('current_bid');
+        // 2. Compute Total Economic Volume Locked/Traded inside the Marketplace
+        $totalMarketVolume = (float) DB::table('orders_logistics')
+            ->sum('final_price');
 
-        // 4. Metric: Species Distribution (Top 5 Caught Fish)
-        // Grouping by fish_name to see the most abundant catches
-        $speciesDistribution = DB::table('listings')
-            ->select('fish_name', DB::raw('SUM(weight_kg) as total_weight'))
-            ->where('status', 'completed')
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+        // 3. Count Active Multi-sided Fleet Operators
+        $activeFishermenCount = DB::table('users')->where('role', 'fisherman')->count();
+        $activeCouriersCount = DB::table('users')->where('role', 'rider')->count();
+
+        // 4. Species Distribution Breakdown (Biomass per Species Matrix)
+        $speciesVolumeData = DB::table('listings')
+            ->select('fish_name', DB::raw('SUM(weight_kg) as total_weight'), DB::raw('COUNT(*) as catch_count'))
+            ->whereIn('status', ['closed', 'completed'])
             ->groupBy('fish_name')
-            ->orderByDesc('total_weight')
-            ->limit(5)
+            ->orderBy('total_weight', 'desc')
             ->get();
 
-        // 5. Metric: Compliance Alerts
-        // For the capstone, we simulate or query rejected catches due to species restrictions
-        $restrictedAlertsCount = DB::table('catches') // Or 'listings' depending on where your AI logs failures
-            ->where('status', 'rejected_restricted')
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
-            ->count();
+        // 5. Query Active High-Risk Infractions (Restricted Protected Species Flag System)
+        // Cross-references your catches against the restricted species definition tables
+        $sustainabilityAlerts = DB::table('listings')
+            ->join('users', 'listings.user_id', '=', 'users.id')
+            ->select(
+                'listings.id as listing_id',
+                'listings.fish_name',
+                'listings.weight_kg',
+                'listings.created_at as captured_at',
+                'users.name as fisherman_name'
+            )
+            // Fixed, synchronized version
+            ->whereIn('listings.fish_name', function ($query) {
+                $query->select('name')->from('restricted_species'); // FIXED: changed column to 'name'
+            })
+            ->orderBy('listings.created_at', 'desc')
+            ->get();
 
-        // Return a clean JSON response for React
-        return response()->json([
-            'success' => true,
-            'timeframe' => Carbon::now()->format('F Y'),
+        // 6. Pass data payload directly to the Inertia frontend compiler
+        return Inertia::render('BfarDashboard', [
             'metrics' => [
-                'total_volume_kg' => round($totalVolume, 2),
-                'total_market_value' => round($marketValue, 2),
-                'restricted_alerts' => $restrictedAlertsCount,
-                'active_ports' => 1, // Currently Galas Port
+                'total_biomass_kg' => $totalBiomassKg,
+                'total_market_value' => $totalMarketVolume,
+                'active_fishermen' => $activeFishermenCount,
+                'active_riders' => $activeCouriersCount,
             ],
-            'species_distribution' => $speciesDistribution
+            'speciesDistribution' => $speciesVolumeData,
+            'alerts' => $sustainabilityAlerts
         ]);
     }
 }
