@@ -44,3 +44,10 @@ yarn-error.log
 /.fleet
 /.nova
 /.phpunit.cache
+
+# Ignore compiled frontend production builds
+/public/build
+/public/js
+/public/css
+/public/hot
+storage/logs/*.log
