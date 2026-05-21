@@ -37,7 +37,15 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Live Trading Floor
                                 </NavLink>
-
+                                {/* --- CONDITIONAL RIDER DISPATCH LINK --- */}
+                                {user.role === 'rider' && (
+                                    <NavLink 
+                                        href={route('dispatch.index')} 
+                                        active={route().current('dispatch.*')}
+                                    >
+                                        Dispatch Board
+                                    </NavLink>
+                                )}
                                 {/* NEW: The Smart Admin Link */}
                                 {user.role === 'admin' && (
                                     <NavLink 

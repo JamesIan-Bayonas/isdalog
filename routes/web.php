@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\BfarDashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DispatchController;
 use App\Http\Controllers\OrderController;
@@ -14,6 +15,7 @@ use Illuminate\Http\Request;
 use App\Models\FishCatch;
 use Inertia\Inertia;
 
+// --- PUBLIC ROUTES ---
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -23,89 +25,59 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    $user = Auth::user();
+// --- AUTHENTICATED ROUTES ---
+Route::middleware(['auth', 'verified'])->group(function () {
 
-    // 1. Aggregate core metrics
-    $totalWeight = FishCatch::where('user_id', $user->id)->sum('weight');
-    $totalCatches = FishCatch::where('user_id', $user->id)->count();
-    
-    // Calculate total value (Assuming you saved estimated_value in the database, 
-    // or we can just pass the raw data and calculate it)
-    
-    // 2. Fetch the 5 most recent catches for the ledger table
-    $recentCatches = FishCatch::where('user_id', $user->id)
-        ->orderBy('created_at', 'desc')
-        ->take(5)
-        ->get();
+    Route::get('/dashboard', function () {
+        $user = Auth::user();
+        return Inertia::render('Dashboard', [
+            'totalWeight' => FishCatch::where('user_id', $user->id)->sum('weight'),
+            'totalCatches' => FishCatch::where('user_id', $user->id)->count(),
+            'recentCatches' => FishCatch::where('user_id', $user->id)->orderBy('created_at', 'desc')->take(5)->get(),
+            'chartData' => FishCatch::selectRaw('DATE(created_at) as date, SUM(weight) as daily_weight')->where('user_id', $user->id)->groupBy('date')->get(),
+        ]);
+    })->name('dashboard');
 
-    // 3. Fetch data specifically formatted for the Recharts graph
-    $chartData = FishCatch::selectRaw('DATE(created_at) as date, SUM(weight) as daily_weight')
-        ->where('user_id', $user->id)
-        ->groupBy('date')
-        ->orderBy('date', 'asc')
-        ->get();
-
-    // Inject data into the React Frontend
-    return Inertia::render('Dashboard', [
-        'totalWeight' => $totalWeight,
-        'totalCatches' => $totalCatches,
-        'recentCatches' => $recentCatches,
-        'chartData' => $chartData
-    ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
+    // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Marketplace & Bidding
+    Route::get('/marketplace', [MarketplaceController::class, 'index'])->name('marketplace.index');
     Route::post('/listings', [ListingController::class, 'store'])->name('listings.store');
     Route::post('/listings/{listing}/bid', [BidController::class, 'store'])->name('bids.store');
-    Route::get('/marketplace', [MarketplaceController::class, 'index'])->name('marketplace.index');
-    Route::post('/listings/{listing}/fulfill', [OrderController::class, 'store'])->name('orders.store');
-    Route::get('/dispatch', [DispatchController::class, 'index'])->name('dispatch.index');
-    Route::post('/dispatch/{orderId}/accept', [DispatchController::class, 'accept'])->name('dispatch.accept');
-    Route::post('/dispatch/{orderId}/delivered', [App\Http\Controllers\DispatchController::class, 'markDelivered'])->name('dispatch.delivered');
-    Route::post('/orders/{orderId}/receipt', [App\Http\Controllers\OrderController::class, 'confirmReceipt'])->name('orders.receipt');
-    Route::post('/dispatch/{orderId}/delivered', [App\Http\Controllers\DispatchController::class, 'markDelivered'])->name('dispatch.delivered');
-    Route::post('/orders/{orderId}/confirm', [App\Http\Controllers\OrderController::class, 'confirmReceipt'])->name('orders.confirm');
+    Route::post('/orders/{listing}', [OrderController::class, 'store'])->name('orders.store');
+
+    // =========================================================================
+    // ENHANCED DISPATCH LOGISTICS LAYER (Bypasses traditional provider Gates)
+    // =========================================================================
+    Route::group(['middleware' => function ($request, $next) {
+        if ($request->user() && $request->user()->role === 'rider') {
+            return $next($request);
+        }
+        abort(403, 'Access Denied: Your account role is not authorized to access the rider platform.');
+    }], function () {
+        Route::get('/dispatch', [DispatchController::class, 'index'])->name('dispatch.index');
+        Route::post('/dispatch/{id}/claim', [DispatchController::class, 'claim'])->name('dispatch.claim');
+        Route::post('/dispatch/{id}/complete', [DispatchController::class, 'completeDelivery'])->name('dispatch.complete');
+    });
+
+    // =========================================================================
+    // ENHANCED BFAR REGULATORY LAYER (Bypasses traditional provider Gates)
+    // =========================================================================
+    Route::group(['middleware' => function ($request, $next) {
+        if ($request->user() && $request->user()->role === 'admin') {
+            return $next($request);
+        }
+        abort(403, 'Access Denied: This dashboard is reserved for BFAR/LGU management officials.');
+    }], function () {
+        Route::get('/bfar/dashboard', [BfarDashboardController::class, 'index'])->name('bfar.dashboard');
+    });
+
+    // Admin User Management
     Route::get('/admin/users', [AdminController::class, 'manageUsers'])->name('admin.users');
     Route::patch('/admin/users/{id}/role', [AdminController::class, 'updateRole'])->name('admin.users.update');
-    Route::post('/profile/upgrade-request', function (Request $request) {
-    $validated = $request->validate([   
-        'requested_role' => 'required|in:fisherman,rider',
-        'contact_number' => 'required|string|max:20',
-        'bfar_registration_number' => 'nullable|string|max:255',
-        'vehicle_details' => 'nullable|string|max:255',
-    ]);
-    Route::post('/orders/{listing}', [OrderController::class, 'store'])->name('orders.store');
-    Route::post('/orders/{id}/confirm', [OrderController::class, 'confirm'])->name('orders.confirm');
-    Route::get('/dispatch', [DispatchController::class, 'index'])->name('dispatch.index');
-    Route::post('/dispatch/{id}/claim', [DispatchController::class, 'claim'])->name('dispatch.claim');
-
-    $request->user()->update($validated);
-
-    return redirect()->back()->with('success', 'Your upgrade request is under review by the Admin.');
-})->name('profile.upgrade.request');
 });
-
-// --- BFAR / LGU ADMIN ROUTES ---
-Route::middleware(['auth', 'verified'])->group(function () {
-    
-    // Inject the Request object directly into the function
-    Route::get('/bfar/dashboard', function (Request $request) {
-        
-        // Use $request->user() instead of auth()->user()
-        if ($request->user()->role !== 'admin') {
-            abort(403, 'Unauthorized access. This area is restricted to BFAR and LGU Officials.');
-        }
-
-        return Inertia::render('BfarDashboard');
-        
-    })->name('bfar.dashboard');
-
-});
-
-Route::post('/dispatch/{id}/complete', [DispatchController::class, 'completeDelivery'])->name('dispatch.complete');
 
 require __DIR__.'/auth.php';
