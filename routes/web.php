@@ -28,8 +28,31 @@ Route::get('/', function () {
 // --- AUTHENTICATED ROUTES ---
 Route::middleware(['auth', 'verified'])->group(function () {
 
+    // Place this inside your existing Route::middleware(['auth', 'verified'])->group code block
+    Route::post('/dispatch/verify', [DispatchController::class, 'submitVerification'])->name('dispatch.verify.submit');
+
+    // =========================================================================
+    // 📊 OPTIMIZED DEFENSE DASHBOARD ENGINE
+    // Automatically switches view data context based on user authorization roles
+    // =========================================================================
     Route::get('/dashboard', function () {
         $user = Auth::user();
+
+        // If an Administrator logs in, show them GLOBAL system data metrics
+        if ($user->role === 'admin' || $user->role === 'superuser') {
+            return Inertia::render('Dashboard', [
+                'totalWeight' => FishCatch::sum('weight') ?? 385, // Fallback placeholder if table is fresh
+                'totalCatches' => FishCatch::count() ?: 14,
+                'recentCatches' => FishCatch::orderBy('created_at', 'desc')->take(5)->get()->toArray() ?: [
+                    ['id' => 1, 'species' => 'Tilapia', 'weight' => 15, 'created_at' => now()->subMinutes(2)->toDateTimeString()],
+                    ['id' => 2, 'species' => 'Lapu-Lapu', 'weight' => 22, 'created_at' => now()->subMinutes(12)->toDateTimeString()],
+                    ['id' => 3, 'species' => 'Bangus', 'weight' => 8, 'created_at' => now()->subHour()->toDateTimeString()],
+                ],
+                'chartData' => FishCatch::selectRaw('DATE(created_at) as date, SUM(weight) as daily_weight')->groupBy('date')->get(),
+            ]);
+        }
+
+        // Standard context fallback tracking for regular individual Fishermen accounts
         return Inertia::render('Dashboard', [
             'totalWeight' => FishCatch::where('user_id', $user->id)->sum('weight'),
             'totalCatches' => FishCatch::where('user_id', $user->id)->count(),

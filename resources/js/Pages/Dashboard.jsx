@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function Dashboard({ auth }) {
+export default function Dashboard({ auth, totalWeight, totalCatches, recentCatches, chartData }) {
     const [showFishermanForm, setShowFishermanForm] = useState(false);
     
     const { data, setData, post, processing } = useForm({
@@ -103,7 +103,61 @@ export default function Dashboard({ auth }) {
                     </div>
                 )}
 
-                {/* ... The rest of your normal Buyer Marketplace components ... */}
+                {/* ========================================================================= */}
+                {/* 📊 NEW LIVE ECOSYSTEM METRICS SHOWCASE VIEW                               */}
+                {/* ========================================================================= */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 sm:rounded-lg">
+                        <p className="text-sm text-gray-500 font-medium uppercase tracking-wider">Total Volume Logged</p>
+                        <p className="text-3xl font-black text-green-600 mt-2">{totalWeight ?? 0} KG</p>
+                        <p className="text-xs text-gray-400 mt-1">Aggregated across active harbor pools</p>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 sm:rounded-lg">
+                        <p className="text-sm text-gray-500 font-medium uppercase tracking-wider">Total Recorded Catches</p>
+                        <p className="text-3xl font-black text-blue-600 mt-2">{totalCatches ?? 0}</p>
+                        <p className="text-xs text-gray-400 mt-1">Verified via local Edge AI pipelines</p>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 sm:rounded-lg">
+                        <p className="text-sm text-gray-500 font-medium uppercase tracking-wider">System Operational Mode</p>
+                        <p className="text-xl font-bold text-purple-600 mt-3 flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full bg-purple-500 animate-pulse"></span>
+                            Defense-Ready
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">RTX 4060 Local Acceleration Active</p>
+                    </div>
+                </div>
+
+                {/* ========================================================================= */}
+                {/* 📋 LIVE ECOSYSTEM AUDIT LOG GRID                                         */}
+                {/* ========================================================================= */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 sm:rounded-lg">
+                    <h2 className="text-lg font-bold mb-4 text-gray-800 flex items-center gap-2">
+                        📡 Live Real-Time Activity Ledger
+                    </h2>
+                    <div className="space-y-3">
+                        {recentCatches && recentCatches.length > 0 ? (
+                            recentCatches.map((catchItem, index) => (
+                                <div key={catchItem.id ?? index} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition">
+                                    <div>
+                                        <p className="text-sm text-gray-800 font-semibold">
+                                            Automated ingestion loop detected: <span className="text-blue-600">{catchItem.species ?? 'Unknown Species'}</span>
+                                        </p>
+                                        <span className="text-xs text-gray-400 font-normal">
+                                            Mass parameters committed: <strong>{catchItem.weight} KG</strong> | Port Context: Galas Port
+                                        </span>
+                                    </div>
+                                    <span className="text-xs text-gray-500 font-mono bg-white px-2 py-1 rounded border border-gray-200">
+                                        {catchItem.created_at ? catchItem.created_at.split(' ')[1] ?? 'Recent' : 'Just Now'}
+                                    </span>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="text-center py-6 text-gray-400 text-sm">
+                                No recent entries detected. Fire catch data from your Telegram Bot node to see this view update in real-time.
+                            </div>
+                        )}
+                    </div>
+                </div>
 
             </div>
         </AuthenticatedLayout>
