@@ -2,138 +2,68 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Listing;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use Inertia\Response;
-use Illuminate\Http\RedirectResponse;
-use App\Services\SmsNotificationService;
+use App\Models\User;
 
 class DispatchController extends Controller
 {
-    /**
-     * Render the dispatch board listing all open jobs.
-     */
-    public function index(): Response
+    public function index()
     {
-        $openJobs = DB::table('orders_logistics')
-            ->join('listings', 'orders_logistics.listing_id', '=', 'listings.id')
-            ->select(
-                'orders_logistics.id as order_id', 
-                'orders_logistics.status',
-                'orders_logistics.final_price',
-                'listings.fish_name',
-                'listings.weight_kg',
-                'listings.location'
-            )
-            ->where('orders_logistics.status', 'pending_dispatch')
-            ->whereNull('orders_logistics.rider_id')
-            ->get();
+        $user = Auth::user();
 
+        // 1. Fetch available logistics jobs from the database (Mocked for immediate presentation stability)
+        $availableJobs = [
+            [
+                'id' => 101,
+                'species' => 'Tilapia Crate A',
+                'weight' => '45 KG',
+                'origin' => 'Galas Port (Dock 2)',
+                'destination' => 'Dipolog Central Market Stall #14',
+                'payout' => '₱350.00',
+                'status' => 'pending_pickup'
+            ],
+            [
+                'id' => 102,
+                'species' => 'Premium Lapu-Lapu',
+                'weight' => '12 KG',
+                'origin' => 'Turno Port',
+                'destination' => 'Lee Plaza Seafood Restaurant',
+                'payout' => '₱280.00',
+                'status' => 'pending_pickup'
+            ]
+        ];
+
+        // 2. Pass the user profile status directly down to the React Frontend component
         return Inertia::render('Dispatch', [
-            'openJobs' => $openJobs
+            'riderStatus' => $user->status ?? 'unverified', // unverified, pending_review, verified
+            'riderMetadata' => [
+                'license' => $user->license_number ?? null,
+                'vehicle' => $user->vehicle_plate ?? null,
+            ],
+            'jobs' => $availableJobs
         ]);
     }
 
-    /**
-     * Route handler allowing a registered Rider to claim an open shipment delivery.
-     */
-    public function claim(Request $request, int $orderId): RedirectResponse
-    {
-        if (Auth::user()->role !== 'rider') {
-            return redirect()->back()->withErrors(['error' => 'Unauthorized action. Only verified couriers can claim jobs.']);
-        }
-
-        // Fetch order details alongside owner context profiles before updating state
-        $order = DB::table('orders_logistics')
-            ->join('users', 'orders_logistics.user_id', '=', 'users.id')
-            ->join('listings', 'orders_logistics.listing_id', '=', 'listings.id')
-            ->select('orders_logistics.*', 'users.phone as buyer_phone', 'listings.fish_name')
-            ->where('orders_logistics.id', $orderId)
-            ->first();
-
-        $affected = DB::table('orders_logistics')
-            ->where('id', $orderId)
-            ->where('status', 'pending_dispatch')
-            ->whereNull('rider_id')
-            ->update([
-                'rider_id' => Auth::id(),
-                'status' => 'en_route',
-                'updated_at' => now(),
-            ]);
-
-        if (!$affected) {
-            return redirect()->back()->withErrors(['error' => 'Job already taken or unavailable.']);
-        }
-
-        // TRIGGER 1: Notify the Buyer that their consignment shipment has left Galas Port
-        if ($order && !empty($order->buyer_phone)) {
-            SmsNotificationService::send(
-                $order->buyer_phone,
-                "IsdaLog Dispatch: Your order for {$order->weight_kg}kg of {$order->fish_name} is en route! Rider " . Auth::user()->name . " is navigating to your destination."
-            );
-        }
-
-        return redirect()->back()->with('success', 'Job claimed successfully! Proceed to Galas Port for pickup.');
-    }
-
-    /**
-     * Mark the delivery as completed and execute the Escrow payout with strict types.
-     */
-    public function completeDelivery(Request $request, int $id): RedirectResponse
+    // 3. Handle the incoming legal document verification payload upload
+    public function submitVerification(Request $request)
     {
         $request->validate([
-            'receipt_image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'license_number' => 'required|string|max:50',
+            'vehicle_plate' => 'required|string|max:20',
+            'vehicle_type' => 'required|string',
         ]);
 
-        $order = DB::table('orders_logistics')->where('id', $id)->first();
+        $user = User::find(Auth::id());
+        
+        // Save metadata parameters into user records attributes field columns
+        $user->update([
+            'license_number' => $request->license_number,
+            'vehicle_plate' => $request->vehicle_plate,
+            'status' => 'pending_review' // Mutate state status gate lock
+        ]);
 
-        if (!$order || $order->status !== 'en_route') {
-            return redirect()->back()->withErrors(['error' => 'Order is not in a deliverable state.']);
-        }
-
-        $imagePath = $request->file('receipt_image')->store('receipts', 'public');
-
-        $scannedText = "OFFICIAL RECEIPT ISDALOG-ORDER-#ID-" . $order->id; 
-        $expectedToken = "ISDALOG-ORDER-#ID-" . $order->id;
-
-        if (strpos($scannedText, $expectedToken) === false) {
-            return redirect()->back()->withErrors(['error' => 'OCR Verification Failed: Receipt metadata does not match Crate ID.']);
-        }
-
-        DB::transaction(function () use ($order) {
-            DB::table('orders_logistics')
-                ->where('id', $order->id)
-                ->update([
-                    'status' => 'completed',
-                    'updated_at' => now()
-                ]);
-
-            DB::table('users')
-                ->where('id', $order->fisherman_id)
-                ->increment('wallet_balance', $order->final_price);
-
-            DB::table('users')
-                ->where('id', $order->rider_id)
-                ->increment('wallet_balance', $order->delivery_fee);
-        });
-
-        // Fetch user profiles to grab the vendor's cellular metadata contact
-        $fisherman = DB::table('users')->where('id', $order->fisherman_id)->first();
-
-        // TRIGGER 2: Notify the Fisherman that the handshake passed and escrow balances cleared
-        if ($fisherman && !empty($fisherman->phone)) {
-            SmsNotificationService::send(
-                $fisherman->phone,
-                "IsdaLog Capital Release: Handshake verified for Crate #{$order->id}! Escrow balance of ₱" . number_format($order->final_price, 2) . " has been successfully credited to your account wallet."
-            );
-        }
-
-        return redirect()->route('dispatch.index')->with('success', 'Handshake verified! Escrow balances cleared successfully.');
-    }  
+        return redirect()->back()->with('success', 'Credentials submitted securely for administrative vetting.');
+    }
 }

@@ -2,42 +2,40 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\User;
-use App\Models\Listing;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-
-        $this->call([
-                AdminSeeder::class,
-            ]);
-
-        // 1. Create 3 Fishermen
-        $fishermen = User::factory(3)->create([
+        // 1. Seed your authentic Fisherman profile (tied to your real Chat ID)
+        User::create([
+            'name' => 'Ian the Fisherman',
+            'email' => 'fisherman@isdalog.ph',
+            'password' => Hash::make('password123'),
             'role' => 'fisherman',
-            'contact_number' => '09' . fake()->randomNumber(9, true), // Fake PH number
+            'status' => 'active',
+            'telegram_chat_id' => '8531483496', // Your exact verified Chat ID
         ]);
 
-        // 2. Give each fisherman 4 active listings
-        foreach ($fishermen as $fisherman) {
-            Listing::factory(4)->create([
-                'user_id' => $fisherman->id,
-            ]);
-        }
-
-        // 3. Create 5 Buyers to act as bidders
-        User::factory(5)->create([
-            'role' => 'buyer',
-            'contact_number' => '09' . fake()->randomNumber(9, true),
-        ]);
-        
-        // 4. Create 1 Rider for future logistics testing
-        User::factory(1)->create([
+        // 2. Seed a dummy Verified Rider profile
+        User::create([
+            'name' => 'Juan the Rider',
+            'email' => 'rider@isdalog.ph',
+            'password' => Hash::make('password123'),
             'role' => 'rider',
-            'contact_number' => '09' . fake()->randomNumber(9, true),
+            'status' => 'active', // Pre-approved for the stage demo!
+        ]);
+
+        // 3. Seed a dummy Merchant/Buyer profile
+        User::create([
+            'name' => 'Maria the Merchant',
+            'email' => 'merchant@isdalog.ph',
+            'password' => Hash::make('password123'),
+            'role' => 'merchant',
+            'status' => 'active',
         ]);
     }
 }
