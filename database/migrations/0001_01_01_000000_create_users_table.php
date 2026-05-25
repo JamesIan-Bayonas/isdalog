@@ -6,8 +6,12 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
+        // 1. CREATE THE USERS TABLE
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -15,21 +19,47 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             
-            // 🔮 THE FUTURE-PROOF INJECTIONS
-            // This column isolates what a user can see (fisherman, merchant, rider)
-            $table->string('role')->default('merchant'); 
+            // 🛡️ ROLE-BASED ACCESS CONTROL (RBAC) LAYER
+            $table->string('role')->default('buyer'); 
             
-            // This column handles the Rider Verification state gates
-            $table->string('status')->default('active'); // 'active', 'pending_verification', 'suspended'
+            // ⏳ CUSTODY LOGISTICS VALIDATION GATES
+            $table->string('status')->default('unverified'); 
             
-            // Hard-links the Telegram loopback for the fisherman path
+            // 📪 MISSING FIELD RESTORATION (Add this line right here!)
+            $table->string('contact_number')->nullable();
+            
+            // 🪪 DRIVER COMPLIANCE METADATA
+            $table->string('license_number')->nullable();
+            $table->string('vehicle_plate')->nullable();
+            
+            // 🤖 TELEGRAM HANDSHAKE LINKAGE
             $table->string('telegram_chat_id')->nullable()->unique(); 
 
             $table->rememberToken();
             $table->timestamps();
         });
+
+        // 2. CREATE THE PASSWORD RESET TOKENS TABLE
+        Schema::create('password_reset_tokens', function (Blueprint $table) {
+            $table->string('email')->primary();
+            $table->string('token');
+            $table->timestamp('created_at')->nullable();
+        });
+
+        // 3. CREATE THE REQUIRED SESSIONS TABLE (Brings back your missing driver dependency)
+        Schema::create('sessions', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->foreignId('user_id')->nullable()->index();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->longText('payload');
+            $table->integer('last_activity')->index();
+        });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('users');

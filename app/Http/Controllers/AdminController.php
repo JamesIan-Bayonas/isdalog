@@ -18,8 +18,8 @@ class AdminController extends Controller
             abort(403, 'Unauthorized action. Admin access required.');
         }
 
-        // Fetch all users to display in the data table
-        $users = User::select('id', 'name', 'email', 'role', 'contact_number', 'created_at')
+        // Fetch all users along with their compliance documentation states
+        $users = User::select('id', 'name', 'email', 'role', 'status', 'contact_number', 'license_number', 'vehicle_plate', 'created_at')
                      ->orderBy('created_at', 'desc')
                      ->get();
 
@@ -29,7 +29,50 @@ class AdminController extends Controller
     }
 
     /**
-     * Securely update a user's role.
+     * Officially Approve a Pending Rider Verification Request
+     */
+    public function approveRider(Request $request, $id)
+    {
+        if ($request->user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $user = User::findOrFail($id);
+        
+        // Mutate the account parameters to full operational authorization status
+        $user->update([
+            'role' => 'rider',
+            'status' => 'verified'
+        ]);
+
+        return redirect()->back()->with([
+            'success' => "Rider status for {$user->name} has been verified. Logistics clearance granted."
+        ]);
+    }
+
+    /**
+     * Reject/Suspend a User Account or Compliance Request
+     */
+    public function rejectUser(Request $request, $id)
+    {
+        if ($request->user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $user = User::findOrFail($id);
+        
+        // Mark account back to unverified or suspended state gate lock
+        $user->update([
+            'status' => 'unverified'
+        ]);
+
+        return redirect()->back()->with([
+            'error' => "Application request for {$user->name} has been rejected/reset."
+        ]);
+    }
+
+    /**
+     * Keep your original generic fallback update role function if needed
      */
     public function updateRole(Request $request, $id)
     {
@@ -37,7 +80,6 @@ class AdminController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        // Validate strictly against your database Enums
         $validated = $request->validate([
             'role' => 'required|in:fisherman,buyer,rider,admin'
         ]);
@@ -47,7 +89,7 @@ class AdminController extends Controller
         $user->save();
 
         return redirect()->back()->with([
-            'success' => "{$user->name} has been successfully promoted to {$user->role}."
+            'success' => "{$user->name} role updated to {$user->role}."
         ]);
     }
 }
