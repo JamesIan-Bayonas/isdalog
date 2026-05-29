@@ -28,7 +28,6 @@ Route::get('/', function () {
 // --- AUTHENTICATED ROUTES ---
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    // Place this inside your existing Route::middleware(['auth', 'verified'])->group code block
     Route::post('/dispatch/verify', [DispatchController::class, 'submitVerification'])->name('dispatch.verify.submit');
 
     // =========================================================================
@@ -74,9 +73,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // =========================================================================
     // ENHANCED DISPATCH LOGISTICS LAYER (Bypasses traditional provider Gates)
+    // TEMPORARY PROTOTYPE ALLOWANCE: Grants 'buyer' access for seamless live demo switching
     // =========================================================================
     Route::group(['middleware' => function ($request, $next) {
-        if ($request->user() && $request->user()->role === 'rider') {
+        $user = $request->user();
+        if ($user && ($user->role === 'rider' || $user->role === 'buyer')) {
             return $next($request);
         }
         abort(403, 'Access Denied: Your account role is not authorized to access the rider platform.');
@@ -84,6 +85,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/dispatch', [DispatchController::class, 'index'])->name('dispatch.index');
         Route::post('/dispatch/{id}/claim', [DispatchController::class, 'claim'])->name('dispatch.claim');
         Route::post('/dispatch/{id}/complete', [DispatchController::class, 'completeDelivery'])->name('dispatch.complete');
+        Route::post('/dispatch/verify', [DispatchController::class, 'submitVerification'])->name('dispatch.verify.submit');
     });
 
     // =========================================================================
@@ -101,6 +103,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Admin User Management
     Route::get('/admin/users', [AdminController::class, 'manageUsers'])->name('admin.users');
     Route::patch('/admin/users/{id}/role', [AdminController::class, 'updateRole'])->name('admin.users.update');
+    Route::patch('/admin/users/{id}/approve-rider', [AdminController::class, 'approveRider'])->name('admin.users.approve-rider');
+    Route::patch('/admin/users/{id}/reject', [AdminController::class, 'rejectUser'])->name('admin.users.reject');
 });
 
 require __DIR__.'/auth.php';
