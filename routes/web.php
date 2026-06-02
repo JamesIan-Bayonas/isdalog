@@ -91,7 +91,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // =========================================================================
     // ENHANCED BFAR REGULATORY LAYER (Bypasses traditional provider Gates)
     // =========================================================================
-    Route::group(['middleware' => function ($request, $next) {
+    Route::group(['middleware' => function ($request, $next) {1
         if ($request->user() && $request->user()->role === 'admin') {
             return $next($request);
         }
