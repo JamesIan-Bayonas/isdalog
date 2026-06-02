@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\BfarDashboardController;
+use App\Http\Controllers\Api\BiddingController; // <-- Added your new controller import
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DispatchController;
 use App\Http\Controllers\OrderController;
@@ -51,7 +52,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ]);
         }
 
-        // Standard context fallback tracking for regular individual Fishermen accounts
+        // Standard context fallback tracking for regular individual Fisherman accounts
         return Inertia::render('Dashboard', [
             'totalWeight' => FishCatch::where('user_id', $user->id)->sum('weight'),
             'totalCatches' => FishCatch::where('user_id', $user->id)->count(),
@@ -70,6 +71,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/listings', [ListingController::class, 'store'])->name('listings.store');
     Route::post('/listings/{listing}/bid', [BidController::class, 'store'])->name('bids.store');
     Route::post('/orders/{listing}', [OrderController::class, 'store'])->name('orders.store');
+
+    // =========================================================================
+    // 🌊 LIVE AUCTION MARKETPLACE TRADING FLOOR
+    // =========================================================================
+    Route::get('/trading-floor', [BiddingController::class, 'index'])->name('trading-floor.index');
+    Route::post('/trading-floor/{id}/bid', [BiddingController::class, 'placeBid'])->name('trading-floor.bid');
 
     // =========================================================================
     // ENHANCED DISPATCH LOGISTICS LAYER (Bypasses traditional provider Gates)
@@ -91,7 +98,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // =========================================================================
     // ENHANCED BFAR REGULATORY LAYER (Bypasses traditional provider Gates)
     // =========================================================================
-    Route::group(['middleware' => function ($request, $next) {1
+    Route::group(['middleware' => function ($request, $next) { // <-- FIXED: Removed stray "1" syntax typo
         if ($request->user() && $request->user()->role === 'admin') {
             return $next($request);
         }
