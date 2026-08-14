@@ -1,28 +1,31 @@
+// resources/js/Pages/Dashboard.jsx
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, Link } from '@inertiajs/react';
 import { useState } from 'react';
-import {
-    ScaleIcon,
-    ArchiveBoxIcon,
-    BoltIcon,
-    RadioIcon,
-    ShieldCheckIcon,
+import { 
+    ScaleIcon, 
+    CircleStackIcon, 
+    SparklesIcon, 
+    ShoppingBagIcon, 
+    TruckIcon, 
+    ArrowTrendingUpIcon, 
     ClockIcon,
-    XMarkIcon,
-    PhoneIcon,
-    IdentificationIcon,
+    ShieldCheckIcon,
+    PlusCircleIcon
 } from '@heroicons/react/24/outline';
 
-export default function Dashboard({ auth, totalWeight, totalCatches, recentCatches, chartData }) {
+export default function Dashboard({ auth, role_context = 'buyer', metrics = {}, recentActivity = [] }) {
+    const userRole = role_context || auth.user.role || 'buyer';
     const [showFishermanForm, setShowFishermanForm] = useState(false);
-
+    
+    // Form for buyers requesting an upgrade
     const { data, setData, post, processing } = useForm({
         requested_role: 'fisherman',
-        contact_number: '',
+        contact_number: auth.user.contact_number || '',
         bfar_registration_number: '',
     });
 
-    const submitRequest = (e) => {
+    const submitUpgrade = (e) => {
         e.preventDefault();
         post(route('profile.upgrade.request'), {
             preserveScroll: true,
@@ -33,114 +36,101 @@ export default function Dashboard({ auth, totalWeight, totalCatches, recentCatch
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-slate-800 leading-tight">Marketplace Dashboard</h2>}
+            header={
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                        <h2 className="font-black text-2xl text-slate-900 tracking-tight">
+                            {userRole === 'fisherman' && '🎣 Fisherman Harbor Terminal'}
+                            {userRole === 'buyer' && '🛍️ Consignment Trading Desk'}
+                            {userRole === 'rider' && '🚚 Fleet Logistics Station'}
+                        </h2>
+                        <p className="text-xs text-slate-500 font-medium">
+                            Node Identity: <span className="font-mono text-slate-700 font-bold">{auth.user.name}</span> • Terminal Context: <span className="text-cyan-700 font-bold capitalize">{userRole}</span>
+                        </p>
+                    </div>
+
+                    {userRole === 'fisherman' && (
+                        <Link
+                            href={route('marketplace.index')}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold rounded-xl shadow-md transition-all active:scale-[0.98]"
+                        >
+                            <PlusCircleIcon className="w-4 h-4" />
+                            <span>View Live Auctions</span>
+                        </Link>
+                    )}
+                </div>
+            }
         >
-            <Head title="Dashboard" />
+            <Head title={`${userRole.toUpperCase()} Terminal — IsdaLog`} />
 
-            <div className="py-12 max-w-7xl mx-auto sm:px-6 lg:px-8">
-
-                {/* --- PROGRESSIVE ONBOARDING BANNER --- */}
-                {auth.user.role === 'buyer' && !auth.user.requested_role && !showFishermanForm && (
-                    <div className="relative overflow-hidden bg-white border border-slate-200 rounded-2xl p-6 mb-6 shadow-sm">
-                        <div className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-cyan-500 to-blue-600" />
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pl-2">
-                            <div className="flex items-start gap-3.5">
-                                <div className="p-2.5 rounded-xl bg-cyan-50 border border-cyan-100 shrink-0">
-                                    <BoltIcon className="w-5 h-5 text-cyan-600" />
-                                </div>
-                                <div>
-                                    <h3 className="text-base font-bold text-slate-900">Work with IsdaLog</h3>
-                                    <p className="text-sm text-slate-500 mt-1 max-w-md">
-                                        Are you a maritime worker at Galas Port? Upgrade your account to access the Escrow Hub and Zero-Typing AI Bot.
-                                    </p>
-                                </div>
+            <div className="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+                
+                {/* ========================================================================= */}
+                {/* 1. BUYER ROLE BANNER & UPGRADE WORKFLOW                                   */}
+                {/* ========================================================================= */}
+                {userRole === 'buyer' && !auth.user.requested_role && !showFishermanForm && (
+                    <div className="bg-gradient-to-r from-cyan-950 to-slate-900 border border-cyan-500/30 p-6 rounded-2xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-white">
+                        <div className="space-y-1">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[11px] font-bold">
+                                <SparklesIcon className="w-3.5 h-3.5" />
+                                <span>Harbor Maritime Access</span>
                             </div>
-                            <button
-                                onClick={() => setShowFishermanForm(true)}
-                                className="shrink-0 inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-sm font-bold py-2.5 px-5 rounded-xl shadow-sm shadow-cyan-600/20 transition-all active:scale-[0.98]"
-                            >
-                                Apply as Fisherman
-                            </button>
+                            <h3 className="text-lg font-black text-white">Harvesting Catch at Galas Port?</h3>
+                            <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
+                                Upgrade your account to a certified Fisherman profile to access Telegram Zero-Typing AI Logging and direct catch auctioning.
+                            </p>
                         </div>
+                        <button 
+                            onClick={() => setShowFishermanForm(true)}
+                            className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-xl shadow transition-all shrink-0"
+                        >
+                            Apply as Fisherman
+                        </button>
                     </div>
                 )}
 
-                {/* --- PENDING REVIEW STATE --- */}
-                {auth.user.requested_role && auth.user.role === 'buyer' && (
-                    <div className="relative overflow-hidden bg-white border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
-                        <div className="absolute inset-y-0 left-0 w-1.5 bg-amber-500" />
-                        <div className="flex items-start gap-3.5 pl-2">
-                            <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-100 shrink-0">
-                                <ClockIcon className="w-5 h-5 text-amber-600" />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-sm text-slate-900">Verification Pending</h3>
-                                <p className="text-sm text-slate-500 mt-0.5">
-                                    Your request to become a <span className="font-semibold text-slate-700">{auth.user.requested_role}</span> is currently being reviewed by an administrator. We are verifying your submitted IDs.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* --- THE UPGRADE FORM --- */}
+                {/* UPGRADE SUBMISSION MODAL / FORM */}
                 {showFishermanForm && (
-                    <div className="bg-white p-6 mb-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="flex items-center justify-between mb-5">
-                            <h3 className="text-base font-bold text-slate-900">Fisherman Verification Form</h3>
-                            <button
-                                type="button"
-                                onClick={() => setShowFishermanForm(false)}
-                                className="text-slate-400 hover:text-slate-600 transition-colors"
-                                aria-label="Close form"
-                            >
-                                <XMarkIcon className="w-5 h-5" />
-                            </button>
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-base font-bold text-slate-900">Fisherman BFAR Verification Form</h3>
+                            <button onClick={() => setShowFishermanForm(false)} className="text-xs text-slate-400 hover:text-slate-600">Cancel</button>
                         </div>
-                        <form onSubmit={submitRequest} className="space-y-4 max-w-md">
+                        <form onSubmit={submitUpgrade} className="space-y-4 max-w-md">
                             <div>
-                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Active Contact Number</label>
-                                <div className="mt-1.5 relative rounded-xl group">
-                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-cyan-500 transition-colors">
-                                        <PhoneIcon className="h-5 w-5" />
-                                    </div>
-                                    <input
-                                        type="text"
-                                        value={data.contact_number}
-                                        onChange={e => setData('contact_number', e.target.value)}
-                                        className="block w-full rounded-xl border-slate-300 bg-slate-50 pl-11 py-3 text-sm shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 focus:bg-white transition-all"
-                                        required
-                                    />
-                                </div>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">Active Mobile Number</label>
+                                <input 
+                                    type="text" 
+                                    value={data.contact_number}
+                                    onChange={e => setData('contact_number', e.target.value)}
+                                    placeholder="09123456789"
+                                    className="mt-1 block w-full rounded-xl border-slate-300 text-sm focus:border-cyan-500 focus:ring-cyan-500"
+                                    required 
+                                />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">BFAR Registration Number (FishR)</label>
-                                <div className="mt-1.5 relative rounded-xl group">
-                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-cyan-500 transition-colors">
-                                        <IdentificationIcon className="h-5 w-5" />
-                                    </div>
-                                    <input
-                                        type="text"
-                                        value={data.bfar_registration_number}
-                                        onChange={e => setData('bfar_registration_number', e.target.value)}
-                                        className="block w-full rounded-xl border-slate-300 bg-slate-50 pl-11 py-3 text-sm shadow-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 focus:bg-white transition-all placeholder:text-slate-400"
-                                        placeholder="e.g. PH-1234-5678"
-                                        required
-                                    />
-                                </div>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">BFAR FishR Registration Number</label>
+                                <input 
+                                    type="text" 
+                                    value={data.bfar_registration_number}
+                                    onChange={e => setData('bfar_registration_number', e.target.value)}
+                                    placeholder="e.g. PH-ZN-2026-0041"
+                                    className="mt-1 block w-full rounded-xl border-slate-300 text-sm focus:border-cyan-500 focus:ring-cyan-500"
+                                    required 
+                                />
                             </div>
-                            <div className="flex items-center gap-3 pt-1">
-                                <button
-                                    type="submit"
+                            <div className="flex gap-2 pt-2">
+                                <button 
+                                    type="submit" 
                                     disabled={processing}
-                                    className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-sm shadow-cyan-600/20 disabled:opacity-50 transition-all active:scale-[0.98]"
+                                    className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs py-2.5 px-5 rounded-xl transition"
                                 >
-                                    {processing ? 'Submitting...' : 'Submit for Review'}
+                                    Submit Credentials
                                 </button>
-                                <button
-                                    type="button"
+                                <button 
+                                    type="button" 
                                     onClick={() => setShowFishermanForm(false)}
-                                    className="text-sm font-semibold text-slate-500 hover:text-slate-700 px-4 py-2.5 rounded-xl hover:bg-slate-100 transition-colors"
+                                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2.5 px-4 rounded-xl transition"
                                 >
                                     Cancel
                                 </button>
@@ -150,82 +140,197 @@ export default function Dashboard({ auth, totalWeight, totalCatches, recentCatch
                 )}
 
                 {/* ========================================================================= */}
-                {/* LIVE ECOSYSTEM METRICS                                                     */}
+                {/* 2. DYNAMIC ROLE TELEMETRY METRIC CARDS                                     */}
                 {/* ========================================================================= */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="flex items-center justify-between">
-                            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Total Volume Logged</p>
-                            <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-100">
-                                <ScaleIcon className="w-4 h-4 text-emerald-600" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    
+                    {/* --- FISHERMAN METRICS --- */}
+                    {userRole === 'fisherman' && (
+                        <>
+                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                                <div>
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Harvest Volume</span>
+                                    <h4 className="text-2xl font-black text-slate-900 mt-1">{Number(metrics.totalWeight ?? 0).toLocaleString()} <span className="text-sm font-semibold text-slate-400">KG</span></h4>
+                                    <span className="text-[11px] text-cyan-600 font-semibold">Port Ingestion Ledger</span>
+                                </div>
+                                <div className="p-3 bg-cyan-50 rounded-xl text-cyan-600">
+                                    <ScaleIcon className="w-6 h-6" />
+                                </div>
                             </div>
-                        </div>
-                        <p className="text-3xl font-black text-slate-900 mt-3">
-                            {totalWeight ?? 0} <span className="text-lg font-bold text-slate-400">KG</span>
-                        </p>
-                        <p className="text-xs text-slate-400 mt-1">Aggregated across active harbor pools</p>
-                    </div>
 
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="flex items-center justify-between">
-                            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Total Recorded Catches</p>
-                            <div className="p-2 rounded-lg bg-cyan-50 border border-cyan-100">
-                                <ArchiveBoxIcon className="w-4 h-4 text-cyan-600" />
+                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                                <div>
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Verified Catches</span>
+                                    <h4 className="text-2xl font-black text-slate-900 mt-1">{metrics.totalCatches ?? 0} <span className="text-sm font-semibold text-slate-400">Batches</span></h4>
+                                    <span className="text-[11px] text-emerald-600 font-semibold">AI Vision Validated</span>
+                                </div>
+                                <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600">
+                                    <ShieldCheckIcon className="w-6 h-6" />
+                                </div>
                             </div>
-                        </div>
-                        <p className="text-3xl font-black text-slate-900 mt-3">{totalCatches ?? 0}</p>
-                        <p className="text-xs text-slate-400 mt-1">Verified via local Edge AI pipelines</p>
-                    </div>
 
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="flex items-center justify-between">
-                            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">System Operational Mode</p>
-                            <div className="p-2 rounded-lg bg-violet-50 border border-violet-100">
-                                <RadioIcon className="w-4 h-4 text-violet-600" />
+                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                                <div>
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Active Auctions</span>
+                                    <h4 className="text-2xl font-black text-slate-900 mt-1">{metrics.activeAuctions ?? 0} <span className="text-sm font-semibold text-slate-400">Crates</span></h4>
+                                    <span className="text-[11px] text-blue-600 font-semibold">On Live Floor</span>
+                                </div>
+                                <div className="p-3 bg-blue-50 rounded-xl text-blue-600">
+                                    <ArrowTrendingUpIcon className="w-6 h-6" />
+                                </div>
                             </div>
-                        </div>
-                        <p className="text-lg font-bold text-violet-600 mt-3 flex items-center gap-2">
-                            <span className="h-2 w-2 rounded-full bg-violet-500 animate-pulse" />
-                            Defense-Ready
-                        </p>
-                        <p className="text-xs text-slate-400 mt-1">RTX 4060 local acceleration active</p>
-                    </div>
+
+                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                                <div>
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">AI Bot Gateway</span>
+                                    <h4 className="text-base font-bold text-emerald-600 mt-1 flex items-center gap-1.5">
+                                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                        Connected
+                                    </h4>
+                                    <span className="text-[10px] text-slate-400 font-mono">Telegram @IsdaLogBot</span>
+                                </div>
+                                <div className="p-3 bg-purple-50 rounded-xl text-purple-600">
+                                    <SparklesIcon className="w-6 h-6" />
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+                    {/* --- BUYER METRICS --- */}
+                    {userRole === 'buyer' && (
+                        <>
+                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                                <div>
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Active Bids Placed</span>
+                                    <h4 className="text-2xl font-black text-slate-900 mt-1">{metrics.activeBids ?? 0}</h4>
+                                    <span className="text-[11px] text-cyan-600 font-semibold">Trading Floor</span>
+                                </div>
+                                <div className="p-3 bg-cyan-50 rounded-xl text-cyan-600">
+                                    <ArrowTrendingUpIcon className="w-6 h-6" />
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                                <div>
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Won Consignments</span>
+                                    <h4 className="text-2xl font-black text-slate-900 mt-1">{metrics.wonAuctions ?? 0}</h4>
+                                    <span className="text-[11px] text-emerald-600 font-semibold">Ready for Dispatch</span>
+                                </div>
+                                <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600">
+                                    <ShoppingBagIcon className="w-6 h-6" />
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                                <div>
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Secured Escrow Wallet</span>
+                                    <h4 className="text-2xl font-black text-emerald-600 mt-1">₱{Number(metrics.walletBalance ?? auth.user.wallet_balance ?? 0).toLocaleString()}</h4>
+                                    <span className="text-[11px] text-slate-400 font-semibold">Guaranteed Balance</span>
+                                </div>
+                                <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600">
+                                    <CircleStackIcon className="w-6 h-6" />
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                                <div>
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Marketplace Access</span>
+                                    <h4 className="text-base font-bold text-slate-900 mt-1">Live Trading</h4>
+                                    <Link href={route('marketplace.index')} className="text-[11px] text-cyan-600 font-bold hover:underline">Open Trading Floor →</Link>
+                                </div>
+                                <div className="p-3 bg-blue-50 rounded-xl text-blue-600">
+                                    <ShoppingBagIcon className="w-6 h-6" />
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+                    {/* --- RIDER METRICS --- */}
+                    {userRole === 'rider' && (
+                        <>
+                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                                <div>
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Completed Runs</span>
+                                    <h4 className="text-2xl font-black text-slate-900 mt-1">{metrics.completedDeliveries ?? 0}</h4>
+                                    <span className="text-[11px] text-emerald-600 font-semibold">Verified Chain-of-Custody</span>
+                                </div>
+                                <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600">
+                                    <ShieldCheckIcon className="w-6 h-6" />
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                                <div>
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Harbor Jobs Ready</span>
+                                    <h4 className="text-2xl font-black text-purple-600 mt-1">{metrics.pendingDispatch ?? 0}</h4>
+                                    <span className="text-[11px] text-slate-400 font-semibold">Awaiting Courier Claim</span>
+                                </div>
+                                <div className="p-3 bg-purple-50 rounded-xl text-purple-600">
+                                    <TruckIcon className="w-6 h-6" />
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between col-span-1 sm:col-span-2">
+                                <div>
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Logistics Station</span>
+                                    <h4 className="text-base font-bold text-slate-900 mt-1">Galas Port Dispatch Desk</h4>
+                                    <Link href={route('dispatch.index')} className="text-[11px] text-cyan-600 font-bold hover:underline">Open Cargo Board →</Link>
+                                </div>
+                                <div className="p-3 bg-blue-50 rounded-xl text-blue-600">
+                                    <TruckIcon className="w-6 h-6" />
+                                </div>
+                            </div>
+                        </>
+                    )}
+
                 </div>
 
                 {/* ========================================================================= */}
-                {/* LIVE ECOSYSTEM AUDIT LOG                                                   */}
+                {/* 3. LIVE ACTIVITY LEDGER                                                   */}
                 {/* ========================================================================= */}
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                            <RadioIcon className="w-4 h-4 text-cyan-500" />
-                            Live Real-Time Activity Ledger
-                        </h2>
-                        <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-slate-400 uppercase tracking-wider">
-                            <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-500" />
-                            BFAR Compliant
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <div className="flex items-center gap-2">
+                            <ClockIcon className="w-5 h-5 text-slate-500" />
+                            <h3 className="font-bold text-sm text-slate-900">
+                                {userRole === 'fisherman' ? 'Recent Catch Telemetry Logs' : 'Recent Consignment Activity'}
+                            </h3>
+                        </div>
+                        <span className="text-[10px] font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                            BFAR COMPLIANT
                         </span>
                     </div>
+
                     <div className="space-y-2.5">
-                        {recentCatches && recentCatches.length > 0 ? (
-                            recentCatches.map((catchItem, index) => (
-                                <div key={catchItem.id ?? index} className="flex justify-between items-center p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100/80 transition-colors">
-                                    <div>
-                                        <p className="text-sm text-slate-800 font-semibold">
-                                            Automated ingestion loop detected: <span className="text-cyan-600">{catchItem.species ?? 'Unknown Species'}</span>
-                                        </p>
-                                        <span className="text-xs text-slate-400 font-normal">
-                                            Mass parameters committed: <strong className="text-slate-500">{catchItem.weight} KG</strong> · Port Context: Galas Port
-                                        </span>
+                        {recentActivity && recentActivity.length > 0 ? (
+                            recentActivity.map((item, idx) => (
+                                <div key={item.id ?? idx} className="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-100 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 rounded-full bg-cyan-500" />
+                                        <div>
+                                            <p className="text-xs font-bold text-slate-800">
+                                                {item.species || item.fish_name || 'Catch Batch Logged'}
+                                            </p>
+                                            <p className="text-[11px] text-slate-400">
+                                                {item.weight ? `${item.weight} KG recorded` : ''}
+                                                {item.amount ? `Bid Placed: ₱${parseFloat(item.amount).toLocaleString()}` : ''}
+                                                {' '}• Location: Galas Port
+                                            </p>
+                                        </div>
                                     </div>
-                                    <span className="text-xs text-slate-500 font-mono bg-white px-2.5 py-1 rounded-lg border border-slate-200 shrink-0 ml-4">
-                                        {catchItem.created_at ? catchItem.created_at.split(' ')[1] ?? 'Recent' : 'Just Now'}
+                                    <span className="text-[11px] font-mono text-slate-400 bg-white px-2 py-1 rounded border border-slate-200">
+                                        {item.created_at ? new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent'}
                                     </span>
                                 </div>
                             ))
                         ) : (
-                            <div className="text-center py-10 text-slate-400 text-sm border border-dashed border-slate-200 rounded-xl">
-                                No recent entries detected. Fire catch data from your Telegram Bot node to see this view update in real-time.
+                            <div className="py-12 text-center text-slate-400 text-xs">
+                                <p>No recent activity entries recorded for this account.</p>
+                                {userRole === 'fisherman' && (
+                                    <p className="mt-1 text-cyan-600 font-semibold">
+                                        Send a catch photo via Telegram bot to view instant live telemetry here.
+                                    </p>
+                                )}
                             </div>
                         )}
                     </div>
