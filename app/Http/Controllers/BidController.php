@@ -2,36 +2,65 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Listing;
 use App\Events\CatchBidUpdated;
+use App\Models\Listing;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class BidController extends Controller
 {
-    public function store(Request $request, Listing $listing)
+    /**
+     * Store a newly submitted bid on a live listing with concurrency lock protection.
+     */
+    public function store(Request $request, Listing $listing): RedirectResponse
     {
-        // 1. Security Check: Ensure the new bid is actually higher than the current one
-        $request->validate([
-            'bid_amount' => 'required|numeric|gt:' . $listing->current_bid,
+        $validated = $request->validate([
+            'bid_amount' => ['required', 'numeric', 'min:1', 'max:10000000'],
         ]);
 
-        // 2. Update the main Listing's current price
-        $listing->update([
-            'current_bid' => $request->bid_amount
-        ]);
+        $bidAmount = (float) $validated['bid_amount'];
 
-        // 3. Log it in the Bids ledger table
-        $listing->bids()->create([
-            'user_id' => Auth::id(),
-            'amount' => $request->bid_amount,
-        ]);
+        try {
+            /** @var Listing $updatedListing */
+            $updatedListing = DB::transaction(function () use ($listing, $bidAmount) {
+                /** @var Listing|null $lockedListing */
+                $lockedListing = Listing::where('id', $listing->id)->lockForUpdate()->first();
 
-        // 4. SHOUT IT TO THE WORLD! (Triggers Reverb WebSockets instantly)
-        // We pass the entire $listing object to match the Event constructor
-        event(new CatchBidUpdated($listing));
+                if (! $lockedListing || $lockedListing->status !== 'active') {
+                    throw new \RuntimeException('This auction is no longer active and cannot accept new bids.');
+                }
 
-        // Tell the bidder's screen that their bid was accepted
-        return redirect()->back()->with('success', 'Bid placed successfully!');
+                if ($bidAmount <= (float) $lockedListing->current_bid) {
+                    throw new \RuntimeException(
+                        'A concurrent bid of ₱' . number_format($lockedListing->current_bid, 2) . ' was placed just prior. Submit a higher amount.'
+                    );
+                }
+
+                $lockedListing->update([
+                    'current_bid' => $bidAmount,
+                ]);
+
+                $lockedListing->bids()->create([
+                    'buyer_id' => Auth::id(),
+                    'amount' => $bidAmount,
+                ]);
+
+                return $lockedListing;
+            });
+
+            // Broadcast real-time update across all WebSocket clients
+            event(new CatchBidUpdated($updatedListing));
+
+            return redirect()->back()->with(
+                'success',
+                'Bid of ₱' . number_format($bidAmount, 2) . ' placed successfully!'
+            );
+        } catch (\RuntimeException $e) {
+            return redirect()->back()->withErrors([
+                'bid_amount' => $e->getMessage(),
+            ]);
+        }
     }
 }

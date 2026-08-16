@@ -39,25 +39,29 @@ class MarketplaceController extends Controller
             return $listing;
         });
 
-        // 3. Fetch active logistics orders for the Receiving Bay tracking map
+        // 3. Fetch active logistics orders for the Receiving Bay tracking map (with OTP credentials)
         $activeOrders = DB::table('orders_logistics')
             ->join('listings', 'orders_logistics.listing_id', '=', 'listings.id')
             ->select(
                 'orders_logistics.id as order_id', 
                 'orders_logistics.status',
+                'orders_logistics.delivery_otp',
+                'orders_logistics.logistics_type',
+                'orders_logistics.escrow_balance',
                 'listings.fish_name',
                 'listings.weight_kg',
+                'listings.location',
                 'listings.current_bid as final_price'
             )
             ->where('orders_logistics.user_id', Auth::id())
-            ->whereIn('orders_logistics.status', ['en_route', 'delivered'])
+            ->whereIn('orders_logistics.status', ['pending_dispatch', 'en_route', 'delivered'])
             ->get();
 
         // 4. Return variables completely synchronized with the React parameter signatures
         return Inertia::render('Marketplace', [
-            'activeListings' => $listings, // FIXED: Matches 'activeListings' in React
+            'activeListings' => $listings,
             'activeOrders'   => $activeOrders,
-            'trends'         => [] // Added empty fallback to satisfy the parameter signature
+            'trends'         => []
         ]);
     }
 }

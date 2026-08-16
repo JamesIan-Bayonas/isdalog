@@ -5,8 +5,6 @@ namespace App\Events;
 use App\Models\Listing;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -15,7 +13,7 @@ class CatchBidUpdated implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $listing;
+    public Listing $listing;
 
     /**
      * Create a new event instance.
@@ -26,24 +24,26 @@ class CatchBidUpdated implements ShouldBroadcastNow
     }
 
     /**
-     * Get the channels the event should broadcast on.
+     * Broadcast on specific listing channel and global marketplace channel.
      */
     public function broadcastOn(): array
     {
-        // We broadcast on a specific channel for this listing
         return [
             new Channel('marketplace.' . $this->listing->id),
+            new Channel('marketplace'),
         ];
     }
 
     /**
-     * The data to broadcast to React.
+     * The data payload broadcasted to Inertia / React listeners.
      */
     public function broadcastWith(): array
     {
         return [
             'id' => $this->listing->id,
-            'current_bid' => $this->listing->current_bid,
+            'listing_id' => $this->listing->id,
+            'current_bid' => (float) $this->listing->current_bid,
+            'status' => $this->listing->status,
             'updated_at' => $this->listing->updated_at,
         ];
     }
