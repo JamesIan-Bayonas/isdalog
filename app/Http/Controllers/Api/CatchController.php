@@ -4,18 +4,20 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\FishCatch;
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Hash;
+use App\Models\Listing;
 use App\Models\MarketPrice;
 use App\Models\RestrictedSpecies;
+use App\Models\User;
+use App\Services\WeatherTelemetryService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\Listing;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class CatchController extends Controller
 {
-    public function handshake(Request $request)
+    public function handshake(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'telegram_chat_id' => 'required|string',
@@ -27,69 +29,116 @@ class CatchController extends Controller
             [
                 'name' => $validated['name'] ?? 'Unknown Fisherman',
                 'email' => $validated['telegram_chat_id'] . '@isdalog.local',
-                'password' => Hash::make(Str::random(16))
+                'password' => Hash::make(Str::random(16)),
+                'role' => 'fisherman',
+                'status' => 'verified',
             ]
         );
 
         return response()->json([
             'status' => 'success',
             'message' => 'Identity handshake completed',
-            'user' => $user
+            'user' => $user,
         ], 200);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
-        // 1. FIXED/OPTIMIZED: Dynamic Fisherman User Identification Lookup
-        // Attempts to find the user by chat ID; falls back to User ID 1 (prototype fisherman) if absent
-        $user = User::where('telegram_chat_id', $request->telegram_chat_id)->first();
-        
+        $validated = $request->validate([
+            'telegram_chat_id' => 'required|string',
+            'species' => 'required|string|max:255',
+            'weight' => 'required|numeric|min:0.01',
+            'lat' => 'nullable|numeric',
+            'lon' => 'nullable|numeric',
+            'wind_speed' => 'nullable|numeric',
+            'temperature' => 'nullable|numeric',
+            'weather_condition' => 'nullable|string|max:100',
+        ]);
+
+        // 1. Dynamic User Resolution & Automatic Linkage Pipeline
+        $user = User::where('telegram_chat_id', $validated['telegram_chat_id'])->first();
+
         if (!$user) {
-            $user = User::find(1) ?? User::first();
+            $unlinkedFisherman = User::where('role', 'fisherman')
+                ->whereNull('telegram_chat_id')
+                ->latest()
+                ->first();
+
+            if ($unlinkedFisherman) {
+                $unlinkedFisherman->update([
+                    'telegram_chat_id' => $validated['telegram_chat_id'],
+                ]);
+                $user = $unlinkedFisherman;
+            } else {
+                $user = User::where('role', 'fisherman')->latest()->first() ?? User::first();
+            }
         }
 
-        // 2. Query Market Engine for Base Metrics Pricing
-        $priceRecord = MarketPrice::where('species', 'LIKE', '%' . $request->species . '%')->first();
-        $pricePerKg = $priceRecord ? $priceRecord->price_per_kg : 150.00; 
-        $estimatedValue = $pricePerKg * $request->weight;
+        // 2. Geospatial & Environmental Telemetry Enrichment
+        $latitude = isset($validated['lat']) ? (float) $validated['lat'] : 8.5800;
+        $longitude = isset($validated['lon']) ? (float) $validated['lon'] : 123.3300;
 
-        // 3. Check Regulatory Compliance Warning Metrics
-        $restriction = RestrictedSpecies::where('species', 'LIKE', '%' . $request->species . '%')->first();
+        $windSpeed = $validated['wind_speed'] ?? null;
+        $temperature = $validated['temperature'] ?? null;
+        $weatherCondition = $validated['weather_condition'] ?? null;
+
+        if ($windSpeed === null && $temperature === null) {
+            $capturedWeather = WeatherTelemetryService::capture($latitude, $longitude);
+            $windSpeed = $capturedWeather['wind_speed'];
+            $temperature = $capturedWeather['temperature'];
+            $weatherCondition = $capturedWeather['weather_condition'];
+        }
+
+        // 3. Market Pricing Engine Query
+        $priceRecord = MarketPrice::where('species', 'LIKE', '%' . $validated['species'] . '%')->first();
+        $pricePerKg = $priceRecord ? (float) $priceRecord->price_per_kg : 150.00;
+        $estimatedValue = round($pricePerKg * (float) $validated['weight'], 2);
+
+        // 4. Regulatory Compliance Check
+        $restriction = RestrictedSpecies::where('species', 'LIKE', '%' . $validated['species'] . '%')->first();
         $warningFlag = $restriction ? $restriction->restriction_type : null;
 
-        // Execute queries inside an isolated Database Transaction for safety
-        $result = DB::transaction(function () use ($user, $request, $estimatedValue) {
-            
-            // 4. Record the log in the Fish Catch ledger
-            $catch = new FishCatch();
-            $catch->user_id = $user->id;
-            $catch->species = $request->species;
-            $catch->weight = $request->weight;
-            $catch->latitude = $request->lat ?? '8.6512';
-            $catch->longitude = $request->lon ?? '123.4211';
-            $catch->save();
+        // 5. Atomic Database Transaction
+        $catch = DB::transaction(function () use ($user, $validated, $latitude, $longitude, $windSpeed, $temperature, $weatherCondition, $estimatedValue) {
+            $newCatch = FishCatch::create([
+                'user_id' => $user->id,
+                'species' => $validated['species'],
+                'weight' => $validated['weight'],
+                'location' => 'Galas Port',
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'wind_speed' => $windSpeed,
+                'temperature' => $temperature,
+                'weather_condition' => $weatherCondition,
+                'logged_at' => now(),
+            ]);
 
-            // 5. Create the corresponding Crate row inside the public marketplace floor
-            $listing = new Listing();
-            $listing->user_id = $user->id;
-            $listing->fish_name = $request->species;
-            $listing->weight_kg = $request->weight;
-            $listing->starting_price = $estimatedValue;
-            $listing->current_bid = $estimatedValue;
-            $listing->location = 'Galas Port'; 
-            $listing->status = 'active';
-            $listing->ends_at = now()->addHours(24); 
-            $listing->save();
+            Listing::create([
+                'user_id' => $user->id,
+                'fish_name' => $validated['species'],
+                'weight_kg' => $validated['weight'],
+                'starting_price' => $estimatedValue,
+                'current_bid' => $estimatedValue,
+                'location' => 'Galas Port',
+                'status' => 'active',
+                'ends_at' => now()->addHours(24),
+            ]);
 
-            return $catch;
+            return $newCatch;
         });
 
-        // 6. Send response back out to your external Node.js bot tunnel service
         return response()->json([
             'status' => 'success',
             'message' => 'Catch parsed and published to marketplace successfully',
+            'user_id' => $user->id,
+            'catch_id' => $catch->id,
             'estimated_value' => $estimatedValue,
-            'warning_flag' => $warningFlag
+            'warning_flag' => $warningFlag,
+            'environmental_telemetry' => [
+                'wind_speed' => $catch->wind_speed,
+                'temperature' => $catch->temperature,
+                'weather_condition' => $catch->weather_condition,
+            ],
         ], 201);
     }
 }
