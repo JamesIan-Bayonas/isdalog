@@ -1,106 +1,162 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
+import { useState } from 'react';
 import {
+    ChartBarIcon,
     ShieldExclamationIcon,
     CircleStackIcon,
-    ChartBarIcon,
     UsersIcon,
-    ScaleIcon,
-    SparklesIcon,
-    RadioIcon,
-    ShieldCheckIcon,
-    ExclamationTriangleIcon,
+    TruckIcon,
+    MapPinIcon,
     ArrowTrendingUpIcon,
-    BuildingOffice2Icon
+    SparklesIcon
 } from '@heroicons/react/24/outline';
 
-export default function BfarDashboard({ auth, metrics = {}, speciesDistribution = [], alerts = [] }) {
-    const totalBiomass = metrics?.total_biomass_kg ?? 0;
-    const marketVolume = metrics?.total_market_value ?? 0;
-    const fleetNodes = metrics?.active_fishermen ?? 0;
-    const couriers = metrics?.active_riders ?? 0;
+export default function BfarDashboard({
+    auth,
+    metrics = {},
+    speciesDistribution = [],
+    catchVolumeTrends = [],
+    portDistribution = [],
+    alerts = []
+}) {
+    const [activeTab, setActiveTab] = useState('biomass');
+
+    const maxBiomass = Math.max(...catchVolumeTrends.map((d) => d.biomass_kg), 100);
+    const maxValue = Math.max(...catchVolumeTrends.map((d) => d.traded_value), 1000);
+    const maxSpeciesWeight = Math.max(...speciesDistribution.map((s) => s.total_weight), 10);
 
     return (
         <AuthenticatedLayout
             user={auth.user}
             header={
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 shadow-sm">
-                            <BuildingOffice2Icon className="w-5 h-5" />
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white font-black">
+                            🛡️
                         </div>
                         <div>
-                            <h2 className="font-black text-xl text-white tracking-tight flex items-center gap-2">
-                                BFAR Municipal Supervision Gateway
-                                <span className="text-[10px] uppercase font-mono font-bold tracking-widest px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                                    Regulatory Clearance
-                                </span>
+                            <h2 className="font-black text-xl text-slate-900 leading-tight tracking-tight">
+                                BFAR Supervisory Gateway & Telemetry
                             </h2>
-                            <p className="text-xs font-mono text-slate-400">Zamboanga del Norte · Dipolog Coastal Command</p>
+                            <p className="text-xs font-mono text-slate-500">
+                                Region IX Marine Biomass & Sustainability Compliance Desk
+                            </p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2 font-mono text-xs text-slate-400 bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-800">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                        <span>Telemetry Online (8.58° N, 123.33° E)</span>
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span>Live Conservation Ledger</span>
                     </div>
                 </div>
             }
         >
-            <Head title="BFAR Municipal Supervision" />
+            <Head title="BFAR Maritime Analytics — IsdaLog" />
 
-            <div className="min-h-screen bg-[#020617] text-slate-100 py-8 relative overflow-hidden">
-                {/* Ambient Nautical Background Lighting */}
-                <div className="absolute top-[-10%] left-[-10%] w-[38rem] h-[38rem] bg-gradient-to-br from-cyan-600/10 via-blue-700/[0.05] to-transparent rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[38rem] h-[38rem] bg-gradient-to-tr from-amber-600/[0.08] via-cyan-950/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+            <div className="py-8 bg-slate-50 min-h-screen">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+                    
+                    {/* Top Tier: Telemetry Metric Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                            <div className="flex items-center justify-between text-slate-500">
+                                <span className="text-xs font-mono font-bold uppercase tracking-wider">Total Biomass</span>
+                                <ChartBarIcon className="w-5 h-5 text-cyan-600" />
+                            </div>
+                            <div className="text-2xl font-black text-slate-900 font-mono">
+                                {Number(metrics.total_biomass_kg || 0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} <span className="text-sm font-normal text-slate-500">kg</span>
+                            </div>
+                            <p className="text-[11px] text-slate-500">Aggregated landing volume</p>
+                        </div>
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 relative z-10">
+                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                            <div className="flex items-center justify-between text-slate-500">
+                                <span className="text-xs font-mono font-bold uppercase tracking-wider">Market Turnover</span>
+                                <CircleStackIcon className="w-5 h-5 text-emerald-600" />
+                            </div>
+                            <div className="text-2xl font-black text-slate-900 font-mono">
+                                ₱{Number(metrics.total_market_value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </div>
+                            <p className="text-[11px] text-slate-500">Gross settled escrow trading</p>
+                        </div>
 
-                    {/* --- REGULATORY CONSERVATION ALERT BANNER --- */}
+                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                            <div className="flex items-center justify-between text-slate-500">
+                                <span className="text-xs font-mono font-bold uppercase tracking-wider">Avg Market Rate</span>
+                                <ArrowTrendingUpIcon className="w-5 h-5 text-indigo-600" />
+                            </div>
+                            <div className="text-2xl font-black text-slate-900 font-mono">
+                                ₱{Number(metrics.avg_price_per_kg || 0).toFixed(2)} <span className="text-sm font-normal text-slate-500">/kg</span>
+                            </div>
+                            <p className="text-[11px] text-slate-500">Mean municipal valuation</p>
+                        </div>
+
+                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                            <div className="flex items-center justify-between text-slate-500">
+                                <span className="text-xs font-mono font-bold uppercase tracking-wider">Harvesters</span>
+                                <UsersIcon className="w-5 h-5 text-amber-600" />
+                            </div>
+                            <div className="text-2xl font-black text-slate-900 font-mono">
+                                {metrics.active_fishermen || 0}
+                            </div>
+                            <p className="text-[11px] text-slate-500">Registered fleet operators</p>
+                        </div>
+
+                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                            <div className="flex items-center justify-between text-slate-500">
+                                <span className="text-xs font-mono font-bold uppercase tracking-wider">Logistics Fleet</span>
+                                <TruckIcon className="w-5 h-5 text-purple-600" />
+                            </div>
+                            <div className="text-2xl font-black text-slate-900 font-mono">
+                                {metrics.active_riders || 0}
+                            </div>
+                            <p className="text-[11px] text-slate-500">Active cold-chain couriers</p>
+                        </div>
+                    </div>
+
+                    {/* Sustainability Infractions Banner */}
                     {alerts.length > 0 && (
-                        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-red-950/80 via-slate-900/90 to-slate-900/90 border border-red-500/40 p-6 shadow-xl shadow-red-950/40 backdrop-blur-xl">
-                            <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-red-500 animate-pulse" />
-                            
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-red-500/20">
+                        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 shadow-sm space-y-4">
+                            <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2.5 rounded-xl bg-red-500/20 border border-red-500/40 text-red-400 animate-bounce">
+                                    <div className="p-2.5 bg-rose-100 text-rose-700 rounded-xl">
                                         <ShieldExclamationIcon className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h3 className="text-base font-black text-white tracking-wide flex items-center gap-2">
-                                            Critical Regulatory Enforcement Alert
-                                            <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-red-500/30 text-red-300 border border-red-500/50">
-                                                {alerts.length} Infraction{alerts.length > 1 ? 's' : ''} Detected
-                                            </span>
+                                        <h3 className="text-base font-bold text-rose-900">
+                                            Restricted Marine Species Alert ({alerts.length} Flagged Catches)
                                         </h3>
-                                        <p className="text-xs text-red-200/80 mt-0.5">
-                                            Catch telemetry logged landing species strictly protected under municipal & national fisheries conservation directives.
+                                        <p className="text-xs text-rose-700">
+                                            Catches cross-referenced against BFAR restricted species protection registers.
                                         </p>
                                     </div>
                                 </div>
+                                <span className="text-xs font-bold font-mono px-3 py-1 bg-rose-200 text-rose-900 rounded-full">
+                                    CRITICAL OVERSIGHT
+                                </span>
                             </div>
 
-                            <div className="overflow-x-auto mt-4">
-                                <table className="min-w-full divide-y divide-red-900/40 text-left">
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full text-xs text-left divide-y divide-rose-200">
                                     <thead>
-                                        <tr className="text-[11px] font-mono uppercase text-red-400/90 tracking-wider">
-                                            <th className="py-2.5 px-3">Crate Batch ID</th>
-                                            <th className="py-2.5 px-3">Species Identifier</th>
-                                            <th className="py-2.5 px-3">Harvest Mass</th>
-                                            <th className="py-2.5 px-3">Harvester Node</th>
-                                            <th className="py-2.5 px-3">Audit Timestamp</th>
+                                        <tr className="text-rose-800 font-mono uppercase tracking-wider">
+                                            <th className="py-2 px-3">Listing ID</th>
+                                            <th className="py-2 px-3">Protected Species</th>
+                                            <th className="py-2 px-3">Harvest Weight</th>
+                                            <th className="py-2 px-3">Landing Port</th>
+                                            <th className="py-2 px-3">Operator Name</th>
+                                            <th className="py-2 px-3">Logged Date</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-red-950/40 text-xs font-mono">
+                                    <tbody className="divide-y divide-rose-100">
                                         {alerts.map((alert) => (
-                                            <tr key={alert.listing_id} className="hover:bg-red-500/10 transition-colors">
-                                                <td className="py-3 px-3 text-white font-bold">#CRATE-{alert.listing_id}</td>
-                                                <td className="py-3 px-3 text-red-400 font-bold flex items-center gap-1.5">
-                                                    <ExclamationTriangleIcon className="w-4 h-4 text-red-400 shrink-0" />
-                                                    {alert.fish_name}
-                                                </td>
-                                                <td className="py-3 px-3 text-slate-300 font-semibold">{alert.weight_kg} KG</td>
-                                                <td className="py-3 px-3 text-slate-300">{alert.fisherman_name}</td>
-                                                <td className="py-3 px-3 text-slate-400">{new Date(alert.captured_at).toLocaleString()}</td>
+                                            <tr key={alert.listing_id} className="hover:bg-rose-100/50">
+                                                <td className="py-2 px-3 font-mono font-bold">#{alert.listing_id}</td>
+                                                <td className="py-2 px-3 font-bold text-rose-950">{alert.fish_name}</td>
+                                                <td className="py-2 px-3 font-mono">{alert.weight_kg} kg</td>
+                                                <td className="py-2 px-3">{alert.location}</td>
+                                                <td className="py-2 px-3 font-semibold">{alert.fisherman_name}</td>
+                                                <td className="py-2 px-3 font-mono text-slate-600">{alert.captured_at}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -109,125 +165,153 @@ export default function BfarDashboard({ auth, metrics = {}, speciesDistribution 
                         </div>
                     )}
 
-                    {/* --- CORE PERFORMANCE METRIC TILES --- */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                        {/* Total Biomass */}
-                        <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl shadow-lg relative overflow-hidden group hover:border-cyan-500/40 transition-all duration-300">
-                            <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-slate-400">Biomass Harvested</span>
-                                <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 group-hover:scale-105 transition-transform">
-                                    <ScaleIcon className="w-5 h-5" />
-                                </div>
-                            </div>
-                            <div className="mt-4">
-                                <h4 className="text-3xl font-black text-white tracking-tight">
-                                    {Number(totalBiomass).toLocaleString()} <span className="text-sm font-mono text-cyan-400 font-bold">KG</span>
-                                </h4>
-                                <p className="text-xs text-slate-400 mt-1 font-mono">Aggregated municipal landings</p>
-                            </div>
-                        </div>
-
-                        {/* Market Valuation Velocity */}
-                        <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl shadow-lg relative overflow-hidden group hover:border-emerald-500/40 transition-all duration-300">
-                            <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-slate-400">Market Escrow Volume</span>
-                                <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 group-hover:scale-105 transition-transform">
-                                    <CircleStackIcon className="w-5 h-5" />
-                                </div>
-                            </div>
-                            <div className="mt-4">
-                                <h4 className="text-3xl font-black text-emerald-400 tracking-tight">
-                                    ₱{Number(marketVolume).toLocaleString()}
-                                </h4>
-                                <p className="text-xs text-slate-400 mt-1 font-mono">Total auction transaction flow</p>
-                            </div>
-                        </div>
-
-                        {/* Active Harvesters */}
-                        <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl shadow-lg relative overflow-hidden group hover:border-indigo-500/40 transition-all duration-300">
-                            <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-slate-400">Harvester Fleet</span>
-                                <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 group-hover:scale-105 transition-transform">
-                                    <UsersIcon className="w-5 h-5" />
-                                </div>
-                            </div>
-                            <div className="mt-4">
-                                <h4 className="text-3xl font-black text-white tracking-tight">
-                                    {fleetNodes} <span className="text-sm font-mono text-indigo-400 font-bold">Harvesters</span>
-                                </h4>
-                                <p className="text-xs text-slate-400 mt-1 font-mono">FishR verified vessels</p>
-                            </div>
-                        </div>
-
-                        {/* Active Couriers */}
-                        <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl shadow-lg relative overflow-hidden group hover:border-violet-500/40 transition-all duration-300">
-                            <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-slate-400">Logistics Fleet</span>
-                                <div className="p-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400 group-hover:scale-105 transition-transform">
-                                    <ChartBarIcon className="w-5 h-5" />
-                                </div>
-                            </div>
-                            <div className="mt-4">
-                                <h4 className="text-3xl font-black text-white tracking-tight">
-                                    {couriers} <span className="text-sm font-mono text-violet-400 font-bold">Couriers</span>
-                                </h4>
-                                <p className="text-xs text-slate-400 mt-1 font-mono">Active cold-chain logistics</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* --- SPECIES BIOMASS QUANTIFICATION MATRIX --- */}
-                    <div className="p-6 sm:p-8 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl shadow-lg space-y-6">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-800">
+                    {/* Middle Tier: Time-Series Catch Trends Visualization */}
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
-                                <h3 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
-                                    <RadioIcon className="w-5 h-5 text-cyan-400" />
-                                    Municipal Species Biomass Distribution
+                                <h3 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+                                    <SparklesIcon className="w-5 h-5 text-cyan-600" />
+                                    Historical Catch Volume & Valuation Timeline
                                 </h3>
-                                <p className="text-xs text-slate-400 mt-0.5">Volumetric landing proportion mapped across all registered regional ports</p>
+                                <p className="text-xs text-slate-500">
+                                    Daily aggregated municipal biomass yields and trading turnover
+                                </p>
                             </div>
-                            <span className="text-[11px] font-mono text-slate-400 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">
-                                Total Monitored: {speciesDistribution.length} Taxa
-                            </span>
+                            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold">
+                                <button
+                                    onClick={() => setActiveTab('biomass')}
+                                    className={`px-3 py-1.5 rounded-lg transition-all ${
+                                        activeTab === 'biomass'
+                                            ? 'bg-white text-slate-900 shadow-sm'
+                                            : 'text-slate-500 hover:text-slate-900'
+                                    }`}
+                                >
+                                    Biomass (kg)
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('value')}
+                                    className={`px-3 py-1.5 rounded-lg transition-all ${
+                                        activeTab === 'value'
+                                            ? 'bg-white text-slate-900 shadow-sm'
+                                            : 'text-slate-500 hover:text-slate-900'
+                                    }`}
+                                >
+                                    Market Value (₱)
+                                </button>
+                            </div>
                         </div>
 
-                        <div className="space-y-5">
-                            {speciesDistribution.length === 0 ? (
-                                <div className="text-center py-12 text-slate-500 text-sm font-mono border border-dashed border-slate-800 rounded-xl">
-                                    No landed biomass records currently available for telemetry mapping.
-                                </div>
-                            ) : (
-                                speciesDistribution.map((item) => {
-                                    const percentage = totalBiomass > 0
-                                        ? Math.min((item.total_weight / totalBiomass) * 100, 100)
-                                        : 0;
+                        {catchVolumeTrends.length === 0 ? (
+                            <div className="text-center py-12 text-slate-400 font-mono text-sm">
+                                No historical landing records logged in this interval.
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <div className="h-64 flex items-end gap-2 sm:gap-4 pt-8 pb-2 border-b border-slate-200 overflow-x-auto">
+                                    {catchVolumeTrends.map((point) => {
+                                        const value = activeTab === 'biomass' ? point.biomass_kg : point.traded_value;
+                                        const max = activeTab === 'biomass' ? maxBiomass : maxValue;
+                                        const heightPercent = Math.max(8, Math.round((value / max) * 100));
 
-                                    return (
-                                        <div key={item.fish_name} className="space-y-2 p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/60 hover:border-slate-700 transition-colors">
-                                            <div className="flex justify-between items-center text-xs font-mono">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-bold text-white text-sm">{item.fish_name}</span>
-                                                    <span className="text-[10px] text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/50 font-bold">
-                                                        {item.catch_count} {item.catch_count === 1 ? 'batch' : 'batches'}
-                                                    </span>
+                                        return (
+                                            <div
+                                                key={point.date}
+                                                className="flex-1 min-w-[48px] flex flex-col items-center gap-2 group relative"
+                                            >
+                                                {/* Hover Tooltip */}
+                                                <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-[11px] font-mono py-1 px-2 rounded-lg pointer-events-none whitespace-nowrap z-20 shadow-lg">
+                                                    {point.date}: {activeTab === 'biomass' ? `${point.biomass_kg} kg` : `₱${point.traded_value}`} ({point.total_catches} catches)
                                                 </div>
-                                                <span className="text-slate-300 font-bold">
-                                                    {parseFloat(item.total_weight).toLocaleString()} KG 
-                                                    <span className="text-slate-500 ml-1.5">({percentage.toFixed(1)}%)</span>
+
+                                                <div className="w-full bg-slate-100 rounded-t-lg h-full flex items-end overflow-hidden">
+                                                    <div
+                                                        style={{ height: `${heightPercent}%` }}
+                                                        className={`w-full rounded-t-md transition-all duration-500 ${
+                                                            activeTab === 'biomass'
+                                                                ? 'bg-gradient-to-t from-cyan-600 to-teal-400 group-hover:from-cyan-500 group-hover:to-teal-300'
+                                                                : 'bg-gradient-to-t from-emerald-600 to-green-400 group-hover:from-emerald-500 group-hover:to-green-300'
+                                                        }`}
+                                                    />
+                                                </div>
+                                                <span className="text-[10px] font-mono text-slate-400 rotate-45 sm:rotate-0 mt-1">
+                                                    {point.date.slice(5)}
                                                 </span>
                                             </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
-                                            <div className="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden p-[1px] border border-slate-800">
+                    {/* Bottom Tier: Species Breakdown & Port Distribution */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        
+                        {/* Species Distribution */}
+                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                            <h3 className="text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
+                                <ChartBarIcon className="w-5 h-5 text-indigo-600" />
+                                Species Biomass Matrix
+                            </h3>
+                            <p className="text-xs text-slate-500">
+                                Harvest distribution by taxonomic category
+                            </p>
+
+                            <div className="space-y-3 pt-2">
+                                {speciesDistribution.map((species) => {
+                                    const percent = Math.round((species.total_weight / maxSpeciesWeight) * 100);
+                                    return (
+                                        <div key={species.fish_name} className="space-y-1">
+                                            <div className="flex justify-between text-xs font-semibold text-slate-800">
+                                                <span>{species.fish_name}</span>
+                                                <span className="font-mono text-slate-600">
+                                                    {species.total_weight} kg ({species.catch_count} lots · avg ₱{species.avg_price})
+                                                </span>
+                                            </div>
+                                            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                                                 <div
-                                                    className="bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 h-full rounded-full transition-all duration-700 ease-out"
-                                                    style={{ width: `${percentage}%` }}
+                                                    style={{ width: `${percent}%` }}
+                                                    className="h-full bg-indigo-600 rounded-full"
                                                 />
                                             </div>
                                         </div>
                                     );
-                                })
-                            )}
+                                })}
+                            </div>
                         </div>
+
+                        {/* Port Landing Volume Matrix */}
+                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                            <h3 className="text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
+                                <MapPinIcon className="w-5 h-5 text-emerald-600" />
+                                Port Landing Volume Distribution
+                            </h3>
+                            <p className="text-xs text-slate-500">
+                                Intake capacity across municipal docking facilities
+                            </p>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                                {portDistribution.map((port) => (
+                                    <div
+                                        key={port.location}
+                                        className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2"
+                                    >
+                                        <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                                            <MapPinIcon className="w-4 h-4 text-emerald-600 shrink-0" />
+                                            <span>{port.location}</span>
+                                        </div>
+                                        <div className="text-xl font-black font-mono text-slate-900">
+                                            {port.total_weight.toLocaleString()} <span className="text-xs font-normal text-slate-500">kg</span>
+                                        </div>
+                                        <div className="flex justify-between text-[11px] text-slate-500 font-mono">
+                                            <span>{port.total_landings} Landings</span>
+                                            <span>₱{Number(port.total_value).toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
                     </div>
 
                 </div>
