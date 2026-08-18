@@ -1,0 +1,45 @@
+{
+  "output": {
+    "filePath": "repomix-output.xml",
+    "style": "xml",
+    "parsableStyle": true,
+    "removeComments": false,
+    "removeEmptyLines": true,
+    "showLineNumbers": false
+  },
+  "include": [
+    "app/**",
+    "bootstrap/app.php",
+    "bootstrap/providers.php",
+    "config/**",
+    "database/migrations/**",
+    "database/seeders/**",
+    "database/factories/**",
+    "resources/js/**",
+    "resources/css/**",
+    "resources/views/**",
+    "routes/**",
+    "tests/**",
+    "services/**",
+    "index.js",
+    "composer.json",
+    "package.json",
+    "vite.config.js",
+    "tailwind.config.js",
+    "README.md",
+    "GEMINI.md"
+  ],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "**/node_modules/**",
+      "**/vendor/**",
+      "**/storage/**",
+      "**/public/build/**",
+      "**/bootstrap/cache/**",
+      "*.lock",
+      "package-lock.json"
+    ]
+  }
+}
