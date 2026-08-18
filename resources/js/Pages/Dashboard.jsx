@@ -33,7 +33,8 @@ import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 export default function Dashboard({ 
     auth, 
     role_context = 'buyer', 
-    metrics = {}, 
+    metrics = {},
+    activeListings = [], 
     recentActivity = [], 
     salesHistory = [],
     activeShipments = [], 
@@ -237,6 +238,16 @@ export default function Dashboard({
         }
     };
 
+    const { post: postAcceptBid, processing: acceptingBid } = useForm({});
+
+    const handleAcceptBid = (listingId) => {
+        if (confirm('Accept this winning bid and award the catch? Buyer funds will be locked in escrow.')) {
+            postAcceptBid(route('listings.accept-bid', listingId), {
+                preserveScroll: true,
+            });
+        }
+    };
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -370,134 +381,92 @@ export default function Dashboard({
                 )}
 
                 {/* ========================================================================= */}
-                {/* 2. DYNAMIC ROLE TELEMETRY METRIC CARDS                                     */}
+                {/* 2. DYNAMIC ROLE TELEMETRY METRIC CARDS (UNIFIED 4-COL GRID)               */}
                 {/* ========================================================================= */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     
-                    {/* --- FISHERMAN METRICS --- */}
-                    {userRole === 'fisherman' && (
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                                {/* Withdrawable Balance */}
-                                <div className="p-6 rounded-2xl bg-white border border-emerald-200 shadow-sm flex flex-col justify-between">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Withdrawable Balance</span>
-                                        <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600">
-                                            <BanknotesIcon className="w-5 h-5" />
-                                        </div>
-                                    </div>
-                                    <div className="mt-4">
-                                        <h3 className="text-3xl font-black text-emerald-600 tracking-tight font-mono">
-                                            ₱{parseFloat(metrics.walletBalance || auth.user.wallet_balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                        </h3>
-                                        <p className="text-xs text-slate-400 mt-1">Available for GCash / Maya payout</p>
-                                    </div>
-                                </div>
+                    {/* --- FISHERMAN METRIC CARDS --- */}
+                    {/* ========================================================================= */}
+{/* 2.0 ACTIVE HARVEST AUCTIONS & BID ACCEPTANCE DESK (FISHERMAN EXCLUSIVE)  */}
+{/* ========================================================================= */}
+{userRole === 'fisherman' && (
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-cyan-50 text-cyan-600 border border-cyan-200">
+                    <SparklesIcon className="w-5 h-5" />
+                </div>
+                <div>
+                    <h3 className="text-base font-bold text-slate-900">Active Catch Auctions & Bid Acceptance</h3>
+                    <p className="text-xs text-slate-500">Review incoming marketplace offers and award winning bids</p>
+                </div>
+            </div>
+            <span className="text-xs font-mono font-bold bg-cyan-50 text-cyan-700 px-3 py-1 rounded-lg border border-cyan-200">
+                {activeListings.length} Live On Trading Floor
+            </span>
+        </div>
 
-                                {/* Lifetime Net Earnings */}
-                                <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Lifetime Net Earnings</span>
-                                        <div className="p-2 rounded-xl bg-cyan-50 text-cyan-600">
-                                            <ArrowTrendingUpIcon className="w-5 h-5" />
-                                        </div>
-                                    </div>
-                                    <div className="mt-4">
-                                        <h3 className="text-2xl font-black text-slate-900 tracking-tight font-mono">
-                                            ₱{parseFloat(metrics.netEarnings || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                        </h3>
-                                        <p className="text-xs text-slate-400 mt-1">97% net proceeds from closed sales</p>
-                                    </div>
-                                </div>
-
-                                {/* Escrow Locked In Transit */}
-                                <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Escrow In Transit</span>
-                                        <div className="p-2 rounded-xl bg-amber-50 text-amber-600">
-                                            <LockClosedIcon className="w-5 h-5" />
-                                        </div>
-                                    </div>
-                                    <div className="mt-4">
-                                        <h3 className="text-2xl font-black text-amber-600 tracking-tight font-mono">
-                                            ₱{parseFloat(metrics.pendingEscrow || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                        </h3>
-                                        <p className="text-xs text-slate-400 mt-1">Pending buyer delivery confirmation</p>
-                                    </div>
-                                </div>
-
-                                {/* Total Biomass Harvested */}
-                                <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Logged Biomass</span>
-                                        <div className="p-2 rounded-xl bg-purple-50 text-purple-600">
-                                            <ScaleIcon className="w-5 h-5" />
-                                        </div>
-                                    </div>
-                                    <div className="mt-4">
-                                        <h3 className="text-2xl font-black text-slate-900 tracking-tight font-mono">
-                                            {parseFloat(metrics.totalWeight || 0).toLocaleString()} <span className="text-sm text-purple-600 font-bold">KG</span>
-                                        </h3>
-                                        <p className="text-xs text-slate-400 mt-1">{metrics.totalCatches || 0} batches recorded via Edge AI</p>
-                                    </div>
-                                </div>
+        {activeListings.length === 0 ? (
+            <div className="text-center py-8 text-slate-400 text-xs font-mono">
+                No active auctions currently on the floor. Log a catch via Telegram to start an auction.
+            </div>
+        ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {activeListings.map((listing) => (
+                    <div key={listing.id} className="p-5 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between space-y-4 hover:border-slate-300 transition-all">
+                        <div className="space-y-2.5">
+                            <div className="flex justify-between items-center">
+                                <span className="font-mono text-xs font-bold text-slate-500">Crate #{listing.id}</span>
+                                <span className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full ${
+                                    listing.has_bids ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'
+                                }`}>
+                                    {listing.bids_count} {listing.bids_count === 1 ? 'Bid' : 'Bids'} Placed
+                                </span>
                             </div>
 
-                            {/* Consignment Sales Table */}
-                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6 space-y-4">
-                                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                                    <div>
-                                        <h3 className="text-base font-bold text-slate-900">Consignment Sales & Escrow Ledger</h3>
-                                        <p className="text-xs text-slate-500">Completed catch purchases by verified marketplace merchants</p>
-                                    </div>
-                                    <span className="text-xs font-mono bg-slate-100 text-slate-600 px-3 py-1 rounded-lg">Platform Fee: 3.0%</span>
-                                </div>
+                            <h4 className="text-base font-black text-slate-900">
+                                {listing.fish_name} ({listing.weight_kg} KG)
+                            </h4>
 
-                                {salesHistory.length === 0 ? (
-                                    <div className="text-center py-8 text-slate-400 text-xs font-mono">
-                                        No completed consignment transactions recorded yet.
-                                    </div>
-                                ) : (
-                                    <div className="overflow-x-auto">
-                                        <table className="min-w-full divide-y divide-slate-100 text-left text-xs">
-                                            <thead>
-                                                <tr className="text-slate-400 font-mono uppercase tracking-wider">
-                                                    <th className="py-3 px-3">Order ID</th>
-                                                    <th className="py-3 px-3">Species</th>
-                                                    <th className="py-3 px-3">Weight</th>
-                                                    <th className="py-3 px-3">Gross Sale</th>
-                                                    <th className="py-3 px-3">Fee (3%)</th>
-                                                    <th className="py-3 px-3">Net Payout (97%)</th>
-                                                    <th className="py-3 px-3">Buyer</th>
-                                                    <th className="py-3 px-3">Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-slate-100 font-mono">
-                                                {salesHistory.map((order) => (
-                                                    <tr key={order.order_id} className="hover:bg-slate-50 transition-colors">
-                                                        <td className="py-3 px-3 font-bold text-slate-900">#{order.order_id}</td>
-                                                        <td className="py-3 px-3 font-sans font-bold text-slate-800">{order.fish_name}</td>
-                                                        <td className="py-3 px-3 text-slate-600">{order.weight_kg} kg</td>
-                                                        <td className="py-3 px-3 text-slate-500">₱{order.gross_price.toFixed(2)}</td>
-                                                        <td className="py-3 px-3 text-rose-500">-₱{order.platform_fee.toFixed(2)}</td>
-                                                        <td className="py-3 px-3 font-bold text-emerald-600">₱{order.net_payout.toFixed(2)}</td>
-                                                        <td className="py-3 px-3 font-sans text-slate-600">{order.buyer_name}</td>
-                                                        <td className="py-3 px-3">
-                                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-100 text-emerald-700">
-                                                                {order.status}
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )}
+                            <div className="p-3 bg-white rounded-xl border border-slate-200/60 space-y-1.5 text-xs font-mono">
+                                <div className="flex justify-between">
+                                    <span className="text-slate-400">Starting Floor:</span>
+                                    <span className="text-slate-600">₱{listing.starting_price.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between border-t border-slate-100 pt-1">
+                                    <span className="text-slate-500 font-bold">Current Top Offer:</span>
+                                    <span className="font-black text-emerald-600 text-sm">₱{listing.highest_bid.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between text-[11px] text-slate-400">
+                                    <span>Leading Bidder:</span>
+                                    <span className="font-semibold text-slate-700">{listing.highest_bidder_name}</span>
+                                </div>
                             </div>
                         </div>
-                    )}
 
-                                        {/* --- BUYER METRICS --- */}
+                        {listing.has_bids ? (
+                            <button
+                                type="button"
+                                disabled={acceptingBid}
+                                onClick={() => handleAcceptBid(listing.id)}
+                                className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
+                            >
+                                <CheckBadgeIcon className="w-4 h-4" />
+                                <span>Accept ₱{listing.highest_bid.toFixed(2)} & Award Winner</span>
+                            </button>
+                        ) : (
+                            <div className="text-center py-2 text-[11px] font-mono text-slate-400 bg-slate-100 rounded-xl">
+                                Waiting for buyers to place bids...
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+        )}
+    </div>
+)}
+
+                    {/* --- BUYER METRIC CARDS --- */}
                     {userRole === 'buyer' && (
                         <>
                             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
@@ -522,7 +491,6 @@ export default function Dashboard({
                                 </div>
                             </div>
 
-                            {/* LIQUID & ESCROW SPLIT WALLET TILE */}
                             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                                 <div>
                                     <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Available Liquid Funds</span>
@@ -541,7 +509,6 @@ export default function Dashboard({
                                 </div>
                             </div>
 
-                            {/* ESCROW BALANCE TILE */}
                             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                                 <div>
                                     <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Locked in Transit Escrow</span>
@@ -560,7 +527,7 @@ export default function Dashboard({
                         </>
                     )}
 
-                    {/* --- RIDER METRICS --- */}
+                    {/* --- RIDER METRIC CARDS --- */}
                     {userRole === 'rider' && (
                         <>
                             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
@@ -599,7 +566,119 @@ export default function Dashboard({
                     )}
 
                 </div>
+                {/* ========================================================================= */}
+                {/* 2.1 ACTIVE SOLD CATCHES & CONSIGNMENT ESCROW LEDGER (FISHERMAN EXCLUSIVE) */}
+                {/* ========================================================================= */}
+                {userRole === 'fisherman' && (
+                    <div className="space-y-6">
 
+                        {/* 🚨 ACTIVE SALES / COURIER PICKUP HANDSHAKE ALERT */}
+                        {salesHistory.filter(s => s.status !== 'completed').length > 0 && (
+                            <div className="p-6 rounded-2xl bg-amber-500/10 border border-amber-500/30 shadow-sm space-y-4">
+                                <div className="flex items-center justify-between border-b border-amber-500/20 pb-3">
+                                    <div className="flex items-center gap-2.5">
+                                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
+                                        <h3 className="text-base font-bold text-amber-900">
+                                            🎉 Catch Sold! Courier Handshake Required
+                                        </h3>
+                                    </div>
+                                    <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900">
+                                        Funds Locked in Escrow
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {salesHistory
+                                        .filter(s => s.status !== 'completed')
+                                        .map((order) => (
+                                            <div key={order.order_id} className="p-4 rounded-xl bg-white border border-amber-200 shadow-sm space-y-3">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <span className="text-xs font-mono text-slate-400">Order #{order.order_id}</span>
+                                                        <h4 className="text-base font-black text-slate-900">
+                                                            {order.fish_name} ({order.weight_kg} KG)
+                                                        </h4>
+                                                    </div>
+                                                    <span className="text-sm font-black font-mono text-emerald-600">
+                                                        ₱{Number(order.net_payout).toLocaleString(undefined, { minimumFractionDigits: 2 })} Net
+                                                    </span>
+                                                </div>
+
+                                                <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-center space-y-1">
+                                                    <span className="text-[10px] font-mono font-bold uppercase text-amber-800 tracking-wider block">
+                                                        Give this Handshake OTP to Courier:
+                                                    </span>
+                                                    <span className="text-2xl font-black font-mono text-amber-700 tracking-widest block">
+                                                        {order.pickup_otp || 'WAITING'}
+                                                    </span>
+                                                    <span className="text-[10px] text-amber-600">
+                                                        Buyer: <strong>{order.buyer_name}</strong> • 97% will credit automatically once delivered.
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 📜 HISTORICAL SETTLED CONSIGNMENT LEDGER */}
+                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6 space-y-4">
+                            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                                <div>
+                                    <h3 className="text-base font-bold text-slate-900">Consignment Sales & Escrow Ledger</h3>
+                                    <p className="text-xs text-slate-500">Completed catch purchases by verified marketplace merchants</p>
+                                </div>
+                                <span className="text-xs font-mono bg-slate-100 text-slate-600 px-3 py-1 rounded-lg">Platform Fee: 3.0%</span>
+                            </div>
+
+                            {salesHistory.length === 0 ? (
+                                <div className="text-center py-8 text-slate-400 text-xs font-mono">
+                                    No completed consignment transactions recorded yet.
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-slate-100 text-left text-xs">
+                                        <thead>
+                                            <tr className="text-slate-400 font-mono uppercase tracking-wider">
+                                                <th className="py-3 px-3">Order ID</th>
+                                                <th className="py-3 px-3">Species</th>
+                                                <th className="py-3 px-3">Weight</th>
+                                                <th className="py-3 px-3">Gross Sale</th>
+                                                <th className="py-3 px-3">Fee (3%)</th>
+                                                <th className="py-3 px-3">Net Payout (97%)</th>
+                                                <th className="py-3 px-3">Buyer</th>
+                                                <th className="py-3 px-3">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100 font-mono">
+                                            {salesHistory.map((order) => (
+                                                <tr key={order.order_id} className="hover:bg-slate-50 transition-colors">
+                                                    <td className="py-3 px-3 font-bold text-slate-900">#{order.order_id}</td>
+                                                    <td className="py-3 px-3 font-sans font-bold text-slate-800">{order.fish_name}</td>
+                                                    <td className="py-3 px-3 text-slate-600">{order.weight_kg} kg</td>
+                                                    <td className="py-3 px-3 text-slate-500">₱{order.gross_price.toFixed(2)}</td>
+                                                    <td className="py-3 px-3 text-rose-500">-₱{order.platform_fee.toFixed(2)}</td>
+                                                    <td className="py-3 px-3 font-bold text-emerald-600">₱{order.net_payout.toFixed(2)}</td>
+                                                    <td className="py-3 px-3 font-sans text-slate-600">{order.buyer_name}</td>
+                                                    <td className="py-3 px-3">
+                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                                                            order.status === 'completed'
+                                                                ? 'bg-emerald-100 text-emerald-700'
+                                                                : 'bg-amber-100 text-amber-700'
+                                                        }`}>
+                                                            {order.status.replace('_', ' ')}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+
+                    </div>
+                )}
                 {/* ========================================================================= */}
                 {/* 3. ACTIVE CARGO SHIPMENTS & ESCROW CLEARANCE (BUYER SPECIFIC)             */}
                 {/* ========================================================================= */}
@@ -1204,7 +1283,7 @@ export default function Dashboard({
                         >
                             Cancel
                         </button>
-                        <button
+                        <button 
                             type="submit"
                             disabled={withdrawProcessing}
                             className="w-1/2 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md transition disabled:opacity-50"
