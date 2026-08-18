@@ -49,6 +49,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::patch('/profile/upgrade', [ProfileController::class, 'upgradeRole'])->name('profile.upgrade');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::post('/profile/telegram/token', [App\Http\Controllers\ProfileController::class, 'generateTelegramLinkToken'])->name('profile.telegram.token');
+    Route::delete('/profile/telegram/unlink', [App\Http\Controllers\ProfileController::class, 'unlinkTelegramAccount'])->name('profile.telegram.unlink');
 });
 
 require __DIR__.'/auth.php';
