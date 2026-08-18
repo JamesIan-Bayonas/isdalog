@@ -21,6 +21,7 @@ class FishCatch extends Model
     protected $fillable = [
         'user_id',
         'species',
+        'image_url',
         'weight',
         'location',
         'latitude',

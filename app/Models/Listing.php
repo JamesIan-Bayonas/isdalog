@@ -14,6 +14,7 @@ class Listing extends Model
     protected $fillable = [
         'user_id',
         'fish_name',
+        'image_url',
         'weight_kg',
         'starting_price',
         'current_bid',
