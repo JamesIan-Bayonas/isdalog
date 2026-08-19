@@ -49,9 +49,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::patch('/profile/upgrade', [ProfileController::class, 'upgradeRole'])->name('profile.upgrade');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/listings/{listing}/accept-bid', [ListingController::class, 'acceptBid'])->name('listings.accept-bid');
 
     Route::post('/profile/telegram/token', [App\Http\Controllers\ProfileController::class, 'generateTelegramLinkToken'])->name('profile.telegram.token');
     Route::delete('/profile/telegram/unlink', [App\Http\Controllers\ProfileController::class, 'unlinkTelegramAccount'])->name('profile.telegram.unlink');
+    
+    Route::patch('/admin/users/{user}/toggle-verification', [AdminController::class, 'toggleVerification'])
+        ->name('admin.users.toggle-verification');
 });
 
 require __DIR__.'/auth.php';
