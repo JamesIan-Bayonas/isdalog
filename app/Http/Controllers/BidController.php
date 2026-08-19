@@ -16,6 +16,22 @@ class BidController extends Controller
      */
     public function store(Request $request, Listing $listing): RedirectResponse
     {
+        $user = $request->user();
+
+        // 1. RBAC Guardrail: Only registered buyers can place bids
+        if ($user->role !== 'buyer') {
+            return redirect()->back()->withErrors([
+                'bid_amount' => 'Harvesters and Couriers are restricted from bidding. Please use a Buyer account.',
+            ]);
+        }
+
+        // 2. Anti-Shill Guardrail: Harvesters cannot bid on their own harvest
+        if ((int) $listing->user_id === (int) $user->id) {
+            return redirect()->back()->withErrors([
+                'bid_amount' => 'You cannot place bids on your own catch listing.',
+            ]);
+        }
+
         $validated = $request->validate([
             'bid_amount' => ['required', 'numeric', 'min:1', 'max:10000000'],
         ]);
@@ -24,7 +40,7 @@ class BidController extends Controller
 
         try {
             /** @var Listing $updatedListing */
-            $updatedListing = DB::transaction(function () use ($listing, $bidAmount) {
+            $updatedListing = DB::transaction(function () use ($listing, $bidAmount, $user) {
                 /** @var Listing|null $lockedListing */
                 $lockedListing = Listing::where('id', $listing->id)->lockForUpdate()->first();
 
@@ -43,7 +59,7 @@ class BidController extends Controller
                 ]);
 
                 $lockedListing->bids()->create([
-                    'buyer_id' => Auth::id(),
+                    'buyer_id' => $user->id,
                     'amount' => $bidAmount,
                 ]);
 
