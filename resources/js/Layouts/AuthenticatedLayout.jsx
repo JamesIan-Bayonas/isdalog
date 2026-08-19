@@ -48,12 +48,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                 )}
                                 {/* NEW: The Smart Admin Link */}
                                 {user.role === 'admin' && (
-                                    <NavLink 
-                                        href={route('bfar.dashboard')} 
-                                        active={route().current('bfar.dashboard')} 
-                                        className="text-emerald-600 font-bold"
+                                    <NavLink
+                                        href="/admin/users"
+                                        active={window.location.pathname.startsWith('/admin/users')}
                                     >
-                                        🛡️ BFAR Data Center
+                                        User Management
                                     </NavLink>
                                 )}
                             </div>

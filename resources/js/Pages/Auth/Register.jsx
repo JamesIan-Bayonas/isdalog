@@ -3,23 +3,27 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import {
     ShieldCheckIcon,
     UserIcon,
     EnvelopeIcon,
     LockClosedIcon,
     ArrowRightIcon,
-    ChevronDownIcon,
+    EyeIcon,
+    EyeSlashIcon,
     SparklesIcon,
     CircleStackIcon,
     TruckIcon
 } from '@heroicons/react/24/outline';
 
 export default function Register() {
+    const [showPassword, setShowPassword] = useState(false);
+
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
-        role: 'buyer', // clean baseline default
+        role: 'fisherman', // Sets default to Harvester
         password: '',
         password_confirmation: '',
     });
@@ -31,19 +35,7 @@ export default function Register() {
         });
     };
 
-    // Only the three self-registerable ecosystem roles — BFAR supervision
-    // accounts are provisioned separately, not via public sign-up.
     const roleData = {
-        buyer: {
-            title: 'Marketplace Buyer',
-            desc: 'Bid live on port consignment floors with secured wallet escrow.',
-            badge: 'Trade & Consignment',
-            color: 'text-emerald-400',
-            fill: 'fill-emerald-400',
-            bg: 'bg-emerald-500/10 border-emerald-500/30',
-            angle: 270,
-            icon: CircleStackIcon
-        },
         fisherman: {
             title: 'Local Fisherman',
             desc: 'Log catch by voice or photo and list straight to the auction floor.',
@@ -53,6 +45,16 @@ export default function Register() {
             bg: 'bg-cyan-500/10 border-cyan-500/30',
             angle: 30,
             icon: SparklesIcon
+        },
+        buyer: {
+            title: 'Marketplace Buyer',
+            desc: 'Bid live on port consignment floors with secured wallet escrow.',
+            badge: 'Trade & Consignment',
+            color: 'text-emerald-400',
+            fill: 'fill-emerald-400',
+            bg: 'bg-emerald-500/10 border-emerald-500/30',
+            angle: 270,
+            icon: CircleStackIcon
         },
         rider: {
             title: 'Logistics Courier',
@@ -66,7 +68,7 @@ export default function Register() {
         }
     };
 
-    const CurrentRoleIcon = roleData[data.role].icon;
+    const CurrentRoleIcon = roleData[data.role]?.icon || SparklesIcon;
 
     const contactPoint = (angleDeg) => {
         const rad = (angleDeg * Math.PI) / 180;
@@ -78,8 +80,7 @@ export default function Register() {
 
     return (
         <>
-            <Head title="Register — IsdaLog Maritime Hub" />
-
+            <Head title="Create Operator Account — IsdaLog Maritime Hub" />
             <style>{`
                 @keyframes vela-sweep {
                     from { transform: rotate(0deg); }
@@ -98,9 +99,7 @@ export default function Register() {
                     transform-origin: center;
                 }
             `}</style>
-
             <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-[#020617] text-slate-100 selection:bg-cyan-500 selection:text-white relative overflow-hidden">
-
                 {/* --- AMBIENT NAUTICAL BACKDROP LIGHTING --- */}
                 <div className="absolute top-[-12%] left-[-12%] w-[42rem] h-[42rem] bg-gradient-to-br from-cyan-600/10 via-blue-700/[0.06] to-transparent rounded-full blur-3xl pointer-events-none" />
                 <div className="absolute bottom-[-12%] right-[-6%] w-[36rem] h-[36rem] bg-gradient-to-tr from-emerald-600/[0.06] via-cyan-900/10 to-transparent rounded-full blur-3xl pointer-events-none" />
@@ -110,8 +109,6 @@ export default function Register() {
                 {/* LEFT — SONAR CONSOLE (5 Columns)                                          */}
                 {/* ========================================================================= */}
                 <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-12 relative z-10 border-r border-slate-800/70 bg-slate-950/50 backdrop-blur-xl">
-
-                    {/* Brand Header */}
                     <div>
                         <Link href="/" className="inline-flex items-center gap-3.5 group">
                             <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 p-[1px] shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform duration-300">
@@ -135,21 +132,20 @@ export default function Register() {
                     <div className="space-y-6">
                         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-700/70 text-xs font-semibold text-slate-300 shadow-inner">
                             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                            <span>New contact provisioning open</span>
+                            <span>Identity & Registration Matrix</span>
                         </div>
-
                         <div className="space-y-2">
                             <h2 className="text-3xl font-black text-white leading-[1.1] tracking-tight">
-                                Register a new contact on the port network.
+                                Autonomous maritime catch & escrow logistics.
                             </h2>
                             <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
-                                Pick where you sit in the ecosystem. The scope, and your dashboard, follow.
+                                Select your operating node clearance level to begin trading, harvesting, or cargo delivery.
                             </p>
                         </div>
 
                         <div className="flex gap-6 items-center pt-1">
-                            {/* --- Sonar scope, now a live role selector --- */}
-                            <svg viewBox="0 0 220 220" className="w-40 h-40 shrink-0" role="img" aria-label="Ecosystem role scope">
+                            {/* Sonar scope */}
+                            <svg viewBox="0 0 220 220" className="w-40 h-40 shrink-0" role="img" aria-label="Platform role scope">
                                 <circle cx="110" cy="110" r="100" className="fill-slate-900/70 stroke-slate-800" strokeWidth="1" />
                                 <circle cx="110" cy="110" r="76" className="fill-none stroke-slate-800" strokeWidth="1" />
                                 <circle cx="110" cy="110" r="42" className="fill-none stroke-slate-800" strokeWidth="1" />
@@ -157,10 +153,10 @@ export default function Register() {
                                 <line x1="110" y1="10" x2="110" y2="210" className="stroke-slate-800" strokeWidth="1" />
 
                                 <g className="vela-sweep-arm">
-                                    <path d="M110 110 L110 10 A100 100 0 0 1 178 42 Z" fill="url(#sweepGradientReg)" opacity="0.55" />
+                                    <path d="M110 110 L110 10 A100 100 0 0 1 178 42 Z" fill="url(#regSweepGradient)" opacity="0.55" />
                                 </g>
                                 <defs>
-                                    <linearGradient id="sweepGradientReg" x1="110" y1="10" x2="178" y2="42" gradientUnits="userSpaceOnUse">
+                                    <linearGradient id="regSweepGradient" x1="110" y1="10" x2="178" y2="42" gradientUnits="userSpaceOnUse">
                                         <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.5" />
                                         <stop offset="100%" stopColor="#22d3ee" stopOpacity="0" />
                                     </linearGradient>
@@ -184,10 +180,10 @@ export default function Register() {
                                         </g>
                                     );
                                 })}
-
                                 <circle cx="110" cy="110" r="3" className="fill-slate-300" />
                             </svg>
 
+                            {/* Role contacts tabs */}
                             <div className="flex-1 grid grid-cols-1 gap-1.5">
                                 {Object.keys(roleData).map((role) => (
                                     <button
@@ -201,13 +197,13 @@ export default function Register() {
                                         }`}
                                     >
                                         <span className={`inline-block w-1.5 h-1.5 rounded-full mr-1.5 align-middle ${data.role === role ? roleData[role].fill : 'bg-slate-700'}`} />
-                                        {role}
+                                        {roleData[role].title}
                                     </button>
                                 ))}
                             </div>
                         </div>
 
-                        {/* Active Role Feature Readout */}
+                        {/* Active Role Card */}
                         <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 backdrop-blur-md transition-all duration-300">
                             <div className="flex items-center gap-3">
                                 <div className={`p-2.5 rounded-lg border ${roleData[data.role].bg}`}>
@@ -228,7 +224,6 @@ export default function Register() {
                         </div>
                     </div>
 
-                    {/* Bottom Status Telemetry */}
                     <div className="pt-6 border-t border-slate-900 flex items-center justify-between text-xs text-slate-500 font-mono">
                         <span>LAT 8.58° N, LON 123.33° E</span>
                         <span className="text-emerald-400 font-semibold">BFAR Compliant</span>
@@ -239,41 +234,49 @@ export default function Register() {
                 {/* RIGHT FORM CONTAINER (7 Columns)                                          */}
                 {/* ========================================================================= */}
                 <div className="col-span-1 lg:col-span-7 flex items-center justify-center p-6 sm:p-12 relative z-10">
-                    <div className="w-full max-w-md space-y-8">
-
-                        {/* Mobile Header Bar */}
-                        <div className="lg:hidden flex items-center justify-between border-b border-slate-800 pb-4">
-                            <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-md">
-                                    <span className="text-lg font-black text-white">⚓</span>
-                                </div>
-                                <span className="text-lg font-black text-white">IsdaLog</span>
-                            </div>
-                            <span className="text-xs font-mono text-cyan-400">Galas Port Node</span>
-                        </div>
-
-                        {/* Title Header */}
+                    <div className="w-full max-w-md space-y-6">
+                        {/* Header */}
                         <div>
                             <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                                Create your account
+                                Create Operator Account
                             </h1>
-                            <p className="text-sm text-slate-400 mt-2">
-                                Already have a terminal login?{' '}
+                            <p className="text-sm text-slate-400 mt-1.5">
+                                Already registered on this node?{' '}
                                 <Link
                                     href={route('login')}
                                     className="text-cyan-400 hover:text-cyan-300 font-bold transition-colors underline-offset-4 hover:underline"
                                 >
-                                    Sign in
+                                    Sign in to terminal
                                 </Link>
                             </p>
                         </div>
 
-                        {/* Register Form */}
-                        <form onSubmit={submit} className="space-y-5">
-
-                            {/* NAME FIELD */}
+                        <form onSubmit={submit} className="space-y-4">
+                            {/* ROLE SELECTION BUTTONS (Synchronized with Inertia Form) */}
                             <div>
-                                <InputLabel htmlFor="name" value="Full Name" className="!text-slate-300 !text-xs !font-bold !uppercase !tracking-wider" />
+                                <InputLabel value="Operational Role Designation" className="!text-slate-300 !text-xs !font-bold !uppercase !tracking-wider" />
+                                <div className="mt-1.5 grid grid-cols-3 gap-2 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800">
+                                    {Object.keys(roleData).map((roleKey) => (
+                                        <button
+                                            key={roleKey}
+                                            type="button"
+                                            onClick={() => setData('role', roleKey)}
+                                            className={`py-2.5 px-2 rounded-lg text-xs font-bold capitalize transition-all cursor-pointer ${
+                                                data.role === roleKey
+                                                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-600/30'
+                                                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                                            }`}
+                                        >
+                                            {roleKey}
+                                        </button>
+                                    ))}
+                                </div>
+                                <InputError message={errors.role} className="mt-1 text-xs" />
+                            </div>
+
+                            {/* NAME */}
+                            <div>
+                                <InputLabel htmlFor="name" value="Full Name / Operating Call-Sign" className="!text-slate-300 !text-xs !font-bold !uppercase !tracking-wider" />
                                 <div className="mt-1.5 relative rounded-xl shadow-sm group">
                                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-cyan-400 transition-colors">
                                         <UserIcon className="h-5 w-5" />
@@ -285,41 +288,15 @@ export default function Register() {
                                         className="!bg-slate-900/90 !border-slate-800 !text-white !pl-11 !py-3.5 !rounded-xl focus:!border-cyan-500 focus:!ring-2 focus:!ring-cyan-500/30 block w-full text-sm placeholder:text-slate-600 transition-all shadow-inner"
                                         autoComplete="name"
                                         isFocused={true}
-                                        placeholder="Juan Dela Cruz"
+                                        placeholder="e.g. Juan Dela Cruz"
                                         onChange={(e) => setData('name', e.target.value)}
                                         required
                                     />
                                 </div>
-                                <InputError message={errors.name} className="mt-2 text-xs" />
+                                <InputError message={errors.name} className="mt-1 text-xs" />
                             </div>
 
-                            {/* ROLE FIELD — synced with the sonar scope */}
-                            <div>
-                                <InputLabel htmlFor="role" value="Account Type / Ecosystem Role" className="!text-slate-300 !text-xs !font-bold !uppercase !tracking-wider" />
-                                <div className="mt-1.5 relative rounded-xl shadow-sm group">
-                                    <div className={`absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-colors ${roleData[data.role].color}`}>
-                                        <CurrentRoleIcon className="h-5 w-5" />
-                                    </div>
-                                    <select
-                                        id="role"
-                                        name="role"
-                                        value={data.role}
-                                        className="!bg-slate-900/90 !border-slate-800 !text-white !pl-11 !pr-10 !py-3.5 !rounded-xl focus:!border-cyan-500 focus:!ring-2 focus:!ring-cyan-500/30 block w-full text-sm appearance-none cursor-pointer transition-all shadow-inner"
-                                        onChange={(e) => setData('role', e.target.value)}
-                                        required
-                                    >
-                                        <option value="buyer">Marketplace Buyer (Trade & Consignment)</option>
-                                        <option value="fisherman">Local Fisherman (Harvest & Auction)</option>
-                                        <option value="rider">Logistics Courier / Rider (Fleet Delivery)</option>
-                                    </select>
-                                    <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-500">
-                                        <ChevronDownIcon className="h-4 w-4" />
-                                    </div>
-                                </div>
-                                <InputError message={errors.role} className="mt-2 text-xs" />
-                            </div>
-
-                            {/* EMAIL FIELD */}
+                            {/* EMAIL */}
                             <div>
                                 <InputLabel htmlFor="email" value="Account Email" className="!text-slate-300 !text-xs !font-bold !uppercase !tracking-wider" />
                                 <div className="mt-1.5 relative rounded-xl shadow-sm group">
@@ -338,10 +315,10 @@ export default function Register() {
                                         required
                                     />
                                 </div>
-                                <InputError message={errors.email} className="mt-2 text-xs" />
+                                <InputError message={errors.email} className="mt-1 text-xs" />
                             </div>
 
-                            {/* PASSWORD FIELD */}
+                            {/* PASSWORD */}
                             <div>
                                 <InputLabel htmlFor="password" value="Security Key" className="!text-slate-300 !text-xs !font-bold !uppercase !tracking-wider" />
                                 <div className="mt-1.5 relative rounded-xl shadow-sm group">
@@ -350,20 +327,27 @@ export default function Register() {
                                     </div>
                                     <TextInput
                                         id="password"
-                                        type="password"
+                                        type={showPassword ? 'text' : 'password'}
                                         name="password"
                                         value={data.password}
-                                        className="!bg-slate-900/90 !border-slate-800 !text-white !pl-11 !py-3.5 !rounded-xl focus:!border-cyan-500 focus:!ring-2 focus:!ring-cyan-500/30 block w-full text-sm placeholder:text-slate-600 transition-all shadow-inner"
+                                        className="!bg-slate-900/90 !border-slate-800 !text-white !pl-11 !pr-11 !py-3.5 !rounded-xl focus:!border-cyan-500 focus:!ring-2 focus:!ring-cyan-500/30 block w-full text-sm placeholder:text-slate-600 transition-all shadow-inner"
                                         autoComplete="new-password"
                                         placeholder="••••••••••••"
                                         onChange={(e) => setData('password', e.target.value)}
                                         required
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
+                                    >
+                                        {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+                                    </button>
                                 </div>
-                                <InputError message={errors.password} className="mt-2 text-xs" />
+                                <InputError message={errors.password} className="mt-1 text-xs" />
                             </div>
 
-                            {/* PASSWORD CONFIRMATION FIELD */}
+                            {/* CONFIRM PASSWORD */}
                             <div>
                                 <InputLabel htmlFor="password_confirmation" value="Confirm Security Key" className="!text-slate-300 !text-xs !font-bold !uppercase !tracking-wider" />
                                 <div className="mt-1.5 relative rounded-xl shadow-sm group">
@@ -372,7 +356,7 @@ export default function Register() {
                                     </div>
                                     <TextInput
                                         id="password_confirmation"
-                                        type="password"
+                                        type={showPassword ? 'text' : 'password'}
                                         name="password_confirmation"
                                         value={data.password_confirmation}
                                         className="!bg-slate-900/90 !border-slate-800 !text-white !pl-11 !py-3.5 !rounded-xl focus:!border-cyan-500 focus:!ring-2 focus:!ring-cyan-500/30 block w-full text-sm placeholder:text-slate-600 transition-all shadow-inner"
@@ -382,41 +366,32 @@ export default function Register() {
                                         required
                                     />
                                 </div>
-                                <InputError message={errors.password_confirmation} className="mt-2 text-xs" />
+                                <InputError message={errors.password_confirmation} className="mt-1 text-xs" />
                             </div>
 
                             {/* SUBMIT BUTTON */}
                             <button
                                 type="submit"
                                 disabled={processing}
-                                className="w-full inline-flex items-center justify-center gap-2.5 py-4 px-4 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-xl shadow-cyan-600/25 transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-2 cursor-pointer"
+                                className="w-full inline-flex items-center justify-center gap-2.5 py-4 px-4 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-xl shadow-cyan-600/25 transition-all duration-200 active:scale-[0.98] disabled:opacity-50 mt-4 cursor-pointer"
                             >
                                 {processing ? (
-                                    <div className="flex items-center gap-2">
-                                        <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                                        </svg>
-                                        <span>Provisioning contact...</span>
-                                    </div>
+                                    <span>Registering Operator Node...</span>
                                 ) : (
                                     <>
-                                        <span>Create Account & Authorize</span>
+                                        <span>Establish {roleData[data.role]?.title || 'Operator'} Node</span>
                                         <ArrowRightIcon className="w-4 h-4" />
                                     </>
                                 )}
                             </button>
                         </form>
 
-                        {/* Bottom Security Assurance */}
-                        <div className="pt-4 flex items-center justify-center gap-2 text-[11px] text-slate-500">
+                        <div className="pt-2 flex items-center justify-center gap-2 text-[11px] text-slate-500">
                             <ShieldCheckIcon className="w-4 h-4 text-emerald-500" />
-                            <span>Protected by 256-bit escrow & identity encryption</span>
+                            <span>Encrypted operational credentials</span>
                         </div>
-
                     </div>
                 </div>
-
             </div>
         </>
     );
