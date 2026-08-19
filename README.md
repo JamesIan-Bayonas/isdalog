@@ -1,92 +1,241 @@
-# IsdaLog: Maritime Catch & Logistics Engine
+# IsdaLog: Autonomous Maritime Catch Consignment & Escrow Logistics Ecosystem
 
-## System Overview
-IsdaLog is the core logistics, financial, and regulatory backend engine for the Fisheries AI ecosystem. Built on Laravel, it operates as a secure REST API that ingests geospatial catch data, processes market valuations, and enforces local maritime regulations. 
+> **Executive Summary:** IsdaLog is an enterprise-grade maritime catch consignment, auction, and cold-chain logistics platform engineered to digitize municipal port economies. The ecosystem couples an edge-resilient Telegram AI gateway (powered by Google Gemini 2.5 Flash with local Ollama vision fallback) with a high-concurrency Laravel 11 / Inertia.js core featuring real-time WebSocket bidding, cryptographic dual-OTP chain of custody, automated escrow settlements, and BFAR regulatory compliance auditing.
 
-This repository represents the backend infrastructure. It is designed to be highly decoupled, allowing various frontends to submit data to the logistics engine.
+[Live Demo]()
 
-## Ecosystem Dependency & Architecture
-The IsdaLog engine is half of a microservice architecture. 
+---
 
-* **The Client (Data Ingestion):** In a production environment, this API is consumed by the [Fisheries AI](https://github.com/JamesIan-Bayonas/fisheries-ai.git) service—a Node.js Telegram bot equipped with an Edge-AI vision model (LLaVA). The bot identifies the fish species in the field and securely transmits the structured JSON payload to this IsdaLog API.
-* **The Engine (Data Processing):** Once IsdaLog receives the payload, it cross-references the species against the `market_prices` table to calculate economic value, checks the `restricted_species` table for Bureau of Fisheries and Aquatic Resources (BFAR) compliance, and persists the data to MySQL.
+## Overview & Architectural Deep Dive
 
-## Employer Evaluation Guide (Fast-Track Testing)
-Evaluating the full ecosystem requires configuring Telegram bot tokens and a local GPU for AI vision inference. To respect your time, you can bypass the AI frontend and directly evaluate the backend logic by simulating the bot's HTTP request.
+### Core Business Problem & Purpose
 
-Ensure the Docker containers are running, then execute the following POST request in your terminal to observe the financial and regulatory engine in action:
+Artisanal fisheries operate under severe structural constraints: high network volatility at landing hubs, vulnerability to middleman price manipulation, lack of real-time cold-chain logistics, and zero digital compliance mechanisms for marine conservation oversight.
+
+IsdaLog bridges these operational gaps through a decoupled microservices architecture:
+
+1. **Harbor Data Ingestion Gateway (`fisheries-ai`):** A lightweight Node.js Telegram bot providing instant, zero-typing catch classification directly from smartphone camera feeds using multi-modal AI models, enriched with real-time port weather telemetry.
+2. **Logistics & Financial Core Engine (`isdalog`):** A robust Laravel/Inertia full-stack platform managing dynamic multi-party market auctions, real-time WebSocket communication via Laravel Reverb, automated wallet escrows, courier dispatch with live GPS tracking, and regulatory compliance monitoring for the Bureau of Fisheries and Aquatic Resources (BFAR).
+
+### Technical Challenges & Engineering Trade-offs
+
+* **The Challenge:** High network latency and intermittent disconnections in maritime harbor ports make single-point cloud AI inference brittle, risking transaction abandonment during live catch offloading.
+* **The Solution:** Implemented a resilient hybrid Edge-to-Cloud vision inference pipeline. The gateway first attempts low-latency cloud inference via Google Gemini 2.5 Flash (7s timeout); if cloud communication drops or credentials fail, it immediately reroutes the image payload to a local Ollama instance running `llama3.2-vision:latest` over a dedicated HTTP agent socket pool.
+* **The Trade-off:** Running local multi-modal vision inference requires strict VRAM optimization on edge hardware. Context window size is constrained to 512 tokens (`num_ctx 512`) in the `Modelfile` to save ~1.5 GB of VRAM and enforce concise single-token species classifications over descriptive chatter.
+
+---
+
+## Tech Stack & Architecture Matrix
+
+| Layer | Technology | Primary Package / Driver | Architectural Role |
+| --- | --- | --- | --- |
+| **Frontend UI** | React 18 / Inertia.js | `@inertiajs/react`, `lucide-react`, `@heroicons/react` | Single-Page Application state hydration without client-side routing drift |
+| **Styling & Design** | Tailwind CSS | `@tailwindcss/forms`, `@vitejs/plugin-react` | Fully responsive maritime sonar terminal interface & telemetry UI |
+| **Geospatial Mapping** | Leaflet | `leaflet`, `react-leaflet` | Live cold-chain courier GPS tracking and port node visualization |
+| **Backend Core** | Laravel 11.x (PHP 8.2+) | `laravel/sanctum`, `laravel/reverb`, `laravel/sail` | RESTful API, RBAC middleware, database transactions, and queue dispatching |
+| **Real-time WebSockets** | Laravel Reverb | `laravel-echo`, `pusher-js` | Sub-second bid updates, dispatch alerts, and live courier coordinate broadcasting |
+| **Edge Bot & Gateway** | Node.js (CommonJS) | `node-telegram-bot-api`, `express`, `axios` | Cellular webhook listeners, conversational state machines, and API handshakes |
+| **Computer Vision (AI)** | Gemini + Ollama | `@google/generative-ai`, `llama3.2-vision` | Hybrid cloud/edge multi-modal species identification and pricing grading |
+| **Database & Caching** | MySQL 8.0 / SQLite / Redis | `pdo_mysql`, `predis/predis`, `database` driver | Relational persistence, atomic balances, rate limiting, and queue management |
+| **Telemetry & SMS** | Open-Meteo & GSM Rails | `WeatherTelemetryService`, `SmsNotificationService` | Real-time maritime wind alerts and asynchronous SMS OTP delivery notifications |
+
+---
+
+## Key Features & Engineering Capabilities
+
+* **Zero-Typing Computer Vision Catch Logging:** Multi-modal pipeline identifies fish species directly from captured imagery, cross-referencing regional market price indices and checking for BFAR endangered species restrictions (`restricted_species`) → **Impact:** Reduces catch logging time from minutes of manual entry to seconds at the pier.
+* **Sub-Second WebSocket Consignment Auction:** Live marketplace powered by Laravel Reverb and React Echo listeners with atomic database locks (`lockForUpdate`) preventing race conditions and bid sniping → **Impact:** Guarantees transparent, real-time price discovery with zero bid collision.
+* **Cryptographic Dual-OTP Custody Chain:** Generates independent, cryptographically random 6-digit verification codes for cargo pickup and final buyer delivery handshakes → **Impact:** Eliminates cargo theft and guarantees delivery non-repudiation across third-party logistics couriers.
+* **Automated Virtual Escrow & Net Earnings Ledger:** Winning auction bids lock buyer wallet funds into escrow, automatically distributing a 97% net harvester payout and collecting a 3% platform governance fee upon OTP delivery confirmation → **Impact:** Protects harvesters from bad debt while automating platform revenue collection.
+* **Live Cold-Chain GPS Tracking:** Real-time courier coordinate stream rendered on an interactive Leaflet map using isolated private WebSocket channels (`private-orders.{orderId}`) → **Impact:** Provides end-to-end cargo transit visibility for perishable high-value catch batches.
+* **Asynchronous SMS Dispatch Notification Workers:** Decoupled background queue jobs (`SendSmsNotification`) with exponential retry backoff strategies (10s, 30s, 60s) for cellular dispatch → **Impact:** Ensures offline buyers and fishermen receive critical delivery and escrow clearance notifications without blocking HTTP request threads.
+* **BFAR Regulatory & Biomass Analytics Dashboard:** Dedicated administrative intelligence suite aggregating landing weights, species distributions, and municipal catch volume trends while flagging illegal harvest attempts → **Impact:** Enforces marine conservation regulations and provides verifiable maritime telemetry.
+
+---
+
+## Project Structure
+
+```text
+isdalog-ecosystem/
+├── app/                                   # Laravel Core Application Layer
+│   ├── Events/                            # WebSocket Broadcast Events
+│   │   ├── CargoStatusUpdated.php         # Logistics state change broadcasts
+│   │   ├── CatchBidUpdated.php            # Live auction bid updates
+│   │   ├── OrderDispatched.php            # Courier dispatch broadcast
+│   │   └── RiderLocationUpdated.php       # Live GPS telemetry stream
+│   ├── Http/
+│   │   ├── Controllers/                   # Marketplace, Dispatch, Wallet & Admin Controllers
+│   │   │   └── Api/                       # External Ingestion Endpoints (CatchController, UserController)
+│   │   ├── Middleware/                    # Inertia shared state & Sanctum auth gates
+│   │   └── Requests/                      # Rate-limited Form Requests (LoginRequest, ProfileRequest)
+│   ├── Jobs/                              # Asynchronous Queue Workers (SendSmsNotification)
+│   ├── Models/                            # Eloquent Models (User, Listing, Bid, FishCatch, MarketPrice)
+│   └── Services/                          # Domain Services (PayoutDisbursement, Sms, WeatherTelemetry)
+├── bootstrap/                             # Application bootstrap & middleware configuration
+├── config/                                # Subsystem configs (broadcasting, reverb, sanctum, database)
+├── database/
+│   ├── factories/                         # Model factories for automated feature testing
+│   ├── migrations/                        # Relational schemas (users, listings, bids, orders_logistics, escrows)
+│   └── seeders/                           # Seeders (AdminSeeder, HistoricalListings, DefenseDaySeeder)
+├── resources/
+│   ├── js/
+│   │   ├── Components/                    # Atomic UI components & DeliveryTracker (Leaflet)
+│   │   ├── Layouts/                       # Authenticated and Guest Layout shells
+│   │   └── Pages/                         # Inertia Views (Marketplace, Dispatch, BfarDashboard, Profile)
+│   └── views/                             # Root Blade application view (app.blade.php)
+├── routes/                                # Route definitions (web.php, api.php, channels.php, auth.php)
+├── services/                              # Node.js Edge Microservice Services
+│   ├── ai.service.js                      # Dual Cloud (Gemini) / Edge (Ollama) inference client
+│   ├── isdalog.api.js                     # Secure HTTP payload bridge to Laravel Core
+│   └── weather.service.js                 # Open-Meteo port wind speed & safety threshold evaluator
+├── tests/
+│   └── Feature/                           # Comprehensive PHPUnit Test Suites (Bidding, Escrow, Telemetry)
+├── index.js                               # Node.js Telegram Bot Gateway Entry Point
+├── Modelfile                              # Ollama LLaMA 3.2 Vision VRAM-optimized model manifest
+├── package.json                           # Workspace Node.js dependency manifest
+├── composer.json                          # Laravel PHP dependency manifest
+└── vite.config.js                         # Vite build pipeline configuration
+
+```
+
+---
+
+## Environment Configuration
+
+| Variable | Description | Required | Default / Example |
+| --- | --- | --- | --- |
+| `APP_NAME` | Primary application branding name | Yes | `IsdaLog` |
+| `APP_ENV` | Application runtime environment | Yes | `local` / `production` |
+| `APP_KEY` | 32-character AES-256 application encryption key | Yes | `base64:...` |
+| `APP_URL` | Base URL for web and routing generation | Yes | `http://localhost:8000` |
+| `DB_CONNECTION` | Primary database driver | Yes | `mysql` (or `sqlite`) |
+| `DB_HOST` | Database server hostname | Yes | `127.0.0.1` |
+| `DB_PORT` | Database server connection port | Yes | `3306` |
+| `DB_DATABASE` | Database name | Yes | `isdalog` |
+| `DB_USERNAME` | Database connection username | Yes | `root` |
+| `DB_PASSWORD` | Database connection password | No | `""` |
+| `BROADCAST_CONNECTION` | Real-time broadcasting driver | Yes | `reverb` |
+| `REVERB_APP_ID` | Reverb WebSocket application identifier | Yes | `isdalog-app-id` |
+| `REVERB_APP_KEY` | Reverb WebSocket public client key | Yes | `isdalog-reverb-key` |
+| `REVERB_APP_SECRET` | Reverb WebSocket secret authentication key | Yes | `isdalog-reverb-secret` |
+| `REVERB_HOST` | Reverb WebSocket server binding host | Yes | `localhost` |
+| `REVERB_PORT` | Reverb WebSocket server port | Yes | `8080` |
+| `TELEGRAM_BOT_TOKEN` | Bot token obtained from Telegram BotFather | Yes | `123456789:ABCDefgh...` |
+| `GEMINI_API_KEY` | Google AI Studio Gemini API Key | Optional | `AIzaSy...` |
+| `OLLAMA_BASE_URL` | Local edge Ollama API URL endpoint | Yes | `[http://127.0.0.1:11434](http://127.0.0.1:11434)` |
+| `ISDALOG_API_URL` | Upstream Laravel API base endpoint for bot bridge | Yes | `[http://127.0.0.1:8000/api](http://127.0.0.1:8000/api)` |
+
+---
+
+## Getting Started & Local Setup
+
+### Prerequisites
+
+* **PHP:** `>= 8.2` with `pdo_mysql`, `mbstring`, `curl`, `openssl` extensions enabled
+* **Composer:** `>= 2.x`
+* **Node.js:** `>= 18.x` & `npm`
+* **Database:** MySQL 8.0+ or SQLite 3
+* **Containerization (Optional):** Docker Engine v24+ & Docker Compose
+* **Edge AI (Optional):** Ollama installed locally (`ollama pull llama3.2-vision:latest`)
+
+### Installation & Execution
+
+#### 1. Backend Core & Web Terminal (`isdalog`)
+
+Clone the repository and install PHP dependencies:
 
 ```bash
-curl -X POST http://localhost:8000/api/catch \
--H "Content-Type: application/json" \
--H "Accept: application/json" \
--d '{
-  "telegram_id": "123456789",
-  "species": "Red Snapper",
-  "weight": 1.5,
-  "latitude": 8.5869,
-  "longitude": 123.3406
-}'
-```
-```json
-Expected JSON Response:
-The API will dynamically calculate the 1.5kg weight against the local market rate and return the enriched data:
-
-{
-  "message": "Catch logged successfully",
-  "estimated_value": 675.00,
-  "warning_flag": null
-}
-```
-
-(Note: Try changing the species to "Sea Turtle" to observe the automated BFAR restriction flag).
-Technical Stack
-
-* Framework: Laravel 11.x
-* Language: PHP 8.2+
-* Database: MySQL 8.0
-* API Security: Laravel Sanctum
-* Infrastructure: Docker (Laravel Sail)
-
-## Local Development & Installation
-
-This application is fully containerized to ensure identical environments across all deployment stages.
-1. Clone the repository:
-
-```bash
-git clone [https://github.com/JamesIan-Bayonas/isdalog.git](https://github.com/JamesIan-Bayonas/isdalog.git)
+git clone https://github.com/JamesIan-Bayonas/isdalog.git
 cd isdalog
+composer install
+npm install
+
 ```
 
-2. Install PHP dependencies using a temporary Composer container:
+Configure your environment file and generate the application encryption key:
 
 ```bash
-docker run --rm \
-    -u "$(id -u):$(id -g)" \
-    -v "$(pwd):/var/www/html" \
-    -w /var/www/html \
-    laravelsail/php82-composer:latest \
-    composer install --ignore-platform-reqs
-```
-
-3. Configure the environment:
-```bash 
 cp .env.example .env
+php artisan key:generate
+
 ```
 
-4. Boot the Docker ecosystem:
+Run database migrations and populate seed data (including BFAR administrators and regional species price indexes):
 
 ```bash
-./vendor/bin/sail up -d
+php artisan migrate:fresh --seed
+
 ```
 
-5. Generate the application key, run database migrations, and inject the regional market seed data:
+Start the Vite asset compilation server:
 
-```bash 
-./vendor/bin/sail artisan key:generate
-./vendor/bin/sail artisan migrate:fresh --seed
+```bash
+npm run dev
+
 ```
 
-# Future Roadmap
-Implementation of a React-based web dashboard for historical catch visualization.
-Integration of weather and tidal data directly into the database schemas for predictive catch modeling.
+In separate terminal panes, start the Reverb WebSocket server, background queue worker, and Laravel HTTP server:
+
+```bash
+# Start Real-Time WebSocket Server
+php artisan reverb:start
+
+# Start Asynchronous Background Worker (SMS / Notifications)
+php artisan queue:work
+
+# Start Application HTTP Server
+php artisan serve
+
+```
+
+#### 2. Edge Ingestion & Telegram Bot Gateway (`fisheries-ai`)
+
+Install Node.js service dependencies:
+
+```bash
+npm install
+
+```
+
+Initialize your Ollama vision model (if evaluating local edge inference):
+
+```bash
+ollama create llama3.2-vision -f Modelfile
+ollama run llama3.2-vision
+
+```
+
+Launch the Telegram bot listener:
+
+```bash
+node index.js
+
+```
+
+---
+
+## Verification & Testing
+
+The repository includes end-to-end PHPUnit feature tests covering race-condition hardening, wallet escrow math, WebSocket authorization, and asynchronous job queuing.
+
+```bash
+# Execute the entire automated test suite
+php artisan test
+
+# Run specific domain test suites
+php artisan test tests/Feature/CargoHandshakeTest.php
+php artisan test tests/Feature/WalletWithdrawalTest.php
+php artisan test tests/Feature/AsyncSmsQueueTest.php
+php artisan test tests/Feature/SecurityAndComplianceTest.php
+
+```
+
+---
+
+## Security & Operational Readiness
+
+* **Authentication & RBAC:** Multi-guard authentication architecture using Laravel Sanctum for API token validation and stateful session guards across four strict operational roles: `fisherman`, `buyer`, `rider`, and `admin`.
+* **Private Channel Authorization:** WebSockets broadcasting on sensitive channels (`private-orders.{orderId}`) enforce authorization gates in `routes/channels.php` to prevent eavesdropping on live buyer bids or courier GPS telemetry.
+* **Input Sanitization & Injection Defense:** Regex filtering sanitizes all incoming cellular and Telegram payload data before passing arguments to backend database models.
+* **Rate Limiting & Lockout Defense:** Built-in form request rate limiters (`LoginRequest`) protect authentication endpoints against brute-force attacks via IP-and-email keyed throttles.
+* **Transactional Financial Integrity:** Payout disbursements and escrow state mutations are wrapped in atomic database transactions (`DB::transaction`) utilizing row-level database locking (`lockForUpdate`) to guarantee double-spend prevention.
