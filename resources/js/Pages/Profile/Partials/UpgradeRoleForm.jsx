@@ -4,13 +4,35 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Transition } from '@headlessui/react';
 import { useForm, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { ShieldCheckIcon } from '@heroicons/react/24/outline';
 
 export default function UpgradeRoleForm({ className = '' }) {
     const user = usePage().props.auth.user;
-    
-    // Prevent UI render if user is already an admin
+
+    // Prevent rendering if user is admin or already has an operational role with verified standing
     if (user.role === 'admin') return null;
+
+    if (user.role === 'fisherman' || user.role === 'rider') {
+        return (
+            <section className={className}>
+                <header>
+                    <div className="flex items-center gap-2">
+                        <ShieldCheckIcon className="w-5 h-5 text-emerald-500" />
+                        <h2 className="text-lg font-medium text-gray-900">
+                            Active Operating Clearance
+                        </h2>
+                    </div>
+                    <p className="mt-1 text-sm text-gray-600">
+                        Your account is provisioned as an active <strong className="capitalize text-slate-800">{user.role}</strong> operator node.
+                    </p>
+                </header>
+                <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono space-y-1 text-slate-700">
+                    <p><strong>Designated Role:</strong> {user.role.toUpperCase()}</p>
+                    <p><strong>Verification Status:</strong> <span className="text-emerald-600 font-bold">{user.status.toUpperCase()}</span></p>
+                </div>
+            </section>
+        );
+    }
 
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
         requested_role: 'fisherman',
@@ -31,7 +53,6 @@ export default function UpgradeRoleForm({ className = '' }) {
                 <h2 className="text-lg font-medium text-gray-900">
                     Ecosystem Compliance & Vetting
                 </h2>
-
                 <p className="mt-1 text-sm text-gray-600">
                     Request an upgrade to Harvester or Courier status. All submitted credentials will be securely audited by BFAR administration.
                 </p>
@@ -95,7 +116,6 @@ export default function UpgradeRoleForm({ className = '' }) {
                 {!isPending && (
                     <div className="flex items-center gap-4">
                         <PrimaryButton disabled={processing}>Submit Compliance Documents</PrimaryButton>
-
                         <Transition
                             show={recentlySuccessful}
                             enter="transition ease-in-out"
