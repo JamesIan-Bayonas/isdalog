@@ -1,4 +1,3 @@
-// resources/js/Pages/Auth/Register.jsx
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
@@ -14,7 +13,7 @@ import {
     EyeSlashIcon,
     SparklesIcon,
     CircleStackIcon,
-    TruckIcon
+    TruckIcon,
 } from '@heroicons/react/24/outline';
 
 export default function Register() {
@@ -23,7 +22,7 @@ export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
-        role: 'fisherman', // Sets default to Harvester
+        role: 'fisherman',
         password: '',
         password_confirmation: '',
     });
@@ -44,7 +43,7 @@ export default function Register() {
             fill: 'fill-cyan-400',
             bg: 'bg-cyan-500/10 border-cyan-500/30',
             angle: 30,
-            icon: SparklesIcon
+            icon: SparklesIcon,
         },
         buyer: {
             title: 'Marketplace Buyer',
@@ -54,7 +53,7 @@ export default function Register() {
             fill: 'fill-emerald-400',
             bg: 'bg-emerald-500/10 border-emerald-500/30',
             angle: 270,
-            icon: CircleStackIcon
+            icon: CircleStackIcon,
         },
         rider: {
             title: 'Logistics Courier',
@@ -64,11 +63,12 @@ export default function Register() {
             fill: 'fill-violet-400',
             bg: 'bg-violet-500/10 border-violet-500/30',
             angle: 150,
-            icon: TruckIcon
-        }
+            icon: TruckIcon,
+        },
     };
 
-    const CurrentRoleIcon = roleData[data.role]?.icon || SparklesIcon;
+    const currentRole = roleData[data.role] || roleData.fisherman;
+    const CurrentRoleIcon = currentRole.icon;
 
     const contactPoint = (angleDeg) => {
         const rad = (angleDeg * Math.PI) / 180;
@@ -171,7 +171,8 @@ export default function Register() {
                                                 <circle cx={x} cy={y} r="6" className={`${roleData[role].fill} vela-contact-ping`} />
                                             )}
                                             <circle
-                                                cx={x} cy={y}
+                                                cx={x}
+                                                cy={y}
                                                 r={active ? 6 : 4}
                                                 className={`${roleData[role].fill} transition-all duration-300`}
                                                 stroke="#020617"
@@ -206,18 +207,18 @@ export default function Register() {
                         {/* Active Role Card */}
                         <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 backdrop-blur-md transition-all duration-300">
                             <div className="flex items-center gap-3">
-                                <div className={`p-2.5 rounded-lg border ${roleData[data.role].bg}`}>
-                                    <CurrentRoleIcon className={`w-5 h-5 ${roleData[data.role].color}`} />
+                                <div className={`p-2.5 rounded-lg border ${currentRole.bg}`}>
+                                    <CurrentRoleIcon className={`w-5 h-5 ${currentRole.color}`} />
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <h4 className="text-sm font-bold text-white">{roleData[data.role].title}</h4>
+                                        <h4 className="text-sm font-bold text-white">{currentRole.title}</h4>
                                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                                            {roleData[data.role].badge}
+                                            {currentRole.badge}
                                         </span>
                                     </div>
                                     <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                                        {roleData[data.role].desc}
+                                        {currentRole.desc}
                                     </p>
                                 </div>
                             </div>
@@ -235,7 +236,6 @@ export default function Register() {
                 {/* ========================================================================= */}
                 <div className="col-span-1 lg:col-span-7 flex items-center justify-center p-6 sm:p-12 relative z-10">
                     <div className="w-full max-w-md space-y-6">
-                        {/* Header */}
                         <div>
                             <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
                                 Create Operator Account
@@ -252,7 +252,10 @@ export default function Register() {
                         </div>
 
                         <form onSubmit={submit} className="space-y-4">
-                            {/* ROLE SELECTION BUTTONS (Synchronized with Inertia Form) */}
+                            {/* Hidden Input to Guarantee Payload Sync */}
+                            <input type="hidden" name="role" value={data.role} />
+
+                            {/* ROLE SELECTION BUTTONS */}
                             <div>
                                 <InputLabel value="Operational Role Designation" className="!text-slate-300 !text-xs !font-bold !uppercase !tracking-wider" />
                                 <div className="mt-1.5 grid grid-cols-3 gap-2 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800">
@@ -379,7 +382,7 @@ export default function Register() {
                                     <span>Registering Operator Node...</span>
                                 ) : (
                                     <>
-                                        <span>Establish {roleData[data.role]?.title || 'Operator'} Node</span>
+                                        <span>Establish {currentRole.title} Node</span>
                                         <ArrowRightIcon className="w-4 h-4" />
                                     </>
                                 )}
