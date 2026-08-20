@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\CatchBidUpdated;
+use App\Models\Bid;
 use App\Models\Listing;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -11,72 +12,41 @@ use Illuminate\Support\Facades\DB;
 
 class BidController extends Controller
 {
-    /**
-     * Store a newly submitted bid on a live listing with concurrency lock protection.
-     */
     public function store(Request $request, Listing $listing): RedirectResponse
     {
-        $user = $request->user();
-
-        // 1. RBAC Guardrail: Only registered buyers can place bids
-        if ($user->role !== 'buyer') {
-            return redirect()->back()->withErrors([
-                'bid_amount' => 'Harvesters and Couriers are restricted from bidding. Please use a Buyer account.',
-            ]);
-        }
-
-        // 2. Anti-Shill Guardrail: Harvesters cannot bid on their own harvest
-        if ((int) $listing->user_id === (int) $user->id) {
-            return redirect()->back()->withErrors([
-                'bid_amount' => 'You cannot place bids on your own catch listing.',
-            ]);
-        }
-
         $validated = $request->validate([
-            'bid_amount' => ['required', 'numeric', 'min:1', 'max:10000000'],
+            'bid_amount' => ['required', 'numeric', 'gt:' . $listing->current_bid],
         ]);
 
-        $bidAmount = (float) $validated['bid_amount'];
+        DB::transaction(function () use ($listing, $validated) {
+            // Lock listing row to prevent race conditions
+            /** @var Listing $lockedListing */
+            $lockedListing = Listing::where('id', $listing->id)->lockForUpdate()->first();
 
-        try {
-            /** @var Listing $updatedListing */
-            $updatedListing = DB::transaction(function () use ($listing, $bidAmount, $user) {
-                /** @var Listing|null $lockedListing */
-                $lockedListing = Listing::where('id', $listing->id)->lockForUpdate()->first();
+            if ($lockedListing->status !== 'active') {
+                abort(422, 'Listing is no longer accepting bids.');
+            }
 
-                if (! $lockedListing || $lockedListing->status !== 'active') {
-                    throw new \RuntimeException('This auction is no longer active and cannot accept new bids.');
-                }
+            if ((float) $validated['bid_amount'] <= (float) $lockedListing->current_bid) {
+                abort(422, 'Bid must be strictly higher than the current highest bid.');
+            }
 
-                if ($bidAmount <= (float) $lockedListing->current_bid) {
-                    throw new \RuntimeException(
-                        'A concurrent bid of ₱' . number_format($lockedListing->current_bid, 2) . ' was placed just prior. Submit a higher amount.'
-                    );
-                }
-
-                $lockedListing->update([
-                    'current_bid' => $bidAmount,
-                ]);
-
-                $lockedListing->bids()->create([
-                    'buyer_id' => $user->id,
-                    'amount' => $bidAmount,
-                ]);
-
-                return $lockedListing;
-            });
-
-            // Broadcast real-time update across all WebSocket clients
-            event(new CatchBidUpdated($updatedListing));
-
-            return redirect()->back()->with(
-                'success',
-                'Bid of ₱' . number_format($bidAmount, 2) . ' placed successfully!'
-            );
-        } catch (\RuntimeException $e) {
-            return redirect()->back()->withErrors([
-                'bid_amount' => $e->getMessage(),
+            // 1. Create the persistent bid record for the authenticated buyer
+            Bid::create([
+                'listing_id' => $lockedListing->id,
+                'buyer_id' => Auth::id(),
+                'amount' => $validated['bid_amount'],
             ]);
-        }
+
+            // 2. Update the listing's current price floor
+            $lockedListing->update([
+                'current_bid' => $validated['bid_amount'],
+            ]);
+
+            // 3. Broadcast real-time Reverb WebSocket event
+            event(new CatchBidUpdated($lockedListing));
+        });
+
+        return redirect()->back()->with('success', 'Bid placed successfully!');
     }
 }

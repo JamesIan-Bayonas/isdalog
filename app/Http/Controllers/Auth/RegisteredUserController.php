@@ -28,25 +28,26 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => 'required|string|in:buyer,fisherman,rider',
+            'role' => ['required', 'string', 'in:buyer,fisherman,rider'],
         ]);
 
         // In demo/local testing environments, grant verified operational status immediately
         $initialStatus = config('app.env') === 'production' ? 'unverified' : 'verified';
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => $validated['role'],
             'status' => $initialStatus,
         ]);
 
         event(new Registered($user));
+
         Auth::login($user);
 
         return redirect(route('dashboard', absolute: false));
