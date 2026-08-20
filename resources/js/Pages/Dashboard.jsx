@@ -28,7 +28,8 @@ import {
     BoltIcon,
     FireIcon,
     CheckCircleIcon,
-    ExclamationTriangleIcon
+    ExclamationTriangleIcon,
+    KeyIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 
@@ -125,7 +126,7 @@ function ActiveCatchAuctionCard({ listing, onAccept, isProcessing, errorMessage 
 // ---------------------------------------------------------------------------
 export default function Dashboard({ 
     auth, 
-    role_context = 'buyer', 
+    role_context = null, 
     metrics = {}, 
     activeListings = null,
     recentActivity = null, 
@@ -133,7 +134,7 @@ export default function Dashboard({
     activeShipments = null, 
     biddingWatchlist = null 
 }) {
-    const userRole = role_context || auth?.user?.role || 'buyer';
+    const userRole = auth?.user?.role || role_context || 'buyer';
     const pageProps = usePage().props;
     const pageErrors = pageProps.errors || {};
     const flashSuccess = pageProps.flash?.success;

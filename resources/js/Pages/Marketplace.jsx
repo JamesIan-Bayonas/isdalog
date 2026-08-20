@@ -185,7 +185,7 @@ export default function Marketplace({ auth, activeListings = [], activeOrders: i
                         </div>
                     ) : (
                         listings.map(listing => (
-                            <LiveListingCard key={listing.id} initialListing={listing} />
+                            <LiveListingCard key={listing.id} initialListing={listing} auth={auth} />
                         ))
                     )}
                 </div>
@@ -195,10 +195,14 @@ export default function Marketplace({ auth, activeListings = [], activeOrders: i
 }
 
 function DeliveryConfirmAction({ orderId }) {
-    const { post, processing } = useForm();
+    const { data, setData, post, processing } = useForm({
+        rating: 5,
+    });
 
     const confirmDelivery = () => {
-        post(route('orders.confirm', orderId), { preserveScroll: true });
+        post(route('orders.confirm', orderId), {
+            preserveScroll: true,
+        });
     };
 
     return (
@@ -206,16 +210,16 @@ function DeliveryConfirmAction({ orderId }) {
             <button
                 onClick={confirmDelivery}
                 disabled={processing}
-                className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white py-3 rounded-xl font-bold shadow-sm shadow-emerald-600/20 disabled:opacity-50 transition-all active:scale-[0.98] text-xs uppercase tracking-wider"
+                className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white py-3 rounded-xl font-bold shadow-sm shadow-emerald-600/20 disabled:opacity-50 transition-all active:scale-[0.98] text-xs uppercase tracking-wider cursor-pointer"
             >
                 <ShieldCheckIcon className="w-4 h-4" />
-                {processing ? 'Confirming...' : 'Verify Inspection & Release Escrow'}
+                {processing ? 'Confirming Inspection...' : 'Verify Inspection & Release Escrow'}
             </button>
         </div>
     );
 }
 
-function LiveListingCard({ initialListing }) {
+function LiveListingCard({ initialListing, auth }) {
     const [listing, setListing] = useState(initialListing);
     const [isFlashing, setIsFlashing] = useState(false);
     const [imageError, setImageError] = useState(false);
@@ -243,7 +247,7 @@ function LiveListingCard({ initialListing }) {
 
     const submitBid = (e) => {
         e.preventDefault();
-        post(route('bids.store', listing.id), {
+        post(route('listings.bids.store', listing.id), {
             preserveScroll: true,
             onSuccess: () => setData('bid_amount', ''),
         });
@@ -303,15 +307,18 @@ function LiveListingCard({ initialListing }) {
                 </div>
             </div>
 
-            <form onSubmit={submitBid} className="mt-4 space-y-2">
-                <div className="relative">
-                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 text-xs font-bold">₱</span>
-                    <input
+            {auth.user && auth.user.id === listing.user_id ? (
+                <AcceptBidAction listing={listing} />
+            ) : (
+                <form onSubmit={submitBid} className="mt-4 space-y-2">
+                    <div className="relative">
+                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 text-xs font-bold">₱</span>
+                        <input
                         type="number"
                         step="0.01"
                         min={parseFloat(listing.current_bid) + 1}
                         value={data.bid_amount}
-                        onChange={(e) => setData('bid_amount', e.target.value)}
+                        onChange={(e) => setData("bid_amount", e.target.value)}
                         placeholder={`> ${listing.current_bid}`}
                         className="w-full pl-7 pr-3 py-2 text-sm rounded-xl border-slate-200 focus:border-cyan-500 focus:ring-cyan-500 font-mono"
                         required
@@ -324,9 +331,30 @@ function LiveListingCard({ initialListing }) {
                     disabled={processing}
                     className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all disabled:opacity-50 cursor-pointer"
                 >
-                    {processing ? 'Transmitting Bid...' : 'Place Verified Bid'}
+                    {processing ? "Transmitting Bid..." : "Place Verified Bid"}
                 </button>
             </form>
+            )}
+        </div>
+    );
+}
+
+function AcceptBidAction({ listing }) {
+    const { post, processing } = useForm();
+
+    const acceptBid = () => {
+        post(route("listings.accept-bid", listing.id), { preserveScroll: true });
+    };
+
+    return (
+        <div className="mt-4">
+            <button
+                onClick={acceptBid}
+                disabled={processing}
+                className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white py-3 rounded-xl font-bold shadow-sm shadow-emerald-600/20 disabled:opacity-50 transition-all active:scale-[0.98] text-xs uppercase tracking-wider"
+            >
+                {processing ? "Accepting Bid..." : "Accept Highest Bid & Close Auction"}
+            </button>
         </div>
     );
 }
