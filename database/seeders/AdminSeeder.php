@@ -19,7 +19,7 @@ class AdminSeeder extends Seeder
             ['email' => 'admin@isdalog.com'], // The unique identifier
             [
                 'name' => 'IsdaLog System Admin',
-                'password' => Hash::make('password123'),
+                'password' => 'password123', // Let the User model cast hash it once
                 'role' => 'admin',
                 'contact_number' => '09000000000',
                 'email_verified_at' => now(),

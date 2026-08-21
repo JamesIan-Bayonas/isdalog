@@ -1,0 +1,105 @@
+# ==============================================================================
+# 1. DEPENDENCIES & PACKAGE MANAGERS
+# ==============================================================================
+node_modules/
+vendor/
+.pnpm-store/
+.yarn/
+.npm/
+
+# Lockfiles (pnpm-lock.yaml is not caught by *.lock)
+*.lock
+package-lock.json
+composer.lock
+pnpm-lock.yaml
+
+# ==============================================================================
+# 2. ENVIRONMENT & CREDENTIALS (CRITICAL SECURITY)
+# ==============================================================================
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.cert
+
+# ==============================================================================
+# 3. BUILD, COMPILATION ARTIFACTS & SOURCEMAPS
+# ==============================================================================
+public/build/
+public/hot
+public/storage/
+dist/
+build/
+.next/
+out/
+*.map
+*.min.js
+*.min.css
+
+# ==============================================================================
+# 4. FRAMEWORK, STORAGE & LOG CACHES (LARAVEL)
+# ==============================================================================
+storage/app/public/**
+storage/app/private/**
+storage/framework/cache/**
+storage/framework/sessions/**
+storage/framework/testing/**
+storage/framework/views/**
+storage/logs/**
+bootstrap/cache/**
+
+# ==============================================================================
+# 5. DATABASE BINARIES & STATE
+# ==============================================================================
+*.sqlite
+*.sqlite-journal
+*.sqlite3
+*.db
+database/*.sqlite
+
+# ==============================================================================
+# 6. TESTING CACHES & COVERAGE REPORTS
+# ==============================================================================
+.phpunit.result.cache
+.phpunit.cache/
+.pest/
+coverage/
+.coverage/
+*.lcov
+
+# ==============================================================================
+# 7. MEDIA, BINARY ASSETS & FONTS
+# ==============================================================================
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.webp
+*.avif
+*.svg
+*.pdf
+*.zip
+*.tar.gz
+*.woff
+*.woff2
+*.ttf
+*.eot
+
+# ==============================================================================
+# 8. IDE, OS & REPOMIX OUTPUTS
+# ==============================================================================
+.git/
+.github/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Repomix outputs
+repomix-output*
+repomix-output.*
+
+# Optional Style Exclusions
+resources/css/

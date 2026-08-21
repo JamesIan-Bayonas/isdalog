@@ -1,0 +1,31 @@
+# ==============================================================================
+# ISDALOG BACKEND & CORE PLATFORM GOVERNANCE (/isdalog/)
+# ==============================================================================
+# Scope: Laravel 11 Core, Inertia.js/React Frontend, MySQL/SQLite, Reverb Engine
+
+## 1. FILE HEADER PATH LOGGING LAW
+- Every modified or created file MUST begin with an absolute project-relative path comment on line 1:
+  - PHP: `<?php // File: isdalog/path/to/File.php`
+  - JavaScript/JSX: `// File: isdalog/resources/js/path/to/Component.jsx`
+
+## 2. ABSOLUTE ZERO PSEUDOCODE / NO PLACEHOLDERS LAW
+- Strict prohibition on placeholders: `// TODO: implement`, `// ... existing code ...`, `/* Add remaining methods here */`, or truncated switch/case blocks.
+- Every function, controller action, model relationship, migration method (`up()` and `down()`), and React component must be delivered in complete, production-ready syntax with fully implemented error handling and typings.
+
+## 3. ASYNCHRONOUS PIPELINE SAFETY & ERROR ISOLATION
+- Backend Crash Prevention: Every external API call, queued worker job (`app/Jobs/`), Webhook dispatch, and payment disbursement (`app/Services/PayoutDisbursementService.php`) MUST be wrapped in explicit `try...catch` blocks.
+- Logging Requirement: Catch blocks must log errors via `Log::error()` or `Log::warning()` with contextual payload traces before gracefully returning fail states.
+- Database Transaction Rule: All balance mutations (`wallet_balance`), auction state locks, escrow holds, and courier OTP verification MUST execute inside `DB::transaction()` with explicit row locks (`lockForUpdate()`) to prevent race conditions.
+
+## 4. DEPENDENCY & LOCKFILE BOUNDARIES
+- Never alter, delete, or regenerate `composer.lock` or `package-lock.json` unless explicit new package installation commands are given.
+- Do not introduce arbitrary npm/composer packages if functionality can be implemented using existing platform utilities:
+  - Framework: Laravel 11, Inertia React 2.0, Vite
+  - Telemetry/Realtime: `laravel-echo`, `pusher-js` (via Reverb)
+  - Styling: Tailwind CSS
+  - Mapping: Leaflet, React-Leaflet
+  - Auth: Laravel Sanctum
+
+## 5. API RESPONSE INTEGRITY
+- Controller methods under `app/Http/Controllers/Api/` must return strongly structured JSON responses with explicit HTTP status codes (`200`, `201`, `400`, `403`, `404`, `422`, `500`).
+- Responses must conform to `{ "status": "success"|"error", "data": {...}, "message": "string" }`.
