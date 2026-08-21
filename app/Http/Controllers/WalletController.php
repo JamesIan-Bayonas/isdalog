@@ -1,99 +1,62 @@
 <?php
-
+// app/Http/Controllers/WalletController.php
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Services\PayoutDisbursementService;
-use Illuminate\Http\RedirectResponse;
+use App\Models\Wallet;
+use App\Models\WalletTransaction;
+use App\Models\WithdrawalRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class WalletController extends Controller
 {
-    /**
-     * Top up the authenticated user's virtual wallet balance.
-     */
-    public function deposit(Request $request): RedirectResponse
+    public function requestWithdrawal(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'amount' => ['required', 'numeric', 'min:50', 'max:500000'],
-            'payment_method' => ['required', 'string', 'in:gcash,maya,bank_transfer'],
+            'amount'         => 'required|numeric|min:50',
+            'payment_method' => 'required|in:gcash,maya',
+            'account_name'   => 'required|string|max:100',
+            'account_number' => 'required|string|max:20',
         ]);
 
-        $user = $request->user();
+        return DB::transaction(function () use ($validated, $request) {
+            $user = $request->user();
+            $wallet = Wallet::where('user_id', $user->id)->lockForUpdate()->firstOrFail();
 
-        DB::transaction(function () use ($user, $validated) {
-            $user->increment('wallet_balance', $validated['amount']);
-        });
-
-        return redirect()->back()->with(
-            'success',
-            '₱' . number_format($validated['amount'], 2) . ' successfully deposited via ' . strtoupper($validated['payment_method']) . '.'
-        );
-    }
-
-    /**
-     * Withdraw funds from the authenticated user's virtual wallet via external payout rails.
-     */
-    public function withdraw(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'amount' => ['required', 'numeric', 'min:100', 'max:500000'],
-            'payout_method' => ['required', 'string', 'in:gcash,maya,bank_transfer'],
-            'account_number' => ['required', 'string', 'max:50'],
-            'account_name' => ['required', 'string', 'max:255'],
-        ]);
-
-        $amount = (float) $validated['amount'];
-        $user = $request->user();
-
-        $payoutResult = DB::transaction(function () use ($user, $amount, $validated) {
-            /** @var User $lockedUser */
-            $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
-
-            if ((float) $lockedUser->wallet_balance < $amount) {
-                return [
-                    'status' => 'insufficient_balance',
-                ];
+            if ($wallet->balance < $validated['amount']) {
+                return response()->json([
+                    'message' => 'Insufficient wallet balance.'
+                ], 422);
             }
 
-            $disbursement = PayoutDisbursementService::disburse(
-                $validated['payout_method'],
-                $validated['account_number'],
-                $validated['account_name'],
-                $amount
-            );
+            // Deduct balance to hold funds
+            $wallet->balance -= $validated['amount'];
+            $wallet->save();
 
-            if (! $disbursement['success']) {
-                return [
-                    'status' => 'gateway_failure',
-                    'message' => $disbursement['message'],
-                ];
-            }
+            $withdrawal = WithdrawalRequest::create([
+                'user_id'        => $user->id,
+                'amount'         => $validated['amount'],
+                'payment_method' => $validated['payment_method'],
+                'account_name'   => $validated['account_name'],
+                'account_number' => $validated['account_number'],
+                'status'         => 'pending',
+            ]);
 
-            $lockedUser->decrement('wallet_balance', $amount);
+            WalletTransaction::create([
+                'wallet_id'     => $wallet->id,
+                'order_id'      => null,
+                'type'          => 'debit',
+                'purpose'       => 'withdrawal',
+                'amount'        => $validated['amount'],
+                'balance_after' => $wallet->balance,
+            ]);
 
-            return [
-                'status' => 'success',
-                'reference_id' => $disbursement['reference_id'],
-            ];
+            return response()->json([
+                'status'     => 'success',
+                'message'    => 'Withdrawal request submitted successfully.',
+                'withdrawal' => $withdrawal,
+            ]);
         });
-
-        if ($payoutResult['status'] === 'insufficient_balance') {
-            return redirect()->back()->withErrors([
-                'amount' => 'Insufficient wallet balance for this withdrawal amount.',
-            ]);
-        }
-
-        if ($payoutResult['status'] === 'gateway_failure') {
-            return redirect()->back()->withErrors([
-                'payout_method' => $payoutResult['message'] ?? 'Payout disbursement gateway transaction failed.',
-            ]);
-        }
-
-        return redirect()->back()->with(
-            'success',
-            '₱' . number_format($amount, 2) . ' successfully withdrawn to ' . strtoupper($validated['payout_method']) . ' (' . $validated['account_number'] . ') [Ref: ' . $payoutResult['reference_id'] . '].'
-        );
     }
 }
