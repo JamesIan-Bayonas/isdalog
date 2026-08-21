@@ -247,7 +247,7 @@ function LiveListingCard({ initialListing, auth }) {
 
     const submitBid = (e) => {
         e.preventDefault();
-        post(route('listings.bids.store', listing.id), {
+        post(route('bids.store', listing.id), {
             preserveScroll: true,
             onSuccess: () => setData('bid_amount', ''),
         });

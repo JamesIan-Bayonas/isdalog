@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import OrderRatingModal from '@/Components/OrderRatingModal';
 
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -26,41 +27,58 @@ function RecenterMap({ coords }) {
     return null;
 }
 
-export default function DeliveryTracker({ orderId, status: initialStatus, location, onStatusUpdate }) {
-    const [currentStatus, setCurrentStatus] = useState(initialStatus);
+export default function DeliveryTracker({
+    orderId,
+    status: initialStatus,
+    location,
+    onStatusUpdate,
+    isBuyer = false,
+    deliveryFee = 0,
+    riderId = null,
+    order = null,
+}) {
+    // Normalize props whether passed individually or as an order object
+    const resolvedOrderId = orderId || order?.id || order?.order_id;
+    const resolvedStatus = initialStatus || order?.status || 'pending_dispatch';
+    const resolvedLocation = location || order?.location || 'Galas Port';
+    const resolvedDeliveryFee = deliveryFee || order?.delivery_fee || 0;
+    const resolvedRiderId = riderId || order?.rider_id || null;
+
+    const [currentStatus, setCurrentStatus] = useState(resolvedStatus);
     const [courierLocation, setCourierLocation] = useState(PORT_COORDINATES);
     const [connectionState, setConnectionState] = useState('connected');
     const [lastTelemetryTimestamp, setLastTelemetryTimestamp] = useState(null);
+    const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
 
     useEffect(() => {
-        setCurrentStatus(initialStatus);
-    }, [initialStatus]);
+        setCurrentStatus(resolvedStatus);
+    }, [resolvedStatus]);
 
     const handleCargoUpdate = useCallback((event) => {
-        if (event.order_id === orderId) {
+        if (event.order_id === resolvedOrderId) {
             setCurrentStatus(event.status);
             setLastTelemetryTimestamp(event.updated_at || new Date().toISOString());
             if (onStatusUpdate) {
                 onStatusUpdate(event);
             }
         }
-    }, [orderId, onStatusUpdate]);
+    }, [resolvedOrderId, onStatusUpdate]);
 
     const handleLocationUpdate = useCallback((event) => {
-        if (event.order_id === orderId && typeof event.latitude === 'number' && typeof event.longitude === 'number') {
+        if (event.order_id === resolvedOrderId && typeof event.latitude === 'number' && typeof event.longitude === 'number') {
             setCourierLocation([event.latitude, event.longitude]);
             setLastTelemetryTimestamp(new Date().toISOString());
         }
-    }, [orderId]);
+    }, [resolvedOrderId]);
 
     // Resilient WebSocket Lifecycle Management
     useEffect(() => {
-        if (!window.Echo || !orderId) {
+        if (!window.Echo || !resolvedOrderId) {
             setConnectionState('offline_polling');
             return;
         }
 
-        const channel = window.Echo.private(`orders.${orderId}`);
+        const channel = window.Echo.private(`orders.${resolvedOrderId}`);
 
         channel.listen('CargoStatusUpdated', handleCargoUpdate);
         channel.listen('RiderLocationUpdated', handleLocationUpdate);
@@ -77,14 +95,14 @@ export default function DeliveryTracker({ orderId, status: initialStatus, locati
 
             return () => {
                 pusherConnection.unbind('state_change', handleStateChange);
-                window.Echo.leaveChannel(`private-orders.${orderId}`);
+                window.Echo.leaveChannel(`private-orders.${resolvedOrderId}`);
             };
         }
 
         return () => {
-            window.Echo.leaveChannel(`private-orders.${orderId}`);
+            window.Echo.leaveChannel(`private-orders.${resolvedOrderId}`);
         };
-    }, [orderId, handleCargoUpdate, handleLocationUpdate]);
+    }, [resolvedOrderId, handleCargoUpdate, handleLocationUpdate]);
 
     const steps = [
         { key: 'pending_dispatch', label: 'Awaiting Courier' },
@@ -95,12 +113,20 @@ export default function DeliveryTracker({ orderId, status: initialStatus, locati
     const currentStepIndex = steps.findIndex(step => step.key === currentStatus);
     const resolvedStepIndex = currentStepIndex === -1 && currentStatus === 'completed' ? 2 : currentStepIndex;
 
+    const payloadForModal = order || {
+        id: resolvedOrderId,
+        order_id: resolvedOrderId,
+        delivery_fee: resolvedDeliveryFee,
+        rider_id: resolvedRiderId,
+        status: currentStatus,
+    };
+
     return (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden p-6 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                     <h4 className="text-lg font-bold text-slate-800">Live Logistics Routing</h4>
-                    <p className="text-xs text-slate-500">Real-time cold-chain stream from {location || 'Galas Port'}</p>
+                    <p className="text-xs text-slate-500">Real-time cold-chain stream from {resolvedLocation}</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <span className={`inline-flex items-center gap-1.5 font-mono text-[11px] px-2.5 py-1 rounded-full border ${
@@ -161,7 +187,7 @@ export default function DeliveryTracker({ orderId, status: initialStatus, locati
                                 <span className="text-blue-600 font-normal">
                                     {currentStatus === 'en_route' 
                                         ? `Lat: ${courierLocation[0].toFixed(4)}, Lon: ${courierLocation[1].toFixed(4)}`
-                                        : (location || 'Galas Port, Dipolog City')}
+                                        : resolvedLocation}
                                 </span>
                             </div>
                         </Popup>
@@ -175,6 +201,26 @@ export default function DeliveryTracker({ orderId, status: initialStatus, locati
                     </div>
                 )}
             </div>
+
+            {/* Buyer Delivery Confirmation & Rating Trigger */}
+            {isBuyer && currentStatus === 'delivered' && (
+                <div className="pt-2">
+                    <button
+                        type="button"
+                        onClick={() => setIsRatingModalOpen(true)}
+                        className="w-full py-3 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm tracking-wide shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                        <span>✓ Verify Inspection & Release Escrow</span>
+                    </button>
+                </div>
+            )}
+
+            {/* Settlement & Rating Modal */}
+            <OrderRatingModal
+                order={payloadForModal}
+                isOpen={isRatingModalOpen}
+                onClose={() => setIsRatingModalOpen(false)}
+            />
         </div>
     );
 }
