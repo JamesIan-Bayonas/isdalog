@@ -148,7 +148,7 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
         >
             <Head title="Logistics Dispatch" />
 
-            <div className="min-h-screen bg-[#020617] text-slate-100 py-8 relative overflow-hidden">
+            <div className="bg-[#020617] text-slate-100 py-8 relative overflow-hidden">
                 <div className="absolute top-[-10%] left-[-10%] w-[38rem] h-[38rem] bg-gradient-to-br from-cyan-600/10 via-blue-700/[0.05] to-transparent rounded-full blur-3xl pointer-events-none" />
                 <div className="absolute bottom-[-10%] right-[-10%] w-[38rem] h-[38rem] bg-gradient-to-tr from-purple-600/[0.08] via-cyan-950/10 to-transparent rounded-full blur-3xl pointer-events-none" />
 

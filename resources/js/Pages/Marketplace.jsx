@@ -12,6 +12,7 @@ import {
     ShieldExclamationIcon
 } from '@heroicons/react/24/outline';
 import DeliveryTracker from '@/Components/DeliveryTracker';
+import OrderRatingModal from '@/Components/OrderRatingModal';
 
 export default function Marketplace({ auth, activeListings = [], activeOrders: initialActiveOrders = [], trends = [] }) {
     const [listings, setListings] = useState(activeListings);
@@ -166,9 +167,8 @@ export default function Marketplace({ auth, activeListings = [], activeOrders: i
                                                 🛵 Courier has claimed cargo. En route to your destination...
                                             </div>
                                         )}
-
                                         {order.status === 'delivered' && (
-                                            <DeliveryConfirmAction orderId={order.order_id} />
+                                            <DeliveryConfirmAction order={order} />
                                         )}
                                     </div>
                                 </div>
@@ -194,27 +194,25 @@ export default function Marketplace({ auth, activeListings = [], activeOrders: i
     );
 }
 
-function DeliveryConfirmAction({ orderId }) {
-    const { data, setData, post, processing } = useForm({
-        rating: 5,
-    });
-
-    const confirmDelivery = () => {
-        post(route('orders.confirm', orderId), {
-            preserveScroll: true,
-        });
-    };
+function DeliveryConfirmAction({ order }) {
+    const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
 
     return (
         <div className="mt-2">
             <button
-                onClick={confirmDelivery}
-                disabled={processing}
-                className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white py-3 rounded-xl font-bold shadow-sm shadow-emerald-600/20 disabled:opacity-50 transition-all active:scale-[0.98] text-xs uppercase tracking-wider cursor-pointer"
+                type="button"
+                onClick={() => setIsRatingModalOpen(true)}
+                className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white py-3 rounded-xl font-bold shadow-sm shadow-emerald-600/20 transition-all active:scale-[0.98] text-xs uppercase tracking-wider cursor-pointer"
             >
                 <ShieldCheckIcon className="w-4 h-4" />
-                {processing ? 'Confirming Inspection...' : 'Verify Inspection & Release Escrow'}
+                <span>Verify Inspection & Release Escrow</span>
             </button>
+
+            <OrderRatingModal
+                order={order}
+                isOpen={isRatingModalOpen}
+                onClose={() => setIsRatingModalOpen(false)}
+            />
         </div>
     );
 }
@@ -254,6 +252,8 @@ function LiveListingCard({ initialListing, auth }) {
     };
 
     const hasValidImage = Boolean(listing.image_url) && !imageError;
+    const isOwner = auth.user && auth.user.id === listing.user_id;
+    const isBuyer = auth.user && auth.user.role === 'buyer';
 
     return (
         <div className={`bg-white rounded-2xl p-6 border transition-all duration-300 shadow-sm flex flex-col justify-between ${
@@ -307,38 +307,46 @@ function LiveListingCard({ initialListing, auth }) {
                 </div>
             </div>
 
-            {auth.user && auth.user.id === listing.user_id ? (
+            {/* Role-Gated Action Area */}
+            {isOwner ? (
                 <AcceptBidAction listing={listing} />
-            ) : (
+            ) : isBuyer ? (
                 <form onSubmit={submitBid} className="mt-4 space-y-2">
                     <div className="relative">
                         <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 text-xs font-bold">₱</span>
                         <input
-                        type="number"
-                        step="0.01"
-                        min={parseFloat(listing.current_bid) + 1}
-                        value={data.bid_amount}
-                        onChange={(e) => setData("bid_amount", e.target.value)}
-                        placeholder={`> ${listing.current_bid}`}
-                        className="w-full pl-7 pr-3 py-2 text-sm rounded-xl border-slate-200 focus:border-cyan-500 focus:ring-cyan-500 font-mono"
-                        required
-                    />
-                </div>
-                {errors.bid_amount && <p className="text-xs text-rose-500">{errors.bid_amount}</p>}
+                            type="number"
+                            step="0.01"
+                            min={parseFloat(listing.current_bid) + 1}
+                            value={data.bid_amount}
+                            onChange={(e) => setData("bid_amount", e.target.value)}
+                            placeholder={`> ${listing.current_bid}`}
+                            className="w-full pl-7 pr-3 py-2 text-sm rounded-xl border-slate-200 focus:border-cyan-500 focus:ring-cyan-500 font-mono"
+                            required
+                        />
+                    </div>
+                    {errors.bid_amount && <p className="text-xs text-rose-500">{errors.bid_amount}</p>}
 
-                <button
-                    type="submit"
-                    disabled={processing}
-                    className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all disabled:opacity-50 cursor-pointer"
-                >
-                    {processing ? "Transmitting Bid..." : "Place Verified Bid"}
-                </button>
-            </form>
+                    <button
+                        type="submit"
+                        disabled={processing}
+                        className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all disabled:opacity-50 cursor-pointer"
+                    >
+                        {processing ? "Transmitting Bid..." : "Place Verified Bid"}
+                    </button>
+                </form>
+            ) : (
+                <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl text-center">
+                    <p className="text-xs font-mono text-slate-500">
+                        {auth.user?.role === 'fisherman'
+                            ? '🐟 Harvest Auction Live • Fellow Harvester View'
+                            : '🔒 Bidding open to registered buyers only'}
+                    </p>
+                </div>
             )}
         </div>
     );
 }
-
 function AcceptBidAction({ listing }) {
     const { post, processing } = useForm();
 
