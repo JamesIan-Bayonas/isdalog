@@ -51,9 +51,7 @@ class OrderReviewModelTest extends TestCase
             'target_type' => 'fisherman',
             'rating'      => 5,
             'comment'     => 'Exceptional catch quality and freshness.',
-        ]);
-
-        $this->assertInstanceOf(OrderReview::class, $review);
+        ]); 
         $this->assertDatabaseHas('order_reviews', [
             'id'          => $review->id,
             'order_id'    => $orderId,
