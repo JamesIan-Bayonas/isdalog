@@ -101,4 +101,19 @@ class ProfileTest extends TestCase
 
         $this->assertNotNull($user->fresh());
     }
+
+    public function test_non_fisherman_roles_do_not_render_telegram_link_interface(): void
+{
+    /** @var User $buyer */
+    $buyer = User::factory()->create([
+        'role' => 'buyer',
+    ]);
+
+    $response = $this->actingAs($buyer)->get('/profile');
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('Profile/Edit')
+        ->where('auth.user.role', 'buyer')
+    );
+}
 }

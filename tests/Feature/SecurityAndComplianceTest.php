@@ -147,4 +147,34 @@ class SecurityAndComplianceTest extends TestCase
         'current_bid' => 1464.00,
 ]);
     }
+
+    public function test_telegram_handshake_deep_link_binds_chat_id_to_fisherman(): void
+{
+    /** @var User $fisherman */
+    $fisherman = User::factory()->create([
+        'role' => 'fisherman',
+        'telegram_chat_id' => null,
+    ]);
+
+    // 1. Generate deep-link pairing token
+    $tokenResponse = $this->actingAs($fisherman)->postJson(route('profile.telegram.token'));
+    $tokenResponse->assertOk();
+    $token = $tokenResponse->json('token');
+
+    // 2. Simulate Telegram Gateway Bot handshake callback
+    $handshakeResponse = $this->postJson('/api/telegram/link', [
+        'token' => $token,
+        'telegram_chat_id' => '9988776655',
+        'telegram_username' => 'fisherman_ian',
+    ]);
+
+    $handshakeResponse->assertOk();
+    $handshakeResponse->assertJson(['status' => 'success']);
+
+    // 3. Verify database reality
+    $this->assertDatabaseHas('users', [
+        'id' => $fisherman->id,
+        'telegram_chat_id' => '9988776655',
+    ]);
+}
 }

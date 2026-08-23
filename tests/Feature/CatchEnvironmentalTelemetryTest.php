@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\FishCatch;
 use App\Models\User;
+use App\Models\Listing;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -93,5 +94,36 @@ class CatchEnvironmentalTelemetryTest extends TestCase
             'temperature' => 29.10,
             'weather_condition' => 'WMO-1',
         ]);
+    }
+
+    // File: tests/Feature/CatchEnvironmentalTelemetryTest.php
+// Target Method: test_catch_logging_persists_root_relative_image_path
+
+    public function test_catch_logging_persists_root_relative_image_path(): void
+    {
+        /** @var User $fisherman */
+        $fisherman = User::factory()->create([
+            'role' => 'fisherman',
+            'telegram_chat_id' => '987654321',
+        ]);
+
+        $dummyBase64 = 'data:image/jpeg;base64,' . base64_encode('fake-image-binary-stream');
+
+        $response = $this->postJson('/api/catches', [
+            'telegram_chat_id' => '987654321',
+            'species' => 'Sardines',
+            'weight' => 12.0,
+            'image_base64' => $dummyBase64,
+        ]);
+
+        $response->assertStatus(201);
+
+        $catch = FishCatch::where('user_id', $fisherman->id)->latest('id')->first();
+        $listing = Listing::where('user_id', $fisherman->id)->latest('id')->first();
+
+        $this->assertNotNull($catch->image_url);
+        $this->assertStringStartsWith('/storage/catches/', $catch->image_url);
+        $this->assertStringStartsWith('/storage/catches/', $listing->image_url);
+        $this->assertStringNotContainsString('http://localhost', $listing->image_url);
     }
 }

@@ -76,7 +76,9 @@ class CatchController extends Controller
                 /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
                 $disk = Storage::disk('public');
                 $disk->put($fileName, $imageData);
-                $imageUrl = $disk->url($fileName);
+                
+                // Enforce root-relative pathing to prevent port/host mismatch regressions in web SPAs
+                $imageUrl = '/storage/' . $fileName;
             } catch (\Exception $e) {
                 $imageUrl = null;
             }
