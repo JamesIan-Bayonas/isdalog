@@ -28,7 +28,7 @@ class MarketplaceController extends Controller
 
             // Attach the calculated average to the object
             $listing->market_average = $averagePrice ? round($averagePrice, 2) : $listing->current_bid;
-            
+
             // Calculate the percentage difference
             if ($listing->market_average > 0) {
                 $listing->trend_percentage = round((($listing->current_bid - $listing->market_average) / $listing->market_average) * 100, 1);
@@ -43,7 +43,10 @@ class MarketplaceController extends Controller
         $activeOrders = DB::table('orders_logistics')
             ->join('listings', 'orders_logistics.listing_id', '=', 'listings.id')
             ->select(
-                'orders_logistics.id as order_id', 
+                'orders_logistics.id as order_id',
+                'orders_logistics.id',
+                'orders_logistics.rider_id',
+                'orders_logistics.delivery_fee',
                 'orders_logistics.status',
                 'orders_logistics.delivery_otp',
                 'orders_logistics.logistics_type',

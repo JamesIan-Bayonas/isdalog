@@ -85,7 +85,11 @@ class DashboardController extends Controller
 
                 $listing->bids_count = DB::table('bids')->where('listing_id', $listing->id)->count();
                 $listing->highest_bid = $highestBid ? (float) $highestBid->amount : (float) $listing->starting_price;
+                $listing->current_bid = $highestBid ? (float) $highestBid->amount : (float) $listing->starting_price;
                 $listing->leading_bidder = $highestBid ? $highestBid->buyer_name : null;
+                $listing->top_bidder_name = $highestBid ? $highestBid->buyer_name : null;
+                $listing->highest_bidder_name = $highestBid ? $highestBid->buyer_name : null;
+                $listing->has_bids = $listing->bids_count > 0;
                 return $listing;
             });
 
@@ -106,7 +110,7 @@ class DashboardController extends Controller
                 'orders_logistics.escrow_balance',
                 'orders_logistics.delivery_fee',
                 'orders_logistics.status',
-                'orders_logistics.pickup_otp',   // Crucial: Handshake Pickup Token PIN for Rider
+                'orders_logistics.pickup_otp',
                 'orders_logistics.delivery_otp',
                 'orders_logistics.logistics_type',
                 'orders_logistics.rating',
@@ -118,7 +122,15 @@ class DashboardController extends Controller
                 'orders_logistics.updated_at',
             ])
             ->orderByDesc('orders_logistics.created_at')
-            ->get();
+            ->get()
+            ->map(function ($order) {
+                $finalPrice = (float) $order->final_price;
+                $order->gross_price = $finalPrice;
+                $order->platform_fee = round($finalPrice * 0.03, 2);
+                $order->net_payout = round($finalPrice * 0.97, 2);
+                $order->seller_earnings = round($finalPrice * 0.97, 2);
+                return $order;
+            });
 
         // 4. Biological Catch Telemetry Logs
         $telemetryLogs = DB::table('catches')
@@ -144,6 +156,14 @@ class DashboardController extends Controller
 
         return Inertia::render('Dashboard', [
             'role' => 'fisherman',
+            'role_context' => 'fisherman',
+            'metrics' => [
+                'walletBalance' => (float) $user->wallet_balance,
+                'netEarnings'   => $lifetimeNetEarnings,
+                'pendingEscrow' => $escrowInTransit,
+                'totalWeight'   => $loggedBiomass,
+                'totalCatches'  => $totalBatches,
+            ],
             'stats' => [
                 'withdrawableBalance' => (float) $user->wallet_balance,
                 'lifetimeEarnings'    => $lifetimeNetEarnings,
@@ -155,10 +175,13 @@ class DashboardController extends Controller
                 'escrow_in_transit'   => $escrowInTransit,
                 'logged_biomass'      => $loggedBiomass,
             ],
+            'activeListings'    => $activeAuctions,
             'activeAuctions'    => $activeAuctions,
+            'salesHistory'      => $consignmentLedger,
             'consignmentLedger' => $consignmentLedger,
             'consignmentOrders' => $consignmentLedger,
             'consignmentSales'  => $consignmentLedger,
+            'recentActivity'    => $telemetryLogs,
             'telemetryLogs'     => $telemetryLogs,
             'catchLogs'         => $telemetryLogs,
             'myListings'        => $myListings,

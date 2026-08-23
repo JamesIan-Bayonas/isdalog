@@ -21,7 +21,6 @@ class CatchToHarvesterDashboardSyncTest extends TestCase
             'telegram_chat_id' => '100200300',
             'wallet_balance'   => 0.00,
         ]);
-
         FishCatch::create([
             'user_id'           => $fisherman->id,
             'species'           => 'Ling',
@@ -32,7 +31,6 @@ class CatchToHarvesterDashboardSyncTest extends TestCase
             'weather_condition' => 'WMO-0',
             'logged_at'         => now(),
         ]);
-
         Listing::create([
             'user_id'        => $fisherman->id,
             'fish_name'      => 'Ling',
@@ -42,9 +40,7 @@ class CatchToHarvesterDashboardSyncTest extends TestCase
             'location'       => 'Dipolog Port',
             'status'         => 'active',
         ]);
-
         $dashResponse = $this->actingAs($fisherman)->get('/dashboard');
-
         $dashResponse->assertStatus(200);
         $dashResponse->assertInertia(fn ($page) => $page
             ->component('Dashboard')
@@ -53,7 +49,7 @@ class CatchToHarvesterDashboardSyncTest extends TestCase
             ->where('stats.loggedBiomass', 12)
             ->has('activeListings', 1)
             ->where('activeListings.0.fish_name', 'Ling')
-            ->where('activeListings.0.starting_price', '1464.00')
+            ->where('activeListings.0.starting_price', 1464)
             ->has('recentActivity', 1)
             ->where('recentActivity.0.species', 'Ling')
         );
