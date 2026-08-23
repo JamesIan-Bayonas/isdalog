@@ -38,13 +38,10 @@ class DispatchTest extends TestCase
             'role' => 'rider',
             'status' => 'unverified',
         ]);
-
         /** @var User $fisherman */
         $fisherman = User::factory()->create(['role' => 'fisherman']);
-
         /** @var User $buyer */
         $buyer = User::factory()->create(['role' => 'buyer']);
-
         $listing = Listing::create([
             'user_id' => $fisherman->id,
             'fish_name' => 'Blue Marlin',
@@ -54,7 +51,6 @@ class DispatchTest extends TestCase
             'location' => 'Galas Port',
             'status' => 'completed',
         ]);
-
         $orderId = DB::table('orders_logistics')->insertGetId([
             'listing_id' => $listing->id,
             'user_id' => $buyer->id,
@@ -62,14 +58,16 @@ class DispatchTest extends TestCase
             'rider_id' => null,
             'final_price' => 4000.00,
             'escrow_balance' => 4000.00,
+            'pickup_otp' => '123456',
+            'delivery_otp' => '654321',
             'logistics_type' => 'request_rider',
             'status' => 'pending_dispatch',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-
-        $response = $this->actingAs($rider)->post("/dispatch/orders/{$orderId}/claim");
-
+        $response = $this->actingAs($rider)->post("/dispatch/orders/{$orderId}/claim", [
+            'pickup_otp' => '123456',
+        ]);
         $response->assertSessionHasErrors('error');
         $this->assertDatabaseHas('orders_logistics', [
             'id' => $orderId,

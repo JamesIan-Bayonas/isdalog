@@ -14,6 +14,16 @@ class BidController extends Controller
 {
     public function store(Request $request, Listing $listing): RedirectResponse
     {
+        // 1. RBAC Guardrail: Only verified buyer accounts may participate in bidding
+        if ($request->user()->role !== 'buyer') {
+            abort(403, 'Unauthorized. Only verified buyers are permitted to place auction bids.');
+        }
+
+        // 2. Self-Bidding Prevention Guardrail
+        if ((int) $request->user()->id === (int) $listing->user_id) {
+            abort(403, 'Harvesters cannot place bids on their own catch listings.');
+        }
+
         $validated = $request->validate([
             'bid_amount' => ['required', 'numeric', 'gt:' . $listing->current_bid],
         ]);

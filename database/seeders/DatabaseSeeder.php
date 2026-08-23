@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
             'telegram_chat_id' => '8531483496',
             'email_verified_at' => now(),
         ]);
-
+    
         // 3. SEED A RIDER PROFILE
         User::create([
             'name' => 'Juan the Rider',

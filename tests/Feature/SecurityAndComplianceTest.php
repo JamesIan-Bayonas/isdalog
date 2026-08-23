@@ -5,8 +5,6 @@ namespace Tests\Feature;
 use App\Models\Listing;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Broadcast;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class SecurityAndComplianceTest extends TestCase
@@ -119,5 +117,34 @@ class SecurityAndComplianceTest extends TestCase
         ]);
         
         $buyerResponse->assertStatus(200);
+    }
+
+    public function test_fisherman_cannot_place_bids_on_marketplace(): void
+    {
+        /** @var User $harvester */
+        $harvester = User::factory()->create(['role' => 'fisherman']);
+
+        /** @var User $otherFisherman */
+        $otherFisherman = User::factory()->create(['role' => 'fisherman']);
+
+        $listing = Listing::create([
+            'user_id' => $harvester->id,
+            'fish_name' => 'Ling',
+            'weight_kg' => 12.00,
+            'starting_price' => 1464.00,
+            'current_bid' => 1464.00,
+            'location' => 'Dipolog Port',
+            'status' => 'active',
+        ]);
+
+        $response = $this->actingAs($otherFisherman)->post("/listings/{$listing->id}/bids", [
+            'bid_amount' => 1600.00,
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('listings', [
+        'id' => $listing->id,
+        'current_bid' => 1464.00,
+]);
     }
 }
