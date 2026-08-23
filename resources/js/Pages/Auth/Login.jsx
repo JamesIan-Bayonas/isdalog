@@ -1,28 +1,26 @@
-// resources/js/Pages/Auth/Login.jsx
+// File: resources/js/Pages/Auth/Login.jsx
 import Checkbox from '@/Components/Checkbox';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
-import { 
-    ShieldCheckIcon, 
-    LockClosedIcon, 
-    EnvelopeIcon, 
-    EyeIcon, 
+import {
+    ShieldCheckIcon,
+    LockClosedIcon,
+    EnvelopeIcon,
+    EyeIcon,
     EyeSlashIcon,
     ArrowRightIcon,
     SparklesIcon,
     CircleStackIcon,
     TruckIcon,
-    ChartBarIcon,
-    ExclamationCircleIcon
+    ChartBarIcon
 } from '@heroicons/react/24/outline';
 
 export default function Login({ status, canResetPassword }) {
     const [showPassword, setShowPassword] = useState(false);
     const [selectedRolePreview, setSelectedRolePreview] = useState('fisherman');
-
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -36,13 +34,18 @@ export default function Login({ status, canResetPassword }) {
         });
     };
 
+    // Roles are modelled as sonar contacts — angle is fixed per role so the
+    // console reads like a real scope, not a decoration.
     const roleData = {
         fisherman: {
             title: 'Harbor Fishermen',
-            desc: 'Instant Zero-Typing AI catch logging & direct consignment floor listing.',
+            desc: 'Instant zero-typing AI catch logging & direct consignment floor listing.',
             badge: 'Harvest & Auction',
             color: 'text-cyan-400',
+            ring: 'stroke-cyan-400',
+            fill: 'fill-cyan-400',
             bg: 'bg-cyan-500/10 border-cyan-500/30',
+            angle: 55,
             icon: SparklesIcon
         },
         buyer: {
@@ -50,15 +53,21 @@ export default function Login({ status, canResetPassword }) {
             desc: 'Real-time WebSocket bidding with secured wallet escrow verification.',
             badge: 'Live Trading',
             color: 'text-emerald-400',
+            ring: 'stroke-emerald-400',
+            fill: 'fill-emerald-400',
             bg: 'bg-emerald-500/10 border-emerald-500/30',
+            angle: 145,
             icon: CircleStackIcon
         },
         rider: {
             title: 'Logistics Couriers',
             desc: 'Port-to-market dispatch routing & verifiable chain-of-custody tracking.',
             badge: 'Cold Chain Delivery',
-            color: 'text-purple-400',
-            bg: 'bg-purple-500/10 border-purple-500/30',
+            color: 'text-violet-400',
+            ring: 'stroke-violet-400',
+            fill: 'fill-violet-400',
+            bg: 'bg-violet-500/10 border-violet-500/30',
+            angle: 235,
             icon: TruckIcon
         },
         admin: {
@@ -66,31 +75,56 @@ export default function Login({ status, canResetPassword }) {
             desc: 'Biomass volume telemetry & automated marine conservation monitoring.',
             badge: 'Compliance Oversight',
             color: 'text-amber-400',
+            ring: 'stroke-amber-400',
+            fill: 'fill-amber-400',
             bg: 'bg-amber-500/10 border-amber-500/30',
+            angle: 325,
             icon: ChartBarIcon
         }
     };
 
     const CurrentRoleIcon = roleData[selectedRolePreview].icon;
 
+    // Polar -> cartesian for the sonar contacts. Center (110,110), radius 76.
+    const contactPoint = (angleDeg) => {
+        const rad = (angleDeg * Math.PI) / 180;
+        return {
+            x: 110 + 76 * Math.cos(rad),
+            y: 110 + 76 * Math.sin(rad),
+        };
+    };
+
     return (
         <>
             <Head title="Sign In — IsdaLog Maritime Hub" />
-
-            <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-[#030712] text-slate-100 selection:bg-cyan-500 selection:text-white relative overflow-hidden">
-                
+            <style>{`
+                @keyframes vela-sweep {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+                @keyframes vela-ping-slow {
+                    0% { transform: scale(0.9); opacity: .55; }
+                    70%, 100% { transform: scale(1.9); opacity: 0; }
+                }
+                .vela-sweep-arm {
+                    transform-origin: 110px 110px;
+                    animation: vela-sweep 4.5s linear infinite;
+                }
+                .vela-contact-ping {
+                    animation: vela-ping-slow 2.4s cubic-bezier(0,0,.2,1) infinite;
+                    transform-origin: center;
+                }
+            `}</style>
+            <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-[#020617] text-slate-100 selection:bg-cyan-500 selection:text-white relative overflow-hidden">
                 {/* --- AMBIENT NAUTICAL BACKDROP LIGHTING --- */}
-                <div className="absolute top-[-10%] left-[-10%] w-[45rem] h-[45rem] bg-gradient-to-br from-cyan-600/15 via-blue-700/10 to-transparent rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute bottom-[-10%] right-[-5%] w-[40rem] h-[40rem] bg-gradient-to-tr from-emerald-600/10 via-cyan-900/15 to-transparent rounded-full blur-3xl pointer-events-none" />
-                
-                {/* Subtle Grid Texture */}
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b0a_1px,transparent_1px),linear-gradient(to_bottom,#1e293b0a_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent100%)] pointer-events-none" />
+                <div className="absolute top-[-12%] left-[-12%] w-[42rem] h-[42rem] bg-gradient-to-br from-cyan-600/10 via-blue-700/[0.06] to-transparent rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute bottom-[-12%] right-[-6%] w-[36rem] h-[36rem] bg-gradient-to-tr from-emerald-600/[0.06] via-cyan-900/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b08_1px,transparent_1px),linear-gradient(to_bottom,#1e293b08_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
 
                 {/* ========================================================================= */}
-                {/* LEFT HERO & TELEMETRY SHOWCASE (5 Columns)                                */}
+                {/* LEFT — SONAR CONSOLE (5 Columns)                                          */}
                 {/* ========================================================================= */}
-                <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-12 relative z-10 border-r border-slate-800/80 bg-slate-950/40 backdrop-blur-xl">
-                    
+                <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-12 relative z-10 border-r border-slate-800/70 bg-slate-950/50 backdrop-blur-xl">
                     {/* Brand Header */}
                     <div>
                         <Link href="/" className="inline-flex items-center gap-3.5 group">
@@ -106,75 +140,112 @@ export default function Login({ status, canResetPassword }) {
                                         v2.4 Core
                                     </span>
                                 </span>
-                                <p className="text-[11px] font-mono text-slate-400 tracking-wider">Galas Port Terminal • Dipolog City</p>
+                                {/* <p className="text-[11px] font-mono text-slate-500 tracking-wider">Galas Port Terminal · Dipolog City</p> */}
                             </div>
                         </Link>
                     </div>
 
-                    {/* Interactive Operational Showcase */}
+                    {/* Sonar Console + Role Contacts */}
                     <div className="space-y-6">
-                        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-700/80 text-xs font-semibold text-slate-300 shadow-inner">
+                        {/* <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-700/70 text-xs font-semibold text-slate-300 shadow-inner">
                             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                            <span>Municipal Trading Nodes Operational</span>
-                        </div>
+                            <span>Municipal trading nodes operational</span>
+                        </div> */}
 
                         <div className="space-y-2">
-                            <h2 className="text-3xl font-black text-white leading-tight tracking-tight">
-                                Autonomous Maritime Catch & Escrow Logistics.
+                            <h2 className="text-3xl font-black text-white leading-[1.1] tracking-tight">
+                                Autonomous maritime catch & escrow logistics.
                             </h2>
-                            <p className="text-slate-400 text-sm leading-relaxed">
-                                Experience high-velocity catch consignment with sub-second WebSocket bidding, AI vision grading, and guaranteed wallet settlements.
+                            <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
+                                Every role on this port is a contact on the scope. Select one to see what it reports.
                             </p>
                         </div>
 
-                        {/* Interactive Role Card Previews */}
-                        <div className="space-y-3 pt-2">
-                            <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-widest text-slate-400">
-                                <span>Platform Role Access</span>
-                                <span>Preview Scope</span>
-                            </div>
+                        <div className="flex gap-6 items-center pt-1">
+                            {/* --- Sonar scope --- */}
+                            <svg viewBox="0 0 220 220" className="w-40 h-40 shrink-0" role="img" aria-label="Platform role scope">
+                                <circle cx="110" cy="110" r="100" className="fill-slate-900/70 stroke-slate-800" strokeWidth="1" />
+                                <circle cx="110" cy="110" r="76" className="fill-none stroke-slate-800" strokeWidth="1" />
+                                <circle cx="110" cy="110" r="42" className="fill-none stroke-slate-800" strokeWidth="1" />
+                                <line x1="10" y1="110" x2="210" y2="110" className="stroke-slate-800" strokeWidth="1" />
+                                <line x1="110" y1="10" x2="110" y2="210" className="stroke-slate-800" strokeWidth="1" />
 
-                            <div className="grid grid-cols-4 gap-1.5 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800">
+                                {/* Rotating sweep */}
+                                <g className="vela-sweep-arm">
+                                    <path d="M110 110 L110 10 A100 100 0 0 1 178 42 Z" fill="url(#sweepGradient)" opacity="0.55" />
+                                </g>
+                                <defs>
+                                    <linearGradient id="sweepGradient" x1="110" y1="10" x2="178" y2="42" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.5" />
+                                        <stop offset="100%" stopColor="#22d3ee" stopOpacity="0" />
+                                    </linearGradient>
+                                </defs>
+
+                                {/* Role contacts */}
+                                {Object.keys(roleData).map((role) => {
+                                    const { x, y } = contactPoint(roleData[role].angle);
+                                    const active = selectedRolePreview === role;
+                                    return (
+                                        <g key={role} onClick={() => setSelectedRolePreview(role)} className="cursor-pointer">
+                                            {active && (
+                                                <circle cx={x} cy={y} r="6" className={`${roleData[role].fill} vela-contact-ping`} />
+                                            )}
+                                            <circle
+                                                cx={x} cy={y}
+                                                r={active ? 6 : 4}
+                                                className={`${roleData[role].fill} transition-all duration-300`}
+                                                stroke="#020617"
+                                                strokeWidth="1.5"
+                                            />
+                                        </g>
+                                    );
+                                })}
+                                <circle cx="110" cy="110" r="3" className="fill-slate-300" />
+                            </svg>
+
+                            {/* Role tabs */}
+                            <div className="flex-1 grid grid-cols-2 gap-1.5">
                                 {Object.keys(roleData).map((role) => (
                                     <button
                                         key={role}
                                         type="button"
                                         onClick={() => setSelectedRolePreview(role)}
-                                        className={`py-1.5 px-2 rounded-lg text-xs font-bold capitalize transition-all ${
+                                        className={`py-2 px-2.5 rounded-lg text-[11px] font-bold capitalize transition-all text-left border ${
                                             selectedRolePreview === role
-                                                ? 'bg-slate-800 text-white shadow-sm border border-slate-700'
-                                                : 'text-slate-400 hover:text-slate-200'
+                                                ? 'bg-slate-800/90 text-white border-slate-700 shadow-sm'
+                                                : 'bg-transparent text-slate-500 border-transparent hover:text-slate-300 hover:border-slate-800'
                                         }`}
                                     >
+                                        <span className={`inline-block w-1.5 h-1.5 rounded-full mr-1.5 align-middle ${selectedRolePreview === role ? roleData[role].fill : 'bg-slate-700'}`} />
                                         {role}
                                     </button>
                                 ))}
                             </div>
+                        </div>
 
-                            {/* Active Role Feature Card */}
-                            <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 backdrop-blur-md transition-all duration-300">
-                                <div className="flex items-center gap-3">
-                                    <div className={`p-2.5 rounded-lg border ${roleData[selectedRolePreview].bg}`}>
-                                        <CurrentRoleIcon className={`w-5 h-5 ${roleData[selectedRolePreview].color}`} />
+                        {/* Active Role Feature Readout */}
+                        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 backdrop-blur-md transition-all duration-300">
+                            <div className="flex items-center gap-3">
+                                <div className={`p-2.5 rounded-lg border ${roleData[selectedRolePreview].bg}`}>
+                                    <CurrentRoleIcon className={`w-5 h-5 ${roleData[selectedRolePreview].color}`} />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <h4 className="text-sm font-bold text-white">{roleData[selectedRolePreview].title}</h4>
+                                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                                            {roleData[selectedRolePreview].badge}
+                                        </span>
                                     </div>
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <h4 className="text-sm font-bold text-white">{roleData[selectedRolePreview].title}</h4>
-                                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                                                {roleData[selectedRolePreview].badge}
-                                            </span>
-                                        </div>
-                                        <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                                            {roleData[selectedRolePreview].desc}
-                                        </p>
-                                    </div>
+                                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                                        {roleData[selectedRolePreview].desc}
+                                    </p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Bottom Status Telemetry */}
-                    <div className="pt-6 border-t border-slate-900 flex items-center justify-between text-xs text-slate-400 font-mono">
+                    <div className="pt-6 border-t border-slate-900 flex items-center justify-between text-xs text-slate-500 font-mono">
                         <span>LAT 8.58° N, LON 123.33° E</span>
                         <span className="text-emerald-400 font-semibold">BFAR Compliant</span>
                     </div>
@@ -185,7 +256,6 @@ export default function Login({ status, canResetPassword }) {
                 {/* ========================================================================= */}
                 <div className="col-span-1 lg:col-span-7 flex items-center justify-center p-6 sm:p-12 relative z-10">
                     <div className="w-full max-w-md space-y-8">
-                        
                         {/* Mobile Header Bar */}
                         <div className="lg:hidden flex items-center justify-between border-b border-slate-800 pb-4">
                             <div className="flex items-center gap-3">
@@ -194,7 +264,7 @@ export default function Login({ status, canResetPassword }) {
                                 </div>
                                 <span className="text-lg font-black text-white">IsdaLog</span>
                             </div>
-                            <span className="text-xs font-mono text-cyan-400">Galas Port Node</span>
+                            {/* <span className="text-xs font-mono text-cyan-400">Galas Port Node</span> */}
                         </div>
 
                         {/* Title Header */}
@@ -204,8 +274,8 @@ export default function Login({ status, canResetPassword }) {
                             </h1>
                             <p className="text-sm text-slate-400 mt-2">
                                 Access live trading, cargo logistics, or registration.{' '}
-                                <Link 
-                                    href={route('register')} 
+                                <Link
+                                    href={route('register')}
                                     className="text-cyan-400 hover:text-cyan-300 font-bold transition-colors underline-offset-4 hover:underline"
                                 >
                                     Create account
@@ -213,7 +283,7 @@ export default function Login({ status, canResetPassword }) {
                             </p>
                         </div>
 
-                        {/* Status Message (e.g. Password Reset link sent) */}
+                        {/* Status Message */}
                         {status && (
                             <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm font-semibold flex items-center gap-2.5">
                                 <ShieldCheckIcon className="w-5 h-5 text-emerald-400 shrink-0" />
@@ -221,17 +291,8 @@ export default function Login({ status, canResetPassword }) {
                             </div>
                         )}
 
-                        {/* ⚠️ GLOBAL AUTHENTICATION ERROR BANNER */}
-                        {(errors.email || errors.password) && (
-                            <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm font-semibold flex items-center gap-3 animate-shake">
-                                <ExclamationCircleIcon className="w-5 h-5 text-rose-400 shrink-0" />
-                                <span>{errors.email || errors.password || 'Authentication failed. Please verify credentials.'}</span>
-                            </div>
-                        )}
-
                         {/* Login Form */}
                         <form onSubmit={submit} className="space-y-5">
-                            
                             {/* EMAIL FIELD */}
                             <div>
                                 <InputLabel htmlFor="email" value="Account Email" className="!text-slate-300 !text-xs !font-bold !uppercase !tracking-wider" />
@@ -244,7 +305,7 @@ export default function Login({ status, canResetPassword }) {
                                         type="email"
                                         name="email"
                                         value={data.email}
-                                        className={`!bg-slate-900/90 !border ${errors.email ? '!border-rose-500' : '!border-slate-800'} !text-white !pl-11 !py-3.5 !rounded-xl focus:!border-cyan-500 focus:!ring-2 focus:!ring-cyan-500/30 block w-full text-sm placeholder:text-slate-600 transition-all shadow-inner`}
+                                        className="!bg-slate-900/90 !border-slate-800 !text-white !pl-11 !py-3.5 !rounded-xl focus:!border-cyan-500 focus:!ring-2 focus:!ring-cyan-500/30 block w-full text-sm placeholder:text-slate-600 transition-all shadow-inner"
                                         autoComplete="username"
                                         isFocused={true}
                                         placeholder="operator@isdalog.ph"
@@ -252,7 +313,7 @@ export default function Login({ status, canResetPassword }) {
                                         required
                                     />
                                 </div>
-                                <InputError message={errors.email} className="mt-2 text-xs !text-rose-400" />
+                                <InputError message={errors.email} className="mt-2 text-xs" />
                             </div>
 
                             {/* PASSWORD FIELD */}
@@ -277,7 +338,7 @@ export default function Login({ status, canResetPassword }) {
                                         type={showPassword ? 'text' : 'password'}
                                         name="password"
                                         value={data.password}
-                                        className={`!bg-slate-900/90 !border ${errors.password ? '!border-rose-500' : '!border-slate-800'} !text-white !pl-11 !pr-11 !py-3.5 !rounded-xl focus:!border-cyan-500 focus:!ring-2 focus:!ring-cyan-500/30 block w-full text-sm placeholder:text-slate-600 transition-all shadow-inner`}
+                                        className="!bg-slate-900/90 !border-slate-800 !text-white !pl-11 !pr-11 !py-3.5 !rounded-xl focus:!border-cyan-500 focus:!ring-2 focus:!ring-cyan-500/30 block w-full text-sm placeholder:text-slate-600 transition-all shadow-inner"
                                         autoComplete="current-password"
                                         placeholder="••••••••••••"
                                         onChange={(e) => setData('password', e.target.value)}
@@ -296,7 +357,7 @@ export default function Login({ status, canResetPassword }) {
                                         )}
                                     </button>
                                 </div>
-                                <InputError message={errors.password} className="mt-2 text-xs !text-rose-400" />
+                                <InputError message={errors.password} className="mt-2 text-xs" />
                             </div>
 
                             {/* REMEMBER ME TOGGLE */}
@@ -316,7 +377,7 @@ export default function Login({ status, canResetPassword }) {
                             <button
                                 type="submit"
                                 disabled={processing}
-                                className="w-full inline-flex items-center justify-center gap-2.5 py-4 px-4 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-xl shadow-cyan-600/25 transition-all duration-200 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed mt-2 cursor-pointer"
+                                className="w-full inline-flex items-center justify-center gap-2.5 py-4 px-4 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-xl shadow-cyan-600/25 transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-2 cursor-pointer"
                             >
                                 {processing ? (
                                     <div className="flex items-center gap-2">
@@ -324,7 +385,7 @@ export default function Login({ status, canResetPassword }) {
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                                         </svg>
-                                        <span>Authenticating Signature...</span>
+                                        <span>Authenticating signature...</span>
                                     </div>
                                 ) : (
                                     <>
@@ -338,12 +399,10 @@ export default function Login({ status, canResetPassword }) {
                         {/* Bottom Security Assurance */}
                         <div className="pt-4 flex items-center justify-center gap-2 text-[11px] text-slate-500">
                             <ShieldCheckIcon className="w-4 h-4 text-emerald-500" />
-                            <span>Protected by 256-Bit Escrow & Identity Encryption</span>
+                            <span>Protected by 256-bit escrow & identity encryption</span>
                         </div>
-
                     </div>
                 </div>
-
             </div>
         </>
     );
