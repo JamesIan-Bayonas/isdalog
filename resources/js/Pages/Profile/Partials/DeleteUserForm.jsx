@@ -1,3 +1,4 @@
+// File: resources/js/Pages/Profile/Partials/DeleteUserForm.jsx
 import DangerButton from '@/Components/DangerButton';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
@@ -10,7 +11,6 @@ import { useRef, useState } from 'react';
 export default function DeleteUserForm({ className = '' }) {
     const [confirmingUserDeletion, setConfirmingUserDeletion] = useState(false);
     const passwordInput = useRef();
-
     const {
         data,
         setData,
@@ -29,7 +29,6 @@ export default function DeleteUserForm({ className = '' }) {
 
     const deleteUser = (e) => {
         e.preventDefault();
-
         destroy(route('profile.destroy'), {
             preserveScroll: true,
             onSuccess: () => closeModal(),
@@ -40,7 +39,6 @@ export default function DeleteUserForm({ className = '' }) {
 
     const closeModal = () => {
         setConfirmingUserDeletion(false);
-
         clearErrors();
         reset();
     };
@@ -48,42 +46,33 @@ export default function DeleteUserForm({ className = '' }) {
     return (
         <section className={`space-y-6 ${className}`}>
             <header>
-                <h2 className="text-lg font-medium text-gray-900">
-                    Delete Account
+                <h2 className="text-base font-black text-rose-400 tracking-tight">
+                    Terminate Operator Account
                 </h2>
-
-                <p className="mt-1 text-sm text-gray-600">
-                    Once your account is deleted, all of its resources and data
-                    will be permanently deleted. Before deleting your account,
-                    please download any data or information that you wish to
-                    retain.
+                <p className="mt-1 text-xs font-mono text-slate-400 leading-relaxed">
+                    Once your terminal identity is purged, all associated telemetry, biometric models, and ledger records will be permanently deleted.
                 </p>
             </header>
 
-            <DangerButton onClick={confirmUserDeletion}>
+            <DangerButton onClick={confirmUserDeletion} className="!bg-rose-600 hover:!bg-rose-500 !text-xs !font-mono !font-bold !rounded-xl !py-2.5 !px-4">
                 Delete Account
             </DangerButton>
 
-            <Modal show={confirmingUserDeletion} onClose={closeModal}>
-                <form onSubmit={deleteUser} className="p-6">
-                    <h2 className="text-lg font-medium text-gray-900">
-                        Are you sure you want to delete your account?
+            <Modal show={confirmingUserDeletion} onClose={closeModal} maxWidth="md">
+                <form onSubmit={deleteUser} className="p-6 space-y-5 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100">
+                    <h2 className="text-base font-black text-white tracking-tight">
+                        Confirm Identity Termination
                     </h2>
-
-                    <p className="mt-1 text-sm text-gray-600">
-                        Once your account is deleted, all of its resources and
-                        data will be permanently deleted. Please enter your
-                        password to confirm you would like to permanently delete
-                        your account.
+                    <p className="text-xs font-mono text-slate-400 leading-relaxed">
+                        Please enter your account password to confirm permanent decommission of this operator profile.
                     </p>
 
-                    <div className="mt-6">
+                    <div className="mt-4">
                         <InputLabel
                             htmlFor="password"
-                            value="Password"
+                            value="Security Key"
                             className="sr-only"
                         />
-
                         <TextInput
                             id="password"
                             type="password"
@@ -93,24 +82,28 @@ export default function DeleteUserForm({ className = '' }) {
                             onChange={(e) =>
                                 setData('password', e.target.value)
                             }
-                            className="mt-1 block w-3/4"
+                            className="block w-full !bg-slate-900/90 !border-slate-800 !text-white font-mono text-sm"
                             isFocused
-                            placeholder="Password"
+                            placeholder="••••••••••••"
                         />
-
                         <InputError
                             message={errors.password}
-                            className="mt-2"
+                            className="mt-2 text-xs"
                         />
                     </div>
 
-                    <div className="mt-6 flex justify-end">
-                        <SecondaryButton onClick={closeModal}>
+                    <div className="mt-6 flex justify-end gap-3">
+                        <SecondaryButton 
+                            onClick={closeModal}
+                            className="!bg-slate-900 !border-slate-800 !text-slate-300 hover:!bg-slate-800 !rounded-xl !text-xs"
+                        >
                             Cancel
                         </SecondaryButton>
-
-                        <DangerButton className="ms-3" disabled={processing}>
-                            Delete Account
+                        <DangerButton 
+                            disabled={processing}
+                            className="!bg-rose-600 hover:!bg-rose-500 !rounded-xl !text-xs !font-mono !font-bold"
+                        >
+                            {processing ? 'Terminating...' : 'Confirm Termination'}
                         </DangerButton>
                     </div>
                 </form>
