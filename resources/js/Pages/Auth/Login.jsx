@@ -397,8 +397,8 @@ export default function Login({ status, canResetPassword }) {
                         </form>
 
                         {/* Bottom Security Assurance */}
-                        <div className="pt-4 flex items-center justify-center gap-2 text-[11px] text-slate-500">
-                            <ShieldCheckIcon className="w-4 h-4 text-emerald-500" />
+                        <div className="pt-2 flex items-center justify-center gap-2 text-[11px] font-mono text-slate-500">
+                            <ShieldCheckIcon className="w-4 h-4 text-slate-400" />
                             <span>Protected by 256-bit escrow & identity encryption</span>
                         </div>
                     </div>

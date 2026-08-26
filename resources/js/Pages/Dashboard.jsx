@@ -44,15 +44,15 @@ function ActiveCatchAuctionCard({ listing, onAccept, isProcessing, errorMessage 
     const hasBids = listing.has_bids || bidsCount > 0;
 
     return (
-        <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-xl shadow-lg flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all">
+        <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl flex flex-col justify-between space-y-4 hover:border-cyan-500/40 transition-all group">
             <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-400 bg-cyan-950/70 px-2 py-0.5 rounded border border-cyan-800/60 font-bold">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-400 bg-cyan-950/70 px-2.5 py-0.5 rounded-full border border-cyan-800/60 font-bold">
                         Crate #{listing.id}
                     </span>
-                    <span className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full border ${
+                    <span className={`text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full border ${
                         hasBids 
-                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' 
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
                             : 'bg-slate-800 text-slate-400 border-slate-700'
                     }`}>
                         {bidsCount} {bidsCount === 1 ? 'Bid' : 'Bids'} Placed
@@ -63,7 +63,7 @@ function ActiveCatchAuctionCard({ listing, onAccept, isProcessing, errorMessage 
                     {listing.fish_name} ({listing.weight_kg} KG)
                 </h4>
 
-                <div className="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800/80 space-y-2 text-xs font-mono">
+                <div className="p-3.5 bg-slate-950/80 rounded-xl border border-slate-800/80 space-y-2 text-xs font-mono shadow-inner">
                     <div className="flex justify-between text-slate-400">
                         <span>Starting Floor:</span>
                         <span className="font-semibold text-slate-200">₱{startingPrice.toFixed(2)}</span>
@@ -94,7 +94,7 @@ function ActiveCatchAuctionCard({ listing, onAccept, isProcessing, errorMessage 
                     type="button"
                     disabled={isProcessing}
                     onClick={() => onAccept(listing.id)}
-                    className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold text-xs font-mono uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-600/20 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                    className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs font-mono uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-600/20 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                 >
                     {isProcessing ? (
                         <>
@@ -347,7 +347,6 @@ export default function Dashboard({
 
     return (
         <AuthenticatedLayout
-            user={auth.user}
             header={
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex items-center gap-3">
@@ -373,14 +372,14 @@ export default function Dashboard({
                             <>
                                 <button
                                     onClick={() => setShowWithdrawModal(true)}
-                                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-[0.98]"
+                                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-[0.98] cursor-pointer font-mono"
                                 >
                                     <ArrowDownCircleIcon className="w-4 h-4" />
                                     <span>Cash Out Earnings</span>
                                 </button>
                                 <Link
                                     href={route('marketplace.index')}
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold rounded-xl shadow-md transition-all active:scale-[0.98]"
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold rounded-xl shadow-md transition-all active:scale-[0.98] font-mono"
                                 >
                                     <PlusCircleIcon className="w-4 h-4" />
                                     <span>View Live Auctions</span>
@@ -391,7 +390,7 @@ export default function Dashboard({
                         {userRole === 'buyer' && (
                             <button
                                 onClick={() => setShowWalletModal(true)}
-                                className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-600/20 transition-all active:scale-[0.98] cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-600/20 transition-all active:scale-[0.98] cursor-pointer font-mono"
                             >
                                 <ArrowUpCircleIcon className="w-4 h-4" />
                                 <span>Top Up Wallet</span>
@@ -407,14 +406,14 @@ export default function Dashboard({
                 
                 {/* Global Status & Feedback Banners */}
                 {flashSuccess && (
-                    <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-semibold flex items-center gap-2">
+                    <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-semibold flex items-center gap-2 shadow-xl">
                         <CheckCircleIcon className="w-5 h-5 text-emerald-400 shrink-0" />
                         <span>{flashSuccess}</span>
                     </div>
                 )}
 
                 {pageErrors.error && (
-                    <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-mono font-semibold flex items-center gap-2">
+                    <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-mono font-semibold flex items-center gap-2 shadow-xl">
                         <ExclamationTriangleIcon className="w-5 h-5 text-rose-400 shrink-0" />
                         <span>{pageErrors.error}</span>
                     </div>
@@ -424,9 +423,9 @@ export default function Dashboard({
                 {/* 1. BUYER ROLE BANNER & UPGRADE WORKFLOW                                   */}
                 {/* ========================================================================= */}
                 {userRole === 'buyer' && !auth.user.requested_role && !showFishermanForm && (
-                    <div className="bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-cyan-950/40 border border-slate-800 backdrop-blur-xl p-6 rounded-2xl shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-white">
+                    <div className="bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-cyan-950/40 border border-slate-800 backdrop-blur-xl p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-white">
                         <div className="space-y-1">
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[11px] font-bold">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[11px] font-bold font-mono">
                                 <SparklesIcon className="w-3.5 h-3.5" />
                                 <span>Harbor Maritime Access</span>
                             </div>
@@ -437,7 +436,7 @@ export default function Dashboard({
                         </div>
                         <button 
                             onClick={() => setShowFishermanForm(true)}
-                            className="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-cyan-600/20 transition-all shrink-0 cursor-pointer"
+                            className="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-cyan-600/20 transition-all shrink-0 cursor-pointer font-mono"
                         >
                             Apply as Fisherman
                         </button>
@@ -449,31 +448,31 @@ export default function Dashboard({
                     <div className="bg-slate-900/80 p-6 rounded-2xl shadow-xl border border-slate-800 backdrop-blur-xl">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-base font-bold text-white">Fisherman BFAR Verification Form</h3>
-                            <button onClick={() => setShowFishermanForm(false)} className="text-xs text-slate-400 hover:text-slate-200">Cancel</button>
+                            <button onClick={() => setShowFishermanForm(false)} className="text-xs text-slate-400 hover:text-slate-200 font-mono">Cancel</button>
                         </div>
                         <form onSubmit={submitUpgrade} className="space-y-4 max-w-md">
                             <div>
-                                <InputLabel htmlFor="contact_number" value="Active Mobile Number" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" />
+                                <InputLabel htmlFor="contact_number" value="Active Mobile Number" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300 font-mono" />
                                 <TextInput 
                                     id="contact_number"
                                     type="text" 
                                     value={upgradeData.contact_number}
                                     onChange={e => setUpgradeData('contact_number', e.target.value)}
                                     placeholder="09123456789"
-                                    className="mt-1 block w-full !bg-slate-950/80 !border-slate-800 !text-white"
+                                    className="mt-1 block w-full !bg-slate-950/80 !border-slate-800 !text-white font-mono text-sm"
                                     required 
                                 />
                                 <InputError message={upgradeErrors.contact_number} className="mt-1" />
                             </div>
                             <div>
-                                <InputLabel htmlFor="bfar_registration_number" value="BFAR FishR Registration Number" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" />
+                                <InputLabel htmlFor="bfar_registration_number" value="BFAR FishR Registration Number" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300 font-mono" />
                                 <TextInput 
                                     id="bfar_registration_number"
                                     type="text" 
                                     value={upgradeData.bfar_registration_number}
                                     onChange={e => setUpgradeData('bfar_registration_number', e.target.value)}
                                     placeholder="e.g. PH-ZN-2026-0041"
-                                    className="mt-1 block w-full !bg-slate-950/80 !border-slate-800 !text-white"
+                                    className="mt-1 block w-full !bg-slate-950/80 !border-slate-800 !text-white font-mono text-sm"
                                     required 
                                 />
                                 <InputError message={upgradeErrors.bfar_registration_number} className="mt-1" />
@@ -482,14 +481,14 @@ export default function Dashboard({
                                 <button 
                                     type="submit" 
                                     disabled={upgradeProcessing}
-                                    className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs py-2.5 px-5 rounded-xl transition cursor-pointer"
+                                    className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs py-2.5 px-5 rounded-xl transition cursor-pointer font-mono"
                                 >
                                     Submit Credentials
                                 </button>
                                 <button 
                                     type="button" 
                                     onClick={() => setShowFishermanForm(false)}
-                                    className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs py-2.5 px-4 rounded-xl transition cursor-pointer"
+                                    className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs py-2.5 px-4 rounded-xl transition cursor-pointer font-mono"
                                 >
                                     Cancel
                                 </button>
@@ -506,7 +505,7 @@ export default function Dashboard({
                     {/* --- FISHERMAN 4 KPI METRIC CARDS --- */}
                     {userRole === 'fisherman' && (
                         <>
-                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-xl shadow-lg flex flex-col justify-between">
+                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-emerald-500/40 transition-all">
                                 <div className="flex items-center justify-between">
                                     <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Withdrawable Balance</span>
                                     <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
@@ -521,7 +520,7 @@ export default function Dashboard({
                                 </div>
                             </div>
 
-                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-xl shadow-lg flex flex-col justify-between">
+                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-cyan-500/40 transition-all">
                                 <div className="flex items-center justify-between">
                                     <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Lifetime Net Earnings</span>
                                     <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
@@ -536,7 +535,7 @@ export default function Dashboard({
                                 </div>
                             </div>
 
-                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-xl shadow-lg flex flex-col justify-between">
+                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-amber-500/40 transition-all">
                                 <div className="flex items-center justify-between">
                                     <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Escrow In Transit</span>
                                     <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
@@ -551,7 +550,7 @@ export default function Dashboard({
                                 </div>
                             </div>
 
-                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-xl shadow-lg flex flex-col justify-between">
+                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-purple-500/40 transition-all">
                                 <div className="flex items-center justify-between">
                                     <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Logged Biomass</span>
                                     <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400">
@@ -571,7 +570,7 @@ export default function Dashboard({
                     {/* --- BUYER 4 KPI METRIC CARDS --- */}
                     {userRole === 'buyer' && (
                         <>
-                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-lg flex flex-col justify-between">
+                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-cyan-500/40 transition-all">
                                 <div className="flex items-center justify-between">
                                     <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Active Bids Placed</span>
                                     <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
@@ -584,7 +583,7 @@ export default function Dashboard({
                                 </div>
                             </div>
 
-                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-lg flex flex-col justify-between">
+                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-emerald-500/40 transition-all">
                                 <div className="flex items-center justify-between">
                                     <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Won Consignments</span>
                                     <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
@@ -597,7 +596,7 @@ export default function Dashboard({
                                 </div>
                             </div>
 
-                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-lg flex flex-col justify-between">
+                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-emerald-500/40 transition-all">
                                 <div className="flex items-center justify-between">
                                     <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Available Liquid Funds</span>
                                     <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
@@ -614,7 +613,7 @@ export default function Dashboard({
                                 </div>
                             </div>
 
-                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-lg flex flex-col justify-between">
+                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-amber-500/40 transition-all">
                                 <div className="flex items-center justify-between">
                                     <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Locked in Transit Escrow</span>
                                     <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
@@ -854,6 +853,7 @@ export default function Dashboard({
                                                     </div>
                                                 )}
                                             </div>
+
                                         </div>
 
                                         <button
@@ -1066,7 +1066,7 @@ export default function Dashboard({
 
                     <form onSubmit={submitDeposit} className="space-y-5">
                         <div>
-                            <InputLabel value="Deposit Channel" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" />
+                            <InputLabel value="Deposit Channel" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300 font-mono" />
                             <div className="grid grid-cols-3 gap-2 mt-1.5">
                                 {[
                                     { id: 'gcash', label: 'GCash', color: 'border-blue-500/50 bg-blue-950/40 text-blue-400' },
@@ -1077,7 +1077,7 @@ export default function Dashboard({
                                         key={method.id}
                                         type="button"
                                         onClick={() => setWalletData('payment_method', method.id)}
-                                        className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                                        className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer font-mono ${
                                             walletData.payment_method === method.id 
                                                 ? `${method.color} ring-2 ring-emerald-500/30 shadow-sm` 
                                                 : 'border-slate-800 bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-white'
@@ -1091,7 +1091,7 @@ export default function Dashboard({
                         </div>
 
                         <div>
-                            <InputLabel value="Quick Select Amount (₱)" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" />
+                            <InputLabel value="Quick Select Amount (₱)" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300 font-mono" />
                             <div className="grid grid-cols-5 gap-1.5 mt-1.5">
                                 {presetAmounts.map((preset) => (
                                     <button
@@ -1111,7 +1111,7 @@ export default function Dashboard({
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="deposit_amount" value="Custom Amount (₱)" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" />
+                            <InputLabel htmlFor="deposit_amount" value="Custom Amount (₱)" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300 font-mono" />
                             <div className="mt-1.5 relative rounded-xl shadow-sm">
                                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-bold">
                                     ₱
@@ -1125,7 +1125,7 @@ export default function Dashboard({
                                     step="0.01"
                                     value={walletData.amount}
                                     onChange={(e) => setWalletData('amount', e.target.value)}
-                                    className="!pl-8 block w-full !bg-slate-900/90 !border-slate-800 !text-white font-mono font-bold"
+                                    className="!pl-8 block w-full !bg-slate-900/90 !border-slate-800 !text-white font-mono font-bold text-sm"
                                     placeholder="0.00"
                                     required
                                 />
@@ -1142,7 +1142,7 @@ export default function Dashboard({
                             <button
                                 type="submit"
                                 disabled={walletProcessing}
-                                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-lg shadow-emerald-600/25 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-lg shadow-emerald-600/25 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer font-mono"
                             >
                                 {walletProcessing ? 'Authorizing Payment...' : `Confirm Deposit of ₱${Number(walletData.amount || 0).toLocaleString()}`}
                             </button>
@@ -1192,7 +1192,7 @@ export default function Dashboard({
                             </div>
 
                             <div>
-                                <InputLabel value="Rate Catch Freshness & Delivery Quality" className="!text-xs !font-bold !uppercase !tracking-wider text-center block mb-2 !text-slate-300" />
+                                <InputLabel value="Rate Catch Freshness & Delivery Quality" className="!text-xs !font-bold !uppercase !tracking-wider text-center block mb-2 !text-slate-300 font-mono" />
                                 <div className="flex items-center justify-center gap-2 py-2">
                                     {[1, 2, 3, 4, 5].map((star) => (
                                         <button
@@ -1223,7 +1223,7 @@ export default function Dashboard({
                                 <button
                                     type="submit"
                                     disabled={confirmProcessing}
-                                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-lg shadow-emerald-600/25 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-lg shadow-emerald-600/25 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer font-mono"
                                 >
                                     {confirmProcessing ? 'Releasing Escrow Payout...' : 'Confirm Received & Release Payout'}
                                 </button>
@@ -1270,7 +1270,7 @@ export default function Dashboard({
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="bid_amount" value="Your New Offer (₱)" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" />
+                                <InputLabel htmlFor="bid_amount" value="Your New Offer (₱)" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300 font-mono" />
                                 <div className="mt-1.5 relative rounded-xl shadow-sm">
                                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-bold">
                                         ₱
@@ -1295,7 +1295,7 @@ export default function Dashboard({
                                 <button
                                     type="submit"
                                     disabled={bidProcessing}
-                                    className="w-full bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-lg shadow-cyan-600/25 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                                    className="w-full bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-lg shadow-cyan-600/25 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer font-mono"
                                 >
                                     {bidProcessing ? 'Submitting Offer...' : `Submit Counter-Bid of ₱${Number(bidData.bid_amount || 0).toLocaleString()}`}
                                 </button>
@@ -1333,7 +1333,7 @@ export default function Dashboard({
                     </div>
 
                     <div>
-                        <InputLabel htmlFor="withdraw_amount" value="Withdrawal Amount (₱)" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" />
+                        <InputLabel htmlFor="withdraw_amount" value="Withdrawal Amount (₱)" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300 font-mono" />
                         <TextInput
                             id="withdraw_amount"
                             type="number"
@@ -1350,7 +1350,7 @@ export default function Dashboard({
                     </div>
 
                     <div>
-                        <InputLabel htmlFor="payout_method" value="Payout Destination" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" />
+                        <InputLabel htmlFor="payout_method" value="Payout Destination" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300 font-mono" />
                         <select
                             id="payout_method"
                             value={withdrawData.payout_method}
@@ -1365,7 +1365,7 @@ export default function Dashboard({
                     </div>
 
                     <div>
-                        <InputLabel htmlFor="account_number" value="Account / Mobile Number" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" />
+                        <InputLabel htmlFor="account_number" value="Account / Mobile Number" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300 font-mono" />
                         <TextInput
                             id="account_number"
                             type="text"
@@ -1379,7 +1379,7 @@ export default function Dashboard({
                     </div>
 
                     <div>
-                        <InputLabel htmlFor="account_name" value="Account Holder Name" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" />
+                        <InputLabel htmlFor="account_name" value="Account Holder Name" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300 font-mono" />
                         <TextInput
                             id="account_name"
                             type="text"
@@ -1396,14 +1396,14 @@ export default function Dashboard({
                         <button
                             type="button"
                             onClick={() => setShowWithdrawModal(false)}
-                            className="w-1/2 py-2.5 rounded-xl border border-slate-800 text-xs font-bold text-slate-400 hover:bg-slate-900 hover:text-slate-200 transition cursor-pointer"
+                            className="w-1/2 py-2.5 rounded-xl border border-slate-800 text-xs font-bold text-slate-400 hover:bg-slate-900 hover:text-slate-200 transition cursor-pointer font-mono"
                         >
                             Cancel
                         </button>
                         <button 
                             type="submit"
                             disabled={withdrawProcessing}
-                            className="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/25 transition disabled:opacity-50 cursor-pointer"
+                            className="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/25 transition disabled:opacity-50 cursor-pointer font-mono"
                         >
                             {withdrawProcessing ? 'Authorizing Payout...' : 'Confirm Cash Out'}
                         </button>
