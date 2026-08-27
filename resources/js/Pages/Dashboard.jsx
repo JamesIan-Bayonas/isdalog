@@ -348,7 +348,7 @@ export default function Dashboard({
     return (
         <AuthenticatedLayout
             header={
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full">
                     <div className="flex items-center gap-3">
                         <div className="p-2.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
                             {userRole === 'fisherman' && <SparklesIcon className="w-6 h-6" />}
@@ -367,7 +367,7 @@ export default function Dashboard({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-end gap-2 sm:ml-auto">
                         {userRole === 'fisherman' && (
                             <>
                                 <button
