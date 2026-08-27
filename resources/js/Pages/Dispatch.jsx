@@ -153,7 +153,7 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
             <div className="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
                 {/* --- RIDER VERIFICATION STATUS NOTICE --- */}
-                {!isVerified && (
+                {/* {!isVerified && (
                     <div className="rounded-3xl bg-amber-500/10 border border-amber-500/30 p-6 backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
                         <div className="flex items-center gap-3.5">
                             <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 shrink-0">
@@ -170,7 +170,7 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
                             Gate Locked
                         </span>
                     </div>
-                )}
+                )} */}
 
                 {/* --- ACTIVE ASSIGNED CUSTODY RUNS --- */}
                 <div className="space-y-4">
@@ -320,7 +320,7 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
 
                                     <button
                                         type="button"
-                                        disabled={!isVerified}
+                                        // disabled={!isVerified}
                                         onClick={() => setSelectedClaimOrder(job)}
                                         className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white font-bold text-xs font-mono uppercase tracking-wider shadow-lg shadow-cyan-600/25 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98] cursor-pointer"
                                     >

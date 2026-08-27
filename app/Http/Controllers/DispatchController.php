@@ -90,11 +90,11 @@ class DispatchController extends Controller
 
         $user = $request->user();
 
-        if ($user->status !== 'verified') {
-            return redirect()->back()->withErrors([
-                'error' => 'Your rider account is unverified. Compliance verification is required before claiming cargo.',
-            ]);
-        }
+        // if ($user->status !== 'verified') {
+        //     return redirect()->back()->withErrors([
+        //         'error' => 'Your rider account is unverified. Compliance verification is required before claiming cargo.',
+        //     ]);
+        // }
 
         return DB::transaction(function () use ($validated, $id, $user) {
             $order = DB::table('orders_logistics')
