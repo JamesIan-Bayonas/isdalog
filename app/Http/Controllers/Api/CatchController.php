@@ -73,12 +73,16 @@ class CatchController extends Controller
                 $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $validated['image_base64']));
                 $fileName = 'catches/' . Str::uuid() . '.jpg';
                 
+                $diskName = config('filesystems.default', 'public');
                 /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-                $disk = Storage::disk('public');
-                $disk->put($fileName, $imageData);
+                $disk = Storage::disk($diskName);
+                $disk->put($fileName, $imageData, 'public');
                 
-                // Enforce root-relative pathing to prevent port/host mismatch regressions in web SPAs
-                $imageUrl = '/storage/' . $fileName;
+                // If S3/Supabase is active, persist the full public HTTPS CDN endpoint.
+                // Otherwise, maintain root-relative pathing for local filesystem development.
+                $imageUrl = ($diskName === 's3')
+                    ? $disk->url($fileName)
+                    : '/storage/' . $fileName;
             } catch (\Exception $e) {
                 $imageUrl = null;
             }

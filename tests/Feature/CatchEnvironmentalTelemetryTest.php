@@ -3,10 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\FishCatch;
-use App\Models\User;
 use App\Models\Listing;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class CatchEnvironmentalTelemetryTest extends TestCase
@@ -125,5 +126,37 @@ class CatchEnvironmentalTelemetryTest extends TestCase
         $this->assertStringStartsWith('/storage/catches/', $catch->image_url);
         $this->assertStringStartsWith('/storage/catches/', $listing->image_url);
         $this->assertStringNotContainsString('http://localhost', $listing->image_url);
+    }
+
+    public function test_catch_logging_persists_s3_url_when_s3_driver_is_active(): void
+    {
+        config(['filesystems.default' => 's3']);
+        Storage::fake('s3');
+
+        /** @var User $fisherman */
+        $fisherman = User::factory()->create([
+            'role' => 'fisherman',
+            'telegram_chat_id' => '1122334455',
+        ]);
+
+        $dummyBase64 = 'data:image/jpeg;base64,' . base64_encode('fake-binary-stream');
+
+        $response = $this->postJson('/api/catches', [
+            'telegram_chat_id' => '1122334455',
+            'species'          => 'Silver Pomfret',
+            'weight'           => 15.0,
+            'image_base64'     => $dummyBase64,
+        ]);
+
+        $response->assertStatus(201);
+
+        $listing = Listing::where('user_id', $fisherman->id)->latest('id')->first();
+        $this->assertNotNull($listing);
+        $this->assertNotNull($listing->image_url);
+        $this->assertStringContainsString('catches/', $listing->image_url);
+
+        // Verify storage persistence without triggering Intelephense adapter stub issues
+        $files = Storage::disk('s3')->allFiles('catches');
+        $this->assertNotEmpty($files);
     }
 }
