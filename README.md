@@ -220,7 +220,7 @@ $user->update(['telegram_chat_id' => $validated['telegram_chat_id']]);
 * The buyer is issued a private, 6-digit cryptographic clearance token: **`DELIVERY HANDSHAKE OTP: 388403`**.
 
 <p align="center">
-  <img src="docs/demo/09-buyer-live-tracking-otp" alt="Profile Telegram AI Telemetry Link" width="850"/>
+  <img src="docs/demo/09-buyer-live-tracking-otp.png" alt="Profile Telegram AI Telemetry Link" width="850"/>
 </p>
 
 
