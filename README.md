@@ -2,7 +2,11 @@
 
 > **Executive Summary:** IsdaLog is an enterprise-grade maritime catch consignment, auction, and cold-chain logistics platform engineered to digitize municipal port economies. The ecosystem couples an edge-resilient Telegram AI gateway (powered by Google Gemini 2.5 Flash with local Ollama vision fallback) with a high-concurrency Laravel 11 / Inertia.js core featuring real-time WebSocket bidding, cryptographic dual-OTP chain of custody, automated escrow settlements, and BFAR regulatory compliance auditing.
 
-[Live Demo](https://isdalog-production.up.railway.app)
+<p align="center">
+  <a href="https://isdalog-production.up.railway.app" target="_blank">
+    <img src="https://img.shields.io/badge/Live%20Production%20Demo-Click%20To%20Launch-06b6d4?style=for-the-badge&logo=railway&logoColor=white" alt="Live Demo" />
+  </a>
+</p>
 
 ---
 
