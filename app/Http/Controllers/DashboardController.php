@@ -242,6 +242,7 @@ class DashboardController extends Controller
      */
     private function renderBuyerDashboard(User $user): Response
     {
+        // 1. Live Bidding Watchlist with Highest Bid Subqueries
         $bids = DB::table('bids')
             ->join('listings', 'bids.listing_id', '=', 'listings.id')
             ->where('bids.buyer_id', $user->id)
@@ -261,6 +262,7 @@ class DashboardController extends Controller
                 return $item;
             });
 
+        // 2. All Historical and Active Buyer Orders
         $buyerOrders = DB::table('orders_logistics')
             ->join('listings', 'orders_logistics.listing_id', '=', 'listings.id')
             ->join('users as fishermen', 'orders_logistics.fisherman_id', '=', 'fishermen.id')
@@ -276,22 +278,65 @@ class DashboardController extends Controller
                 'orders_logistics.delivery_fee',
                 'orders_logistics.escrow_balance',
                 'orders_logistics.status',
-                'orders_logistics.delivery_otp', // Buyer's delivery confirmation code
+                'orders_logistics.delivery_otp',
                 'fishermen.name as fisherman_name',
                 'riders.name as rider_name',
+                'riders.contact_number as rider_contact',
                 'orders_logistics.created_at',
             ])
             ->orderByDesc('orders_logistics.created_at')
             ->get();
 
+        // 3. Filter In-Transit Active Shipments
+        $activeShipments = $buyerOrders->filter(function ($order) {
+            return in_array($order->status, ['pending_dispatch', 'en_route', 'delivered']);
+        })->values();
+
+        // 4. Compute Dynamic Buyer Metric Counters
+        $activeBidsCount = DB::table('bids')
+            ->join('listings', 'bids.listing_id', '=', 'listings.id')
+            ->where('bids.buyer_id', $user->id)
+            ->where('listings.status', 'active')
+            ->distinct('bids.listing_id')
+            ->count('bids.listing_id');
+
+        $wonConsignmentsCount = DB::table('orders_logistics')
+            ->where('user_id', $user->id)
+            ->count();
+
+        $lockedEscrowTotal = (float) DB::table('orders_logistics')
+            ->where('user_id', $user->id)
+            ->whereIn('status', ['pending_dispatch', 'en_route', 'delivered'])
+            ->sum('escrow_balance');
+
+        if ($lockedEscrowTotal == 0) {
+            $lockedEscrowTotal = (float) DB::table('orders_logistics')
+                ->where('user_id', $user->id)
+                ->whereIn('status', ['pending_dispatch', 'en_route', 'delivered'])
+                ->sum('final_price');
+        }
+
         return Inertia::render('Dashboard', [
-            'role' => 'buyer',
+            'role'             => 'buyer',
+            'role_context'     => 'buyer',
+            'metrics'          => [
+                'activeBids'    => $activeBidsCount,
+                'wonAuctions'   => $wonConsignmentsCount,
+                'walletBalance' => (float) $user->wallet_balance,
+                'escrowLocked'  => $lockedEscrowTotal,
+            ],
+            'stats'            => [
+                'activeBids'    => $activeBidsCount,
+                'wonAuctions'   => $wonConsignmentsCount,
+                'walletBalance' => (float) $user->wallet_balance,
+                'escrowLocked'  => $lockedEscrowTotal,
+            ],
             'biddingWatchlist' => $bids,
+            'activeShipments'  => $activeShipments,
             'buyerOrders'      => $buyerOrders,
             'myOrders'         => $buyerOrders,
         ]);
     }
-
     /**
      * Aggregate administrative metrics for BFAR Supervision.
      */
