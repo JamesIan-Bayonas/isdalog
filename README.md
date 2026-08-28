@@ -2,7 +2,7 @@
 
 > **Executive Summary:** IsdaLog is an enterprise-grade maritime catch consignment, auction, and cold-chain logistics platform engineered to digitize municipal port economies. The ecosystem couples an edge-resilient Telegram AI gateway (powered by Google Gemini 2.5 Flash with local Ollama vision fallback) with a high-concurrency Laravel 11 / Inertia.js core featuring real-time WebSocket bidding, cryptographic dual-OTP chain of custody, automated escrow settlements, and BFAR regulatory compliance auditing.
 
-[Live Demo]()
+[Live Demo](https://isdalog-production.up.railway.app)
 
 ---
 
@@ -52,6 +52,234 @@ IsdaLog bridges these operational gaps through a decoupled microservices archite
 * **BFAR Regulatory & Biomass Analytics Dashboard:** Dedicated administrative intelligence suite aggregating landing weights, species distributions, and municipal catch volume trends while flagging illegal harvest attempts → **Impact:** Enforces marine conservation regulations and provides verifiable maritime telemetry.
 
 ---
+
+
+## End-to-End System Walkthrough: The 3-Role Lifecycle
+
+The IsdaLog ecosystem orchestrates a complete chain of custody across three primary user roles: **Harvesters (Fishermen)**, **Consignment Buyers**, and **Logistics Riders**[cite: 2]. Below is the step-by-step lifecycle demonstrating how an offloaded catch transitions from edge image capture to marketplace auction and automated escrow settlement[cite: 1, 2].
+
+```text
+┌────────────────────────┐       ┌────────────────────────┐       ┌────────────────────────┐
+│  1. HARVESTER (BOT)    │ ───►  │   2. BUYER (MARKET)    │ ───►  │   3. RIDER (LOGISTICS) │
+│  • One-Click Linking   │       • WebSocket Bidding      │       • Pickup OTP Handshake   │
+│  • AI Vision Scan      │       • Atomic Escrow Hold     │       • Live GPS Telemetry     │
+│  • Broadcast to Floor  │       • Delivery Confirmation  │       • 97/3 Instant Payout    │
+└────────────────────────┘       └────────────────────────┘       └────────────────────────┘
+
+```
+
+---
+
+### Phase 1: Harvester Workflow (Zero-Typing Edge Ingestion)
+
+#### Step 1: One-Click Web-to-Telegram Authentication Handshake
+
+* The fisherman logs into the web terminal under the `fisherman` role and opens the **Profile Configuration** view.
+
+* Clicking **Link Telegram Account** calls `POST /profile/telegram/token`, generating a short-lived one-time pairing key in Redis/Cache (`telegram_bind_<token>`) valid for 10 minutes.
+
+
+* The web app presents a direct deep link (`https://t.me/<bot>?start=link_<token>`) that routes the user to the Telegram bot with automated verification.
+
+<p align="center">
+  <img src="docs/demo/01-profile-telegram-link.png" alt="Profile Telegram AI Telemetry Link" width="850"/>
+</p>
+
+
+```php
+// app/Http/Controllers/Api/UserController.php
+$cacheKey = 'telegram_bind_' . $validated['token'];
+$userId = Cache::get($cacheKey);
+$user->update(['telegram_chat_id' => $validated['telegram_chat_id']]);
+
+```
+
+(Code Reference: `app/Http/Controllers/Api/UserController.php`)
+
+---
+
+#### Step 2: Multi-Modal AI Fish Identification & Weather Telemetry
+
+* Inside Telegram, the bot clears authentication and waits for a photo payload.
+
+
+* When a catch photo is uploaded, the service initiates two background checks:
+
+
+1. **Open-Meteo Weather Safety Check:** Evaluates port wind speeds in Zamboanga del Norte against the 30 km/h gale safety threshold (`checkSeaConditions()`).
+
+
+2. **Multi-Modal Vision Pipeline:** Dispatches the image matrix to Google Gemini 2.5 Flash (with automatic edge failover to local Ollama `llama3.2-vision`), identifying the biological species (e.g., *Yellowstripe Scad*).
+
+<p align="center">
+  <img src="docs/demo/02-telegram-ai-scan.png" alt="Telegram AI Species Identification" width="500"/>
+</p>
+
+---
+
+#### Step 3: Valuation, Staging, and Floor Publication
+
+* The bot prompts the harvester for gross weight (`13 kg`) and asking price per kilogram (`₱120.00 / kg`), automatically calculating the consignment floor value (`₱1,560.00`).
+
+
+* After selecting the landing hub (*Dipolog Port*), the bot renders an interactive summary card.
+
+
+* Tapping **🚀 Confirm & Publish to Floor** invokes `isdalog.api.js`, transmitting the image base64, weather telemetry, and coordinates to the Laravel API.
+
+<p align="center">
+  <img src="docs/demo/03-telegram-valuation-publish.png" alt="Telegram AI Species Identification" width="500"/>
+</p>
+
+---
+
+#### Step 4: Sub-Second WebSocket Live Floor Broadcasting
+
+* Laravel persists the biological catch entry in `catches`, uploads the image to the public disk, creates a listing record in `listings`, and dispatches the `CatchBidUpdated` event via Laravel Reverb.
+
+
+* The harvest batch appears live across all active market sessions instantly.
+
+<p align="center">
+  <img src="docs/demo/04-live-floor-auction.png" alt="Telegram AI Species Identification" width="500"/>
+</p>
+
+
+---
+
+### Phase 2: Consignment Buyer Workflow (Real-Time Bidding & Escrow Locking)
+
+#### Step 5: Trading Desk Liquidity & Consignment Monitor
+
+* The buyer logs into the terminal with the `buyer` role (e.g., **Maria the Merchant**).
+
+
+* The **Consignment Trading Desk** provides real-time telemetry over active bids, won consignments, available liquid wallet funds (`₱8,800.00`), and funds currently locked in transit escrow (`₱5,500.00`).
+
+<p align="center">
+  <img src="docs/demo/05-buyer-trading-desk.png" alt="Profile Telegram AI Telemetry Link" width="850"/>
+</p>
+
+---
+
+#### Step 6: Live WebSocket Bidding on Harvest Batches
+
+* Navigating to the **Live Floor**, the buyer monitors live-streamed catch batches offloaded at municipal ports.
+
+<p align="center">
+  <img src="docs/demo/06-buyer-live-floor.png" alt="Profile Telegram AI Telemetry Link" width="850"/>
+</p>
+
+* Finding the **Yellowstripe Scad** (13.00 kg) previously registered by the fisherman at a floor price of `₱1,560.00`, the buyer enters a higher counter-offer of `₱1,600.00`.
+
+
+* Clicking **Place Verified Bid** dispatches a sub-second WebSocket event (`CatchBidUpdated`), broadcasting the new `₱1,600.00` leading bid across the entire marketplace pool without page reload.
+
+<p align="center">
+  <img src="docs/demo/07-buyer-place-bid.png" alt="Profile Telegram AI Telemetry Link" width="850"/>
+</p>
+
+
+---
+
+### Phase 3: Cold-Chain Logistics & Dual-OTP Custody Chain
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                           CRYPTOGRAPHIC CHAIN OF CUSTODY                                │
+├──────────────────────────┬─────────────────────────────┬────────────────────────────────┤
+│ 1. Port Pickup Handshake │ 2. Live Telemetry Transit   │ 3. Buyer Drop-off Handshake    │
+│ Harvester holds:         │ Rider streams live GPS      │ Buyer holds:                   │
+│ [ PICKUP OTP: 766973 ]   │ coordinates to Leaflet Map  │ [ DELIVERY OTP: 388403 ]       │
+│ Rider inputs to CLAIM    │ Status: EN ROUTE            │ Rider inputs to COMPLETE RUN   │
+└──────────────────────────┴─────────────────────────────┴────────────────────────────────┘
+
+```
+
+#### Step 7: Port Claim & Cargo Handshake Hand-off
+
+* When the harvester accepts the winning `₱1,600.00` bid, Laravel executes an atomic transaction: the buyer's liquid wallet balance is debited, `₱1,600.00` is locked into escrow (`orders_logistics.escrow_balance`), and an active delivery run is staged on the dispatch board.
+
+
+* The logistics rider (**Raider**) arrives at the landing port, inspects the physical crate, and inputs the harvester's **Pickup OTP** (`766973`).
+
+
+* Submitting the valid OTP moves the consignment state from `pending_dispatch` to `en_route` and locks the rider into **Active Custody Run #3**.
+
+<p align="center">
+  <img src="docs/demo/08-rider-en-route-dashboard.png" alt="Profile Telegram AI Telemetry Link" width="850"/>
+</p>
+
+---
+
+#### Step 8: Live GPS Telemetry Stream & Delivery OTP Provisioning
+
+* While the rider is in transit, the buyer's **Active Consignments Receiving Bay** displays an active Leaflet map streaming live GPS coordinates from the rider's device over private WebSocket channels (`orders.{orderId}`).
+
+
+* The buyer is issued a private, 6-digit cryptographic clearance token: **`DELIVERY HANDSHAKE OTP: 388403`**.
+
+<p align="center">
+  <img src="docs/demo/09-buyer-live-tracking-otp" alt="Profile Telegram AI Telemetry Link" width="850"/>
+</p>
+
+
+---
+
+#### Step 9: Final Delivery Verification
+
+* Upon arrival at the delivery destination, the rider requests the clearance code from the buyer and enters `388403` into the terminal.
+
+
+* The system transitions the cargo status to `delivered` and prompts the rider console with `✓ Cargo Handed Over · Awaiting Escrow Release`.
+
+<p align="center">
+  <img src="docs/demo/10-rider-delivered-status.png" alt="Profile Telegram AI Telemetry Link" width="850"/>
+</p>
+
+
+---
+
+### Phase 4: Atomic Settlement & Dual Evaluation
+
+#### Step 10: Escrow Release & Multi-Party Revenue Split
+
+* With cargo physical delivery authenticated, the buyer's terminal updates the tracking status to **Arrived at Destination / Delivered** and unlocks the **🛡️ Verify Inspection & Release Escrow** button.
+
+
+
+* Clicking **Verify Inspection & Release Escrow** opens the dual-evaluation modal to submit 1–5 star reviews for catch freshness (Fisherman) and handling speed (Rider).
+
+
+* Upon form submission, `OrderConfirmationController` executes the financial distribution within an atomic database transaction (`DB::transaction` with `lockForUpdate`):
+
+```php
+// app/Http/Controllers/OrderConfirmationController.php
+$catchPrice     = (float) $order->catch_price;
+$deliveryFee    = (float) $order->delivery_fee;
+$fishermanShare = round($catchPrice * 0.97, 2); // 97% Net Harvester Payout
+$platformShare  = round($catchPrice * 0.03, 2); // 3% Platform Governance Fee
+$riderShare     = $deliveryFee;                 // 100% Courier Logistics Fee
+
+$this->creditWallet($order->fisherman_id, $order->id, $fishermanShare, 'catch_sale');
+$this->creditWallet($platformAdmin->id, $order->id, $platformShare, 'platform_fee');
+if ($order->rider_id && $riderShare > 0) {
+    $this->creditWallet($order->rider_id, $order->id, $riderShare, 'delivery_fee');
+}
+
+```
+
+(Code Reference: `app/Http/Controllers/OrderConfirmationController.php`)
+
+<p align="center">
+  <img src="docs/demo/11-buyer-verify-release-escrow.png" alt="Buyer Verify Inspection and Release Escrow" width="850"/>
+</p>
+
+
+---
+
+
+
 
 ## Project Structure
 
