@@ -1,5 +1,9 @@
-node_modules/
-vendor/
-public/build/
-.vite/
 .env
+.env.*
+!.env.example
+vendor
+node_modules
+public/build
+.vite
+storage/logs
+.git
