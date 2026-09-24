@@ -22,6 +22,10 @@ export default function Marketplace({ auth, activeListings = [], activeOrders: i
     const [listings, setListings] = useState(activeListings);
     const [orders, setOrders] = useState(initialActiveOrders);
     const [copiedOtpId, setCopiedOtpId] = useState(null);
+    const isFisherman = auth?.user?.role === 'fisherman';
+    const isRider = auth?.user?.role === 'rider';
+    const isBuyer = auth?.user?.role === 'buyer';
+    const usesLightMarketplace = isFisherman || isRider || isBuyer;
 
     useEffect(() => {
         setListings(activeListings);
@@ -71,6 +75,7 @@ export default function Marketplace({ auth, activeListings = [], activeOrders: i
     return (
         <AuthenticatedLayout
             user={auth.user}
+            theme={usesLightMarketplace ? 'light' : 'dark'}
             header={
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
                     <div className="flex items-center gap-3">
@@ -79,20 +84,28 @@ export default function Marketplace({ auth, activeListings = [], activeOrders: i
                         </div>
                         <div>
                             <h2 className="font-black text-xl text-white tracking-tight flex items-center gap-2">
-                                Live Trading Floor
-                                <span className="text-[10px] font-mono uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-500/30">
-                                    Real-Time Consignments
+                                {usesLightMarketplace ? 'Marketplace' : 'Live Trading Floor'}
+                                <span className="whitespace-nowrap text-[10px] font-mono uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-500/30">
+                                    {isRider ? 'Live' : isFisherman || isBuyer ? 'Live offers' : 'Real-Time Consignments'}
                                 </span>
                             </h2>
-                            <p className="text-xs font-mono text-slate-400">Dipolog Municipal Ports · Auction & Escrow Bidding</p>
+                            <p className="text-xs font-mono text-slate-400">
+                                {isFisherman
+                                    ? 'Review your active catch auctions and current buyer offers'
+                                    : isRider
+                                        ? 'View active catch listings across participating ports'
+                                        : isBuyer
+                                            ? 'Browse live catch listings and place offers securely'
+                                        : 'Dipolog Municipal Ports · Auction & Escrow Bidding'}
+                            </p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2 self-start sm:self-auto">
                         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs font-mono">
                             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                            <span className="text-slate-400">Live Pool:</span>
-                            <span className="font-bold text-white">{listings.length} Batches</span>
+                            <span className="text-slate-400">Active listings:</span>
+                            <span className="font-bold text-white">{listings.length}</span>
                         </div>
                     </div>
                 </div>
@@ -100,7 +113,7 @@ export default function Marketplace({ auth, activeListings = [], activeOrders: i
         >
             <Head title="Live Marketplace Floor — IsdaLog" />
 
-            <div className="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            <div className={`${usesLightMarketplace ? 'isdalog-marketplace-dashboard' : ''} py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8`}>
 
                 {/* --- MARKET TREND INTELLIGENCE ALERTS --- */}
                 {trends.length > 0 && (
@@ -233,17 +246,17 @@ export default function Marketplace({ auth, activeListings = [], activeOrders: i
                     <div className="flex items-center justify-between pb-1 border-b border-slate-800/80">
                         <h3 className="font-black text-base text-white tracking-tight flex items-center gap-2">
                             <BoltIcon className="w-5 h-5 text-amber-400" />
-                            Live Consignment Batches
+                            {usesLightMarketplace ? 'Marketplace listings' : 'Live Consignment Batches'}
                         </h3>
                         <span className="text-xs font-mono text-slate-400">
-                            Sub-second Reverb WebSocket Updates
+                            {isFisherman ? 'Buyer offers update automatically' : isRider ? 'Live listing updates' : 'Sub-second Reverb WebSocket Updates'}
                         </span>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {listings.length === 0 ? (
                             <div className="text-slate-500 text-xs font-mono py-16 col-span-full text-center bg-slate-900/40 border border-dashed border-slate-800 rounded-3xl">
-                                No active fish listings available on the trading floor right now.
+                                No active listings are available right now.
                             </div>
                         ) : (
                             listings.map(listing => (
@@ -275,6 +288,7 @@ function DeliveryConfirmAction({ order }) {
                 order={order}
                 isOpen={isRatingModalOpen}
                 onClose={() => setIsRatingModalOpen(false)}
+                theme="light"
             />
         </div>
     );
@@ -405,8 +419,10 @@ function LiveListingCard({ initialListing, auth }) {
                 <div className="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl text-center">
                     <p className="text-xs font-mono text-slate-400">
                         {auth.user?.role === 'fisherman'
-                            ? '🐟 Harvest Auction Live · Fellow Harvester View'
-                            : '🔒 Bidding open to registered buyers only'}
+                            ? 'Another fisherman’s auction is live'
+                            : auth.user?.role === 'rider'
+                                ? 'Buyer bidding only · View listing details'
+                                : '🔒 Bidding open to registered buyers only'}
                     </p>
                 </div>
             )}
@@ -428,7 +444,7 @@ function AcceptBidAction({ listing }) {
                 disabled={processing}
                 className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white py-3 rounded-xl font-bold font-mono shadow-sm shadow-emerald-600/20 disabled:opacity-50 transition-all active:scale-[0.98] text-xs uppercase tracking-wider cursor-pointer"
             >
-                {processing ? "Accepting Bid..." : "Accept Highest Bid & Close Auction"}
+                {processing ? "Accepting offer..." : "Accept highest offer"}
             </button>
         </div>
     );

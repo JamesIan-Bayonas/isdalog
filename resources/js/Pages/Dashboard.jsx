@@ -48,7 +48,7 @@ function ActiveCatchAuctionCard({ listing, onAccept, isProcessing, errorMessage 
             <div className="space-y-3">
                 <div className="flex justify-between items-center">
                     <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-400 bg-cyan-950/70 px-2.5 py-0.5 rounded-full border border-cyan-800/60 font-bold">
-                        Crate #{listing.id}
+                        Auction #{listing.id}
                     </span>
                     <span className={`text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full border ${
                         hasBids 
@@ -60,20 +60,20 @@ function ActiveCatchAuctionCard({ listing, onAccept, isProcessing, errorMessage 
                 </div>
 
                 <h4 className="text-base font-black text-white tracking-tight">
-                    {listing.fish_name} ({listing.weight_kg} KG)
+                    {listing.fish_name} · {listing.weight_kg} kg
                 </h4>
 
                 <div className="p-3.5 bg-slate-950/80 rounded-xl border border-slate-800/80 space-y-2 text-xs font-mono shadow-inner">
                     <div className="flex justify-between text-slate-400">
-                        <span>Starting Floor:</span>
+                        <span>Starting price</span>
                         <span className="font-semibold text-slate-200">₱{startingPrice.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between items-center border-t border-slate-800/60 pt-1.5">
-                        <span className="text-slate-300 font-bold">Current Top Offer:</span>
+                        <span className="text-slate-300 font-bold">Highest offer</span>
                         <span className="font-black text-emerald-400 text-sm">₱{topOffer.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-[11px] text-slate-500 border-t border-slate-800/60 pt-1">
-                        <span>Leading Bidder:</span>
+                        <span>Leading buyer</span>
                         <span className="font-bold text-cyan-400">{bidderName}</span>
                     </div>
                 </div>
@@ -107,13 +107,13 @@ function ActiveCatchAuctionCard({ listing, onAccept, isProcessing, errorMessage 
                     ) : (
                         <>
                             <CheckBadgeIcon className="w-4 h-4" />
-                            <span>Accept ₱{topOffer.toFixed(2)} & Award Winner</span>
+                            <span>Accept ₱{topOffer.toFixed(2)} offer</span>
                         </>
                     )}
                 </button>
             ) : (
                 <div className="text-center py-2.5 text-[11px] font-mono text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800/50">
-                    Waiting for buyers to place bids...
+                    Waiting for buyer offers
                 </div>
             )}
         </div>
@@ -347,6 +347,7 @@ export default function Dashboard({
 
     return (
         <AuthenticatedLayout
+            theme={['fisherman', 'rider', 'buyer'].includes(userRole) ? 'light' : 'dark'}
             header={
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full">
                     <div className="flex items-center gap-3">
@@ -357,13 +358,27 @@ export default function Dashboard({
                         </div>
                         <div>
                             <h2 className="font-black text-xl text-white tracking-tight flex items-center gap-2">
-                                {userRole === 'fisherman' && 'Harvester Consignment Terminal'}
-                                {userRole === 'buyer' && 'Consignment Trading Desk'}
-                                {userRole === 'rider' && 'Fleet Logistics Station'}
+                                {userRole === 'fisherman' && 'Fisherman Dashboard'}
+                                {userRole === 'buyer' && 'Buyer Dashboard'}
+                                {userRole === 'rider' && 'Rider Dashboard'}
                             </h2>
-                            <p className="text-xs font-mono text-slate-400">
-                                Node Identity: <span className="text-cyan-400 font-bold">{auth.user.name}</span> · Terminal Context: <span className="text-slate-200 font-bold capitalize">{userRole}</span>
-                            </p>
+                            {userRole === 'fisherman' ? (
+                                <p className="text-sm text-slate-400">
+                                    Auctions, earnings, and catch records for <span className="text-slate-700 font-semibold">{auth.user.name}</span>
+                                </p>
+                            ) : userRole === 'rider' ? (
+                                <p className="text-sm text-slate-400">
+                                    Delivery workload and activity for <span className="text-slate-700 font-semibold">{auth.user.name}</span>
+                                </p>
+                            ) : userRole === 'buyer' ? (
+                                <p className="text-sm text-slate-400">
+                                    Active bids, wallet funds, and delivery updates for <span className="text-slate-700 font-semibold">{auth.user.name}</span>
+                                </p>
+                            ) : (
+                                <p className="text-xs font-mono text-slate-400">
+                                    Node Identity: <span className="text-cyan-400 font-bold">{auth.user.name}</span> · Terminal Context: <span className="text-slate-200 font-bold capitalize">{userRole}</span>
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -372,17 +387,17 @@ export default function Dashboard({
                             <>
                                 <button
                                     onClick={() => setShowWithdrawModal(true)}
-                                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-[0.98] cursor-pointer font-mono"
+                                    className="isdalog-button-secondary inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-[0.98] cursor-pointer font-mono"
                                 >
                                     <ArrowDownCircleIcon className="w-4 h-4" />
-                                    <span>Cash Out Earnings</span>
+                                    <span>Withdraw funds</span>
                                 </button>
                                 <Link
                                     href={route('marketplace.index')}
                                     className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold rounded-xl shadow-md transition-all active:scale-[0.98] font-mono"
                                 >
                                     <PlusCircleIcon className="w-4 h-4" />
-                                    <span>View Live Auctions</span>
+                                    <span>View marketplace</span>
                                 </Link>
                             </>
                         )}
@@ -393,7 +408,7 @@ export default function Dashboard({
                                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-600/20 transition-all active:scale-[0.98] cursor-pointer font-mono"
                             >
                                 <ArrowUpCircleIcon className="w-4 h-4" />
-                                <span>Top Up Wallet</span>
+                                <span>Add wallet funds</span>
                             </button>
                         )}
                     </div>
@@ -402,7 +417,7 @@ export default function Dashboard({
         >
             <Head title={`${userRole.toUpperCase()} Terminal — IsdaLog`} />
 
-            <div className="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+            <div className={`${userRole === 'fisherman' ? 'isdalog-fisherman-dashboard' : userRole === 'rider' ? 'isdalog-rider-dashboard' : userRole === 'buyer' ? 'isdalog-buyer-dashboard' : ''} py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6`}>
                 
                 {/* Global Status & Feedback Banners */}
                 {flashSuccess && (
@@ -507,7 +522,7 @@ export default function Dashboard({
                         <>
                             <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-emerald-500/40 transition-all">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Withdrawable Balance</span>
+                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Available balance</span>
                                     <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
                                         <BanknotesIcon className="w-5 h-5" />
                                     </div>
@@ -516,13 +531,13 @@ export default function Dashboard({
                                     <h3 className="text-3xl font-black text-emerald-400 tracking-tight font-mono">
                                         ₱{parseFloat(metrics.walletBalance || auth?.user?.wallet_balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </h3>
-                                    <p className="text-xs font-mono text-slate-400 mt-1">Available for GCash / Maya payout</p>
+                                    <p className="text-xs font-mono text-slate-400 mt-1">Ready for GCash or Maya withdrawal</p>
                                 </div>
                             </div>
 
                             <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-cyan-500/40 transition-all">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Lifetime Net Earnings</span>
+                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Net earnings</span>
                                     <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
                                         <ArrowTrendingUpIcon className="w-5 h-5" />
                                     </div>
@@ -537,7 +552,7 @@ export default function Dashboard({
 
                             <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-amber-500/40 transition-all">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Escrow In Transit</span>
+                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Pending escrow</span>
                                     <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
                                         <LockClosedIcon className="w-5 h-5" />
                                     </div>
@@ -552,7 +567,7 @@ export default function Dashboard({
 
                             <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-purple-500/40 transition-all">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Logged Biomass</span>
+                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Recorded catch</span>
                                     <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400">
                                         <ScaleIcon className="w-5 h-5" />
                                     </div>
@@ -572,33 +587,33 @@ export default function Dashboard({
                         <>
                             <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-cyan-500/40 transition-all">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Active Bids Placed</span>
+                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Active bids</span>
                                     <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
                                         <ArrowTrendingUpIcon className="w-5 h-5" />
                                     </div>
                                 </div>
                                 <div className="mt-4">
                                     <h4 className="text-3xl font-black text-white font-mono mt-1">{metrics.activeBids ?? 0}</h4>
-                                    <span className="text-[11px] font-mono text-cyan-400 font-semibold">Trading Floor</span>
+                                    <span className="text-[11px] font-mono text-cyan-400 font-semibold">Live marketplace</span>
                                 </div>
                             </div>
 
                             <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-emerald-500/40 transition-all">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Won Consignments</span>
+                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Won purchases</span>
                                     <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
                                         <ShoppingBagIcon className="w-5 h-5" />
                                     </div>
                                 </div>
                                 <div className="mt-4">
                                     <h4 className="text-3xl font-black text-white font-mono mt-1">{metrics.wonAuctions ?? 0}</h4>
-                                    <span className="text-[11px] font-mono text-emerald-400 font-semibold">Ready for Dispatch</span>
+                                    <span className="text-[11px] font-mono text-emerald-400 font-semibold">Ready for dispatch</span>
                                 </div>
                             </div>
 
                             <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-emerald-500/40 transition-all">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Available Liquid Funds</span>
+                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Wallet balance</span>
                                     <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
                                         <CircleStackIcon className="w-5 h-5" />
                                     </div>
@@ -608,14 +623,14 @@ export default function Dashboard({
                                         ₱{Number(metrics.walletBalance ?? auth?.user?.wallet_balance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </h4>
                                     <button onClick={() => setShowWalletModal(true)} className="text-[11px] font-mono text-emerald-400/90 font-bold hover:underline hover:text-emerald-300 flex items-center gap-1 mt-1 cursor-pointer">
-                                        <span>+ Add Balance</span>
+                                        <span>+ Add funds</span>
                                     </button>
                                 </div>
                             </div>
 
                             <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-amber-500/40 transition-all">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Locked in Transit Escrow</span>
+                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Escrow in transit</span>
                                     <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
                                         <BanknotesIcon className="w-5 h-5" />
                                     </div>
@@ -638,9 +653,9 @@ export default function Dashboard({
                         <>
                             <div className="bg-slate-900/70 p-5 rounded-2xl border border-slate-800 backdrop-blur-xl shadow-lg flex items-center justify-between">
                                 <div>
-                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Completed Runs</span>
+                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Completed deliveries</span>
                                     <h4 className="text-2xl font-black text-white font-mono mt-1">{metrics.completedDeliveries ?? 0}</h4>
-                                    <span className="text-[11px] font-mono text-emerald-400 font-semibold">Verified Chain-of-Custody</span>
+                                    <span className="text-[11px] font-mono text-emerald-400 font-semibold">Recorded handovers</span>
                                 </div>
                                 <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400">
                                     <ShieldCheckIcon className="w-6 h-6" />
@@ -649,9 +664,9 @@ export default function Dashboard({
 
                             <div className="bg-slate-900/70 p-5 rounded-2xl border border-slate-800 backdrop-blur-xl shadow-lg flex items-center justify-between">
                                 <div>
-                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Harbor Jobs Ready</span>
+                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Jobs available</span>
                                     <h4 className="text-2xl font-black text-cyan-400 font-mono mt-1">{metrics.pendingDispatch ?? 0}</h4>
-                                    <span className="text-[11px] font-mono text-slate-400">Awaiting Courier Claim</span>
+                                    <span className="text-[11px] font-mono text-slate-400">Ready to be claimed</span>
                                 </div>
                                 <div className="p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-xl text-cyan-400">
                                     <TruckIcon className="w-6 h-6" />
@@ -660,10 +675,10 @@ export default function Dashboard({
 
                             <div className="bg-slate-900/70 p-5 rounded-2xl border border-slate-800 backdrop-blur-xl shadow-lg flex items-center justify-between col-span-1 sm:col-span-2">
                                 <div>
-                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Logistics Station</span>
-                                    <h4 className="text-base font-black text-white mt-1">Galas Port Dispatch Desk</h4>
+                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Dispatch workspace</span>
+                                    <h4 className="text-base font-black text-white mt-1">Galas Port delivery board</h4>
                                     <Link href={route('dispatch.index')} className="text-xs font-mono font-bold text-cyan-400 hover:text-cyan-300 transition-colors inline-flex items-center gap-1 mt-1">
-                                        Open Cargo Board →
+                                        Open dispatch board →
                                     </Link>
                                 </div>
                                 <div className="p-3 bg-indigo-500/10 border border-indigo-500/30 rounded-xl text-indigo-400">
@@ -686,18 +701,18 @@ export default function Dashboard({
                                     <SparklesIcon className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h3 className="text-base font-black text-white tracking-tight">Active Catch Auctions & Bid Acceptance</h3>
-                                    <p className="text-xs font-mono text-slate-400">Review incoming marketplace offers and award winning bids</p>
+                                    <h3 className="text-base font-black text-white tracking-tight">Active auctions</h3>
+                                    <p className="text-xs font-mono text-slate-400">Review offers and award a buyer when you are ready</p>
                                 </div>
                             </div>
                             <span className="text-xs font-mono font-bold bg-cyan-950/70 text-cyan-400 px-3 py-1 rounded-lg border border-cyan-800/60">
-                                {activeListings ? activeListings.length : 0} Live On Trading Floor
+                                {activeListings ? activeListings.length : 0} live in marketplace
                             </span>
                         </div>
 
                         {(!activeListings || activeListings.length === 0) ? (
                             <div className="text-center py-8 text-slate-500 text-xs font-mono">
-                                No active auctions currently on the floor. Log a catch via Telegram to start an auction.
+                                No active auctions. Log a catch through Telegram to create one.
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -722,8 +737,8 @@ export default function Dashboard({
                     <div className="bg-slate-900/70 rounded-2xl border border-slate-800 backdrop-blur-xl shadow-lg overflow-hidden">
                         <div className="p-6 border-b border-slate-800 flex items-center justify-between">
                             <div>
-                                <h3 className="text-lg font-black text-white tracking-tight">Consignment Sales & Escrow Ledger</h3>
-                                <p className="text-xs font-mono text-slate-400">Completed catch purchases and active dispatch handshakes</p>
+                                <h3 className="text-lg font-black text-white tracking-tight">Sales and escrow</h3>
+                                <p className="text-xs font-mono text-slate-400">Track buyer purchases, dispatch status, and secured payouts</p>
                             </div>
                             <span className="text-xs font-mono bg-slate-950 text-slate-400 px-3 py-1 rounded-full border border-slate-800 font-semibold">
                                 Platform Fee: 3.0%
@@ -1000,11 +1015,11 @@ export default function Dashboard({
                             <div className="flex items-center gap-2">
                                 <ClockIcon className="w-5 h-5 text-cyan-400" />
                                 <h3 className="font-black text-base text-white tracking-tight">
-                                    {userRole === 'fisherman' ? 'Recent Catch Telemetry Logs' : 'Recent Logistics Dispatch Log'}
+                                    {userRole === 'fisherman' ? 'Recent catch records' : 'Recent delivery activity'}
                                 </h3>
                             </div>
                             <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/40">
-                                BFAR COMPLIANT
+                                {userRole === 'fisherman' ? 'BFAR verified' : 'Dispatch activity'}
                             </span>
                         </div>
 
@@ -1045,7 +1060,7 @@ export default function Dashboard({
             {/* 7. VIRTUAL WALLET TOP-UP MODAL (BUYER)                                    */}
             {/* ========================================================================= */}
             <Modal show={showWalletModal} onClose={() => setShowWalletModal(false)} maxWidth="md">
-                <div className="p-6 space-y-6 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100">
+                <div className="isdalog-light-modal p-6 space-y-6 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100">
                     <div className="flex items-center justify-between border-b border-slate-800 pb-4">
                         <div className="flex items-center gap-2.5">
                             <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
@@ -1156,7 +1171,7 @@ export default function Dashboard({
             {/* ========================================================================= */}
             <Modal show={Boolean(selectedOrderToConfirm)} onClose={() => setSelectedOrderToConfirm(null)} maxWidth="md">
                 {selectedOrderToConfirm && (
-                    <div className="p-6 space-y-6 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100">
+                    <div className="isdalog-light-modal p-6 space-y-6 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100">
                         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
                             <div className="flex items-center gap-2.5">
                                 <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
@@ -1238,7 +1253,7 @@ export default function Dashboard({
             {/* ========================================================================= */}
             <Modal show={Boolean(counterBidItem)} onClose={() => setCounterBidItem(null)} maxWidth="md">
                 {counterBidItem && (
-                    <div className="p-6 space-y-6 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100">
+                    <div className="isdalog-light-modal p-6 space-y-6 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100">
                         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
                             <div className="flex items-center gap-2.5">
                                 <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
@@ -1309,15 +1324,15 @@ export default function Dashboard({
             {/* 10. WITHDRAWAL CASHOUT MODAL (FISHERMAN)                                  */}
             {/* ========================================================================= */}
             <Modal show={showWithdrawModal} onClose={() => setShowWithdrawModal(false)} maxWidth="md">
-                <form onSubmit={submitWithdraw} className="p-6 space-y-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100">
+                <form onSubmit={submitWithdraw} className="isdalog-light-modal p-6 space-y-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100">
                     <div className="flex justify-between items-center pb-2 border-b border-slate-800">
                         <div className="flex items-center gap-2">
                             <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                                 <ArrowDownCircleIcon className="w-5 h-5" />
                             </div>
                             <div>
-                                <h3 className="text-base font-bold text-white">Cash Out Fisherman Earnings</h3>
-                                <p className="text-xs font-mono text-slate-400">Withdraw available sales balance</p>
+                                <h3 className="text-base font-bold text-white">Withdraw funds</h3>
+                                <p className="text-xs font-mono text-slate-400">Transfer your available sales balance</p>
                             </div>
                         </div>
                         <button type="button" onClick={() => setShowWithdrawModal(false)} className="text-slate-400 hover:text-white transition-colors cursor-pointer">
@@ -1405,7 +1420,7 @@ export default function Dashboard({
                             disabled={withdrawProcessing}
                             className="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/25 transition disabled:opacity-50 cursor-pointer font-mono"
                         >
-                            {withdrawProcessing ? 'Authorizing Payout...' : 'Confirm Cash Out'}
+                            {withdrawProcessing ? 'Authorizing payout...' : 'Confirm withdrawal'}
                         </button>
                     </div>
                 </form>

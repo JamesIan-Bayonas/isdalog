@@ -113,6 +113,7 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
     return (
         <AuthenticatedLayout
             user={auth.user}
+            theme="light"
             header={
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
                     <div className="flex items-center gap-3">
@@ -121,28 +122,28 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
                         </div>
                         <div>
                             <h2 className="font-black text-xl text-white tracking-tight flex items-center gap-2">
-                                Cold-Chain Logistics Dispatch
-                                <span className={`text-[10px] font-mono uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full border ${
+                                Dispatch Board
+                                <span className={`whitespace-nowrap text-[10px] font-mono uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full border ${
                                     isVerified 
                                         ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
                                         : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
                                 }`}>
-                                    {isVerified ? 'Logistics Clearance Active' : 'Pending Verification'}
+                                    {isVerified ? 'Verified' : 'Pending'}
                                 </span>
                             </h2>
-                            <p className="text-xs font-mono text-slate-400">Galas Port Command · Chain-of-Custody Routing</p>
+                            <p className="text-sm text-slate-400">Available jobs and active deliveries at Galas Port</p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3 self-start sm:self-auto text-xs font-mono text-slate-400 bg-slate-900/90 px-4 py-2 rounded-2xl border border-slate-800 shadow-inner">
                         <div className="flex items-center gap-1.5">
                             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                            <span>Available: <strong className="text-white">{availableJobs.length}</strong></span>
+                            <span>Available jobs: <strong className="text-white">{availableJobs.length}</strong></span>
                         </div>
                         <span className="text-slate-700">|</span>
                         <div className="flex items-center gap-1.5">
                             <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                            <span>Active Runs: <strong className="text-white">{activeRuns.length}</strong></span>
+                            <span>Active deliveries: <strong className="text-white">{activeRuns.length}</strong></span>
                         </div>
                     </div>
                 </div>
@@ -150,7 +151,7 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
         >
             <Head title="Logistics Dispatch Matrix — IsdaLog" />
 
-            <div className="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            <div className="isdalog-dispatch-dashboard py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
                 {/* --- RIDER VERIFICATION STATUS NOTICE --- */}
                 {/* {!isVerified && (
@@ -177,14 +178,14 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
                     <div className="flex items-center justify-between pb-1 border-b border-slate-800/80">
                         <div className="flex items-center gap-2">
                             <BoltIcon className="w-5 h-5 text-cyan-400" />
-                            <h3 className="text-base font-black text-white tracking-tight">Active Custody Runs</h3>
+                            <h3 className="text-base font-black text-white tracking-tight">Active deliveries</h3>
                         </div>
-                        <span className="text-xs font-mono text-slate-400">Assigned Transit Orders</span>
+                        <span className="text-xs font-mono text-slate-400">Jobs assigned to you</span>
                     </div>
 
                     {activeRuns.length === 0 ? (
                         <div className="text-center py-12 bg-slate-900/40 rounded-3xl border border-dashed border-slate-800 text-slate-500 font-mono text-xs">
-                            No active cargo assignments currently claimed. Select an available job from the dispatch floor below.
+                            You have no active deliveries. Choose an available job below when you are ready.
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -202,7 +203,7 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
                                                 <h4 className="text-lg font-black text-white mt-1.5">{run.fish_name}</h4>
                                                 <p className="text-xs font-mono text-slate-400 flex items-center gap-1 mt-0.5">
                                                     <MapPinIcon className="w-3.5 h-3.5 text-slate-500" />
-                                                    Origin: {run.origin_port || 'Galas Port'}
+                                                    Pickup: {run.origin_port || 'Galas Port'}
                                                 </p>
                                             </div>
 
@@ -218,11 +219,11 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
 
                                         <div className="grid grid-cols-2 gap-3 p-3.5 bg-slate-950/80 rounded-2xl border border-slate-800/80 text-xs font-mono shadow-inner">
                                             <div>
-                                                <span className="text-slate-500 text-[10px] uppercase">Cargo Mass</span>
+                                                <span className="text-slate-500 text-[10px] uppercase">Cargo weight</span>
                                                 <p className="font-bold text-slate-200 mt-0.5">{run.weight_kg} KG</p>
                                             </div>
                                             <div>
-                                                <span className="text-slate-500 text-[10px] uppercase">Consignment Value</span>
+                                                <span className="text-slate-500 text-[10px] uppercase">Consignment value</span>
                                                 <p className="font-bold text-emerald-400 mt-0.5">₱{parseFloat(run.final_price).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                                             </div>
                                         </div>
@@ -250,14 +251,14 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
                                             className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs font-mono uppercase tracking-wider shadow-lg shadow-emerald-600/25 transition-all active:scale-[0.98] cursor-pointer"
                                         >
                                             <KeyIcon className="w-4 h-4" />
-                                            <span>Complete Handshake (Input Delivery OTP)</span>
+                                            <span>Complete delivery · Enter OTP</span>
                                         </button>
                                     )}
 
                                     {run.status === 'delivered' && (
                                         <div className="p-3.5 bg-emerald-950/30 border border-emerald-500/30 rounded-xl text-center text-xs font-mono text-emerald-300 flex items-center justify-center gap-2">
                                             <CheckCircleIcon className="w-4 h-4 text-emerald-400" />
-                                            <span>Cargo Handed Over · Awaiting Escrow Release</span>
+                                            <span>Delivered · Awaiting buyer confirmation</span>
                                         </div>
                                     )}
                                 </div>
@@ -271,14 +272,14 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
                     <div className="flex items-center justify-between pb-1 border-b border-slate-800/80">
                         <div className="flex items-center gap-2">
                             <ClockIcon className="w-5 h-5 text-cyan-400" />
-                            <h3 className="text-base font-black text-white tracking-tight">Available Dispatch Cargo</h3>
+                            <h3 className="text-base font-black text-white tracking-tight">Available delivery jobs</h3>
                         </div>
-                        <span className="text-xs font-mono text-slate-400">Real-Time Port Offload Floor</span>
+                        <span className="text-xs font-mono text-slate-400">Ready for pickup</span>
                     </div>
 
                     {availableJobs.length === 0 ? (
                         <div className="text-center py-16 bg-slate-900/40 rounded-3xl border border-dashed border-slate-800 text-slate-500 font-mono text-xs">
-                            No pending consignments awaiting courier dispatch at this time. Telemetry listening for new port harvests...
+                            No delivery jobs are waiting to be claimed right now.
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -306,7 +307,7 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
                                         </div>
 
                                         <div className="p-3.5 bg-slate-950/80 rounded-2xl border border-slate-800/80 flex justify-between items-center text-xs font-mono shadow-inner">
-                                            <span className="text-slate-500 uppercase text-[10px]">Escrow Value</span>
+                                            <span className="text-slate-500 uppercase text-[10px]">Consignment value</span>
                                             <span className="font-black text-emerald-400 text-sm">₱{parseFloat(job.final_price).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                         </div>
 
@@ -325,7 +326,7 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
                                         className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white font-bold text-xs font-mono uppercase tracking-wider shadow-lg shadow-cyan-600/25 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98] cursor-pointer"
                                     >
                                         <KeyIcon className="w-4 h-4" />
-                                        <span>Claim Cargo (Verify Pickup OTP)</span>
+                                        <span>Claim delivery · Enter pickup OTP</span>
                                     </button>
                                 </div>
                             ))}
@@ -374,24 +375,24 @@ function ClaimCargoModal({ order, show, onClose }) {
 
     return (
         <Modal show={show} onClose={onClose} maxWidth="md">
-            <form onSubmit={submit} className="p-6 bg-slate-950 text-slate-100 rounded-3xl border border-slate-800 space-y-5 shadow-2xl">
+            <form onSubmit={submit} className="isdalog-light-modal p-6 bg-slate-950 text-slate-100 rounded-3xl border border-slate-800 space-y-5 shadow-2xl">
                 <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
                     <div className="p-2.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shadow-inner">
                         <KeyIcon className="w-6 h-6" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-black text-white tracking-tight">Claim Port Cargo</h3>
+                        <h3 className="text-lg font-black text-white tracking-tight">Claim delivery</h3>
                         <p className="text-xs font-mono text-slate-400">Order #{order.order_id} · {order.fish_name}</p>
                     </div>
                 </div>
 
                 <p className="text-xs font-mono text-slate-300 leading-relaxed">
-                    Obtain the 6-digit Port Pickup OTP from harvester <strong className="text-white">{order.fisherman_name || 'the fisherman'}</strong> at dockside to verify physical handover.
+                    Ask <strong className="text-white">{order.fisherman_name || 'the fisherman'}</strong> for the 6-digit pickup OTP to confirm the dockside handover.
                 </p>
 
                 <div>
                     <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-400 mb-2">
-                        Harvester Pickup OTP
+                        Pickup OTP
                     </label>
                     <input
                         type="text"
@@ -415,7 +416,7 @@ function ClaimCargoModal({ order, show, onClose }) {
                         disabled={processing || data.pickup_otp.length !== 6}
                         className="inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold text-xs font-mono uppercase tracking-wider shadow-lg shadow-cyan-600/25 disabled:opacity-50 transition-all cursor-pointer"
                     >
-                        {processing ? 'Verifying Handshake...' : 'Confirm Pickup'}
+                        {processing ? 'Verifying pickup...' : 'Confirm pickup'}
                     </button>
                 </div>
             </form>
@@ -441,24 +442,24 @@ function DeliverCargoModal({ order, show, onClose }) {
 
     return (
         <Modal show={show} onClose={onClose} maxWidth="md">
-            <form onSubmit={submit} className="p-6 bg-slate-950 text-slate-100 rounded-3xl border border-slate-800 space-y-5 shadow-2xl">
+            <form onSubmit={submit} className="isdalog-light-modal p-6 bg-slate-950 text-slate-100 rounded-3xl border border-slate-800 space-y-5 shadow-2xl">
                 <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
                     <div className="p-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-inner">
                         <CheckCircleIcon className="w-6 h-6" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-black text-white tracking-tight">Complete Cargo Handshake</h3>
+                        <h3 className="text-lg font-black text-white tracking-tight">Complete delivery</h3>
                         <p className="text-xs font-mono text-slate-400">Order #{order.order_id} · {order.fish_name}</p>
                     </div>
                 </div>
 
                 <p className="text-xs font-mono text-slate-300 leading-relaxed">
-                    Request the 6-digit Delivery Confirmation OTP displayed on buyer <strong className="text-white">{order.buyer_name || 'the merchant'}</strong>'s terminal upon physical inspection.
+                    Ask <strong className="text-white">{order.buyer_name || 'the buyer'}</strong> for the 6-digit delivery OTP after the physical inspection.
                 </p>
 
                 <div>
                     <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-400 mb-2">
-                        Buyer Delivery OTP
+                        Delivery OTP
                     </label>
                     <input
                         type="text"
@@ -482,7 +483,7 @@ function DeliverCargoModal({ order, show, onClose }) {
                         disabled={processing || data.delivery_otp.length !== 6}
                         className="inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs font-mono uppercase tracking-wider shadow-lg shadow-emerald-600/25 disabled:opacity-50 transition-all cursor-pointer"
                     >
-                        {processing ? 'Verifying Token...' : 'Finalize Delivery'}
+                        {processing ? 'Verifying delivery...' : 'Confirm delivery'}
                     </button>
                 </div>
             </form>
