@@ -1,3 +1,364 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * IsdaLog light prototype
+ * Scope: fisherman dashboard only. These semantic values are the foundation
+ * for the full white theme and its future night-theme counterpart.
+ */
+.isdalog-light-shell,
+.isdalog-light-modal {
+    --isd-canvas: #f4f7f9;
+    --isd-surface: #ffffff;
+    --isd-surface-subtle: #f8fafc;
+    --isd-border: #dce3e8;
+    --isd-border-strong: #c7d2da;
+    --isd-text: #0f172a;
+    --isd-text-secondary: #475569;
+    --isd-text-muted: #64748b;
+    --isd-brand: #0b6b75;
+    --isd-brand-strong: #07535b;
+    --isd-brand-soft: #e6f3f4;
+    --isd-success: #16794f;
+    --isd-success-soft: #eaf7f0;
+    --isd-warning: #a66316;
+    --isd-warning-soft: #fff6e8;
+    --isd-danger: #b42318;
+    --isd-danger-soft: #fff0ee;
+    --isd-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px rgb(15 23 42 / 0.05);
+}
+
+.isdalog-light-shell {
+    background: var(--isd-canvas) !important;
+    color: var(--isd-text) !important;
+}
+
+.isdalog-light-shell > .fixed {
+    display: none;
+}
+
+.isdalog-light-shell nav {
+    background: rgb(255 255 255 / 0.96) !important;
+    border-color: var(--isd-border) !important;
+    box-shadow: 0 1px 0 rgb(15 23 42 / 0.03);
+}
+
+.isdalog-light-shell > header {
+    background: var(--isd-surface) !important;
+    border-color: var(--isd-border) !important;
+}
+
+.isdalog-light-shell > header .font-mono {
+    font-family: inherit;
+}
+
+.isdalog-light-shell main {
+    background: var(--isd-canvas);
+}
+
+.isdalog-light-shell [class*="bg-slate-950"],
+.isdalog-light-shell [class*="bg-slate-900"] {
+    background-color: var(--isd-surface) !important;
+}
+
+.isdalog-light-shell [class*="bg-slate-800"] {
+    background-color: var(--isd-surface-subtle) !important;
+}
+
+.isdalog-light-shell [class*="border-slate-800"],
+.isdalog-light-shell [class*="border-slate-700"] {
+    border-color: var(--isd-border) !important;
+}
+
+.isdalog-light-shell .text-white,
+.isdalog-light-shell .text-slate-100,
+.isdalog-light-shell .text-slate-200 {
+    color: var(--isd-text) !important;
+}
+
+.isdalog-light-shell .text-slate-300,
+.isdalog-light-shell .text-slate-400,
+.isdalog-light-shell .text-slate-500 {
+    color: var(--isd-text-secondary) !important;
+}
+
+.isdalog-light-shell .text-cyan-300,
+.isdalog-light-shell .text-cyan-400,
+.isdalog-light-shell .text-purple-400 {
+    color: var(--isd-brand) !important;
+}
+
+.isdalog-light-shell [class*="bg-cyan-"],
+.isdalog-light-shell [class*="bg-purple-"] {
+    background-color: var(--isd-brand-soft) !important;
+}
+
+.isdalog-light-shell [class*="border-cyan-"],
+.isdalog-light-shell [class*="border-purple-"] {
+    border-color: #b9dfe2 !important;
+}
+
+.isdalog-light-shell .text-emerald-300,
+.isdalog-light-shell .text-emerald-400 {
+    color: var(--isd-success) !important;
+}
+
+.isdalog-light-shell [class*="bg-emerald-"] {
+    background-color: var(--isd-success-soft) !important;
+}
+
+.isdalog-light-shell [class*="border-emerald-"] {
+    border-color: #bfe5cf !important;
+}
+
+.isdalog-light-shell .text-amber-300,
+.isdalog-light-shell .text-amber-400 {
+    color: var(--isd-warning) !important;
+}
+
+.isdalog-light-shell [class*="bg-amber-"] {
+    background-color: var(--isd-warning-soft) !important;
+}
+
+.isdalog-light-shell [class*="border-amber-"] {
+    border-color: #efd7b2 !important;
+}
+
+.isdalog-light-shell .text-rose-300,
+.isdalog-light-shell .text-rose-400 {
+    color: var(--isd-danger) !important;
+}
+
+.isdalog-light-shell [class*="bg-rose-"] {
+    background-color: var(--isd-danger-soft) !important;
+}
+
+.isdalog-light-shell [class*="border-rose-"] {
+    border-color: #f2c7c2 !important;
+}
+
+.isdalog-light-shell [class*="bg-gradient-to-r"] {
+    background-color: var(--isd-brand) !important;
+    background-image: none !important;
+    color: #ffffff !important;
+}
+
+.isdalog-light-shell [class*="bg-gradient-to-r"]:hover {
+    background-color: var(--isd-brand-strong) !important;
+}
+
+.isdalog-light-shell .isdalog-button-secondary {
+    background: #ffffff !important;
+    border: 1px solid var(--isd-border-strong);
+    color: var(--isd-text) !important;
+    box-shadow: none;
+}
+
+.isdalog-light-shell .isdalog-button-secondary:hover {
+    background: var(--isd-surface-subtle) !important;
+    border-color: var(--isd-brand);
+    color: var(--isd-brand-strong) !important;
+}
+
+.isdalog-light-shell [class~="w-2"][class~="h-2"][class*="bg-emerald-"],
+.isdalog-light-shell [class~="w-1.5"][class~="h-1.5"][class*="bg-emerald-"] {
+    background-color: var(--isd-success) !important;
+}
+
+.isdalog-light-shell [class~="w-2"][class~="h-2"][class*="bg-cyan-"],
+.isdalog-light-shell [class~="w-1.5"][class~="h-1.5"][class*="bg-cyan-"] {
+    background-color: var(--isd-brand) !important;
+}
+
+.isdalog-light-shell button:focus-visible,
+.isdalog-light-shell a:focus-visible,
+.isdalog-light-shell input:focus-visible,
+.isdalog-light-shell select:focus-visible,
+.isdalog-light-modal button:focus-visible,
+.isdalog-light-modal input:focus-visible,
+.isdalog-light-modal select:focus-visible {
+    outline: 3px solid rgb(11 107 117 / 0.22);
+    outline-offset: 2px;
+}
+
+.isdalog-fisherman-dashboard .font-mono,
+.isdalog-rider-dashboard .font-mono {
+    font-family: inherit;
+}
+
+.isdalog-fisherman-dashboard > .grid > div,
+.isdalog-fisherman-dashboard > div[class*="bg-slate-900"],
+.isdalog-rider-dashboard > .grid > div,
+.isdalog-rider-dashboard > div[class*="bg-slate-900"] {
+    box-shadow: var(--isd-shadow) !important;
+    backdrop-filter: none !important;
+}
+
+.isdalog-fisherman-dashboard > .grid > div,
+.isdalog-rider-dashboard > .grid > div,
+.isdalog-buyer-dashboard > .grid > div {
+    min-height: 150px;
+}
+
+/* Buyer dashboard: make funds, bids, and delivery work easy to scan. */
+.isdalog-buyer-dashboard .font-mono {
+    font-family: inherit;
+}
+
+.isdalog-buyer-dashboard > .grid > div,
+.isdalog-buyer-dashboard > div[class*="bg-slate-900"] {
+    box-shadow: var(--isd-shadow) !important;
+    backdrop-filter: none !important;
+}
+
+.isdalog-buyer-dashboard [class*="bg-slate-950/60"] {
+    background: var(--isd-surface-subtle) !important;
+}
+
+.isdalog-fisherman-dashboard table thead {
+    background: var(--isd-surface-subtle) !important;
+}
+
+.isdalog-fisherman-dashboard table tbody tr:hover {
+    background: #f8fbfc !important;
+}
+
+.isdalog-light-modal {
+    background: var(--isd-surface) !important;
+    border-color: var(--isd-border) !important;
+    color: var(--isd-text) !important;
+    box-shadow: 0 20px 50px rgb(15 23 42 / 0.14);
+}
+
+.isdalog-light-modal [class*="bg-slate-900"],
+.isdalog-light-modal [class*="bg-slate-950"] {
+    background-color: var(--isd-surface-subtle) !important;
+}
+
+.isdalog-light-modal [class*="border-slate-"] {
+    border-color: var(--isd-border) !important;
+}
+
+.isdalog-light-modal .text-white,
+.isdalog-light-modal .text-slate-100,
+.isdalog-light-modal .text-slate-200 {
+    color: var(--isd-text) !important;
+}
+
+.isdalog-light-modal .text-slate-300,
+.isdalog-light-modal .text-slate-400,
+.isdalog-light-modal [class*="text-slate-300"],
+.isdalog-light-modal [class*="text-slate-400"] {
+    color: var(--isd-text-secondary) !important;
+}
+
+.isdalog-light-modal .font-mono {
+    font-family: inherit;
+}
+
+.isdalog-light-modal input,
+.isdalog-light-modal select {
+    background: #ffffff !important;
+    border-color: var(--isd-border-strong) !important;
+    color: var(--isd-text) !important;
+}
+
+.isdalog-light-modal [class*="bg-gradient-to-r"] {
+    background: var(--isd-brand) !important;
+    color: #ffffff !important;
+}
+
+/* Fisherman marketplace: the same token system, tuned for visual browsing. */
+.isdalog-marketplace-dashboard .font-mono {
+    font-family: inherit;
+}
+
+.isdalog-marketplace-dashboard [class*="bg-gradient-to-br"] {
+    background: var(--isd-surface-subtle) !important;
+}
+
+.isdalog-marketplace-dashboard > .space-y-4 > .grid > div,
+.isdalog-marketplace-dashboard > .space-y-6 > div[class*="bg-slate-900"] {
+    box-shadow: var(--isd-shadow) !important;
+    backdrop-filter: none !important;
+}
+
+.isdalog-marketplace-dashboard > .space-y-4 > .grid > div {
+    border-color: var(--isd-border) !important;
+}
+
+.isdalog-marketplace-dashboard [class*="bg-slate-950/60"] {
+    background: var(--isd-surface-subtle) !important;
+}
+
+.isdalog-marketplace-dashboard [class*="shadow-inner"] {
+    box-shadow: inset 0 1px 2px rgb(15 23 42 / 0.04) !important;
+}
+
+.isdalog-marketplace-dashboard input {
+    background: #ffffff !important;
+    border-color: var(--isd-border-strong) !important;
+    color: var(--isd-text) !important;
+}
+
+.isdalog-marketplace-dashboard input::placeholder {
+    color: var(--isd-text-muted) !important;
+}
+
+.isdalog-marketplace-dashboard [class*="ring-cyan-"] {
+    --tw-ring-color: rgb(11 107 117 / 0.22) !important;
+}
+
+.isdalog-marketplace-dashboard .leaflet-container {
+    border-radius: 0.75rem;
+}
+
+/* Rider dispatch: work-first cards, restrained status colors, clear OTP steps. */
+.isdalog-dispatch-dashboard .font-mono {
+    font-family: inherit;
+}
+
+.isdalog-dispatch-dashboard > .space-y-4 > .grid > div {
+    background: var(--isd-surface) !important;
+    border-color: var(--isd-border) !important;
+    box-shadow: var(--isd-shadow) !important;
+    backdrop-filter: none !important;
+}
+
+.isdalog-dispatch-dashboard [class*="shadow-inner"] {
+    box-shadow: inset 0 1px 2px rgb(15 23 42 / 0.04) !important;
+}
+
+.isdalog-dispatch-dashboard [class*="border-dashed"] {
+    background: var(--isd-surface) !important;
+    border-color: var(--isd-border-strong) !important;
+}
+
+.isdalog-dispatch-dashboard [class*="bg-indigo-"] {
+    background: var(--isd-brand-soft) !important;
+}
+
+.isdalog-light-modal input[maxlength="6"] {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+@media (max-width: 640px) {
+    .isdalog-fisherman-dashboard,
+    .isdalog-rider-dashboard,
+    .isdalog-buyer-dashboard,
+    .isdalog-dispatch-dashboard {
+        padding-top: 1.25rem;
+        padding-bottom: 2rem;
+    }
+
+    .isdalog-fisherman-dashboard > div[class*="rounded-2xl"],
+    .isdalog-rider-dashboard > div[class*="rounded-2xl"],
+    .isdalog-buyer-dashboard > div[class*="rounded-2xl"] {
+        padding: 1rem;
+    }
+
+    .isdalog-fisherman-dashboard table {
+        min-width: 760px;
+    }
+}
