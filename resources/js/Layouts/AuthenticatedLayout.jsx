@@ -5,9 +5,10 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function AuthenticatedLayout({ header, children }) {
+export default function AuthenticatedLayout({ header, children, theme = 'dark' }) {
     const user = usePage().props.auth.user;
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const isLightTheme = theme === 'light';
 
     const getRoleBadge = (role) => {
         switch (role) {
@@ -38,7 +39,7 @@ export default function AuthenticatedLayout({ header, children }) {
     const roleBadge = getRoleBadge(user?.role);
 
     return (
-        <div className="min-h-screen bg-[#020617] text-slate-100 selection:bg-cyan-500 selection:text-white relative overflow-x-hidden">
+        <div className={`${isLightTheme ? 'isdalog-light-shell' : ''} min-h-screen bg-[#020617] text-slate-100 selection:bg-cyan-500 selection:text-white relative overflow-x-hidden`}>
             {/* Ambient Background Gradient Glows */}
             <div className="fixed top-[-10%] left-[-10%] w-[38rem] h-[38rem] bg-gradient-to-br from-cyan-600/10 via-blue-700/[0.04] to-transparent rounded-full blur-3xl pointer-events-none" />
             <div className="fixed bottom-[-10%] right-[-10%] w-[38rem] h-[38rem] bg-gradient-to-tr from-emerald-600/[0.05] via-cyan-900/10 to-transparent rounded-full blur-3xl pointer-events-none" />

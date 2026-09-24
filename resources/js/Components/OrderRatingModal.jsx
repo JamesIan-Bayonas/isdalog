@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
 
-export default function OrderRatingModal({ order, isOpen, onClose }) {
+export default function OrderRatingModal({ order, isOpen, onClose, theme = 'dark' }) {
     const [fishermanRating, setFishermanRating] = useState(5);
     const [fishermanComment, setFishermanComment] = useState('');
     const [riderRating, setRiderRating] = useState(5);
@@ -63,7 +63,7 @@ export default function OrderRatingModal({ order, isOpen, onClose }) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-            <div className="w-full max-w-md rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-2xl text-slate-100">
+            <div className={`${theme === 'light' ? 'isdalog-light-modal ' : ''}w-full max-w-md rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-2xl text-slate-100`}>
                 <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                     <div>
                         <h2 className="text-lg font-black tracking-tight text-white">Verify & Rate Delivery</h2>
