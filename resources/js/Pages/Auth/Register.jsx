@@ -1,400 +1,115 @@
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
+import ThemeToggle from '@/Components/ThemeToggle';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import {
-    ShieldCheckIcon,
-    UserIcon,
-    EnvelopeIcon,
-    LockClosedIcon,
-    ArrowRightIcon,
-    EyeIcon,
-    EyeSlashIcon,
-    SparklesIcon,
-    CircleStackIcon,
-    TruckIcon,
+    ArrowRightIcon, CircleStackIcon, EnvelopeIcon, EyeIcon, EyeSlashIcon,
+    LockClosedIcon, ShieldCheckIcon, SparklesIcon, TruckIcon, UserIcon,
 } from '@heroicons/react/24/outline';
+
+const roles = {
+    fisherman: { label: 'Fisherman', title: 'Fishermen', badge: 'Catch and auctions', description: 'Log catches, manage auctions, and track secured earnings.', icon: SparklesIcon, tone: 'brand' },
+    buyer: { label: 'Buyer', title: 'Buyers', badge: 'Marketplace and delivery', description: 'Place offers, manage funds, and follow delivery progress.', icon: CircleStackIcon, tone: 'success' },
+    rider: { label: 'Rider', title: 'Riders', badge: 'Cold-chain delivery', description: 'Claim dispatches and record verified cold-chain handovers.', icon: TruckIcon, tone: 'info' },
+};
 
 export default function Register() {
     const [showPassword, setShowPassword] = useState(false);
-
     const { data, setData, post, processing, errors, reset } = useForm({
-        name: '',
-        email: '',
-        role: 'fisherman',
-        password: '',
-        password_confirmation: '',
+        name: '', email: '', role: 'fisherman', password: '', password_confirmation: '',
     });
 
-    const submit = (e) => {
-        e.preventDefault();
-        post(route('register'), {
-            onFinish: () => reset('password', 'password_confirmation'),
-        });
+    const submit = (event) => {
+        event.preventDefault();
+        post(route('register'), { onFinish: () => reset('password', 'password_confirmation') });
     };
 
-    const roleData = {
-        fisherman: {
-            title: 'Local Fisherman',
-            desc: 'Log catch by voice or photo and list straight to the auction floor.',
-            badge: 'Harvest & Auction',
-            color: 'text-cyan-400',
-            fill: 'fill-cyan-400',
-            bg: 'bg-cyan-500/10 border-cyan-500/30',
-            angle: 30,
-            icon: SparklesIcon,
-        },
-        buyer: {
-            title: 'Marketplace Buyer',
-            desc: 'Bid live on port consignment floors with secured wallet escrow.',
-            badge: 'Trade & Consignment',
-            color: 'text-emerald-400',
-            fill: 'fill-emerald-400',
-            bg: 'bg-emerald-500/10 border-emerald-500/30',
-            angle: 270,
-            icon: CircleStackIcon,
-        },
-        rider: {
-            title: 'Logistics Courier',
-            desc: 'Accept port-to-market dispatch runs with chain-of-custody tracking.',
-            badge: 'Fleet Delivery',
-            color: 'text-violet-400',
-            fill: 'fill-violet-400',
-            bg: 'bg-violet-500/10 border-violet-500/30',
-            angle: 150,
-            icon: TruckIcon,
-        },
-    };
-
-    const currentRole = roleData[data.role] || roleData.fisherman;
+    const currentRole = roles[data.role] || roles.fisherman;
     const CurrentRoleIcon = currentRole.icon;
-
-    const contactPoint = (angleDeg) => {
-        const rad = (angleDeg * Math.PI) / 180;
-        return {
-            x: 110 + 76 * Math.cos(rad),
-            y: 110 + 76 * Math.sin(rad),
-        };
-    };
 
     return (
         <>
-            <Head title="Create Operator Account — IsdaLog Maritime Hub" />
-            <style>{`
-                @keyframes vela-sweep {
-                    from { transform: rotate(0deg); }
-                    to { transform: rotate(360deg); }
-                }
-                @keyframes vela-ping-slow {
-                    0% { transform: scale(0.9); opacity: .55; }
-                    70%, 100% { transform: scale(1.9); opacity: 0; }
-                }
-                .vela-sweep-arm {
-                    transform-origin: 110px 110px;
-                    animation: vela-sweep 4.5s linear infinite;
-                }
-                .vela-contact-ping {
-                    animation: vela-ping-slow 2.4s cubic-bezier(0,0,.2,1) infinite;
-                    transform-origin: center;
-                }
-            `}</style>
-            <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-[#020617] text-slate-100 selection:bg-cyan-500 selection:text-white relative overflow-hidden">
-                {/* --- AMBIENT NAUTICAL BACKDROP LIGHTING --- */}
-                <div className="absolute top-[-12%] left-[-12%] w-[42rem] h-[42rem] bg-gradient-to-br from-cyan-600/10 via-blue-700/[0.06] to-transparent rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute bottom-[-12%] right-[-6%] w-[36rem] h-[36rem] bg-gradient-to-tr from-emerald-600/[0.06] via-cyan-900/10 to-transparent rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b08_1px,transparent_1px),linear-gradient(to_bottom,#1e293b08_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
+            <Head title="Create an account — IsdaLog Maritime Hub" />
+            <div className="isd-auth-page">
+                <ThemeToggle className="isd-auth-theme-fab" />
+                <aside className="isd-auth-showcase">
+                    <Link href="/" className="isd-auth-brand">
+                        <span className="isd-auth-brand-mark"><img src="/images/isdalog-logo-mark.png" alt="" /></span>
+                        <span><strong>IsdaLog</strong><small>Maritime marketplace and logistics</small></span>
+                    </Link>
 
-                {/* ========================================================================= */}
-                {/* LEFT — SONAR CONSOLE (5 Columns)                                          */}
-                {/* ========================================================================= */}
-                <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-12 relative z-10 border-r border-slate-800/70 bg-slate-950/50 backdrop-blur-xl">
-                    <div>
-                        <Link href="/" className="inline-flex items-center gap-3.5 group">
-                            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 p-[1px] shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform duration-300">
-                                <div className="w-full h-full bg-slate-950 rounded-[15px] flex items-center justify-center">
-                                    <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-tr from-cyan-400 to-blue-400">⚓</span>
-                                </div>
-                            </div>
-                            <div>
-                                <span className="text-xl font-black tracking-tight text-white flex items-center gap-2">
-                                    IsdaLog
-                                    <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-500/30">
-                                        v2.4 Core
-                                    </span>
-                                </span>
-                                <p className="text-[11px] font-mono text-slate-500 tracking-wider">Galas Port Terminal · Dipolog City</p>
-                            </div>
-                        </Link>
-                    </div>
-
-                    {/* Sonar Console + Role Contacts */}
-                    <div className="space-y-6">
-                        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-700/70 text-xs font-semibold text-slate-300 shadow-inner">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                            <span>Identity & Registration Matrix</span>
-                        </div>
-                        <div className="space-y-2">
-                            <h2 className="text-3xl font-black text-white leading-[1.1] tracking-tight">
-                                Autonomous maritime catch & escrow logistics.
-                            </h2>
-                            <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
-                                Select your operating node clearance level to begin trading, harvesting, or cargo delivery.
-                            </p>
+                    <div className="isd-auth-showcase-content">
+                        <div className="isd-auth-showcase-copy">
+                            <p className="isd-auth-eyebrow">One connected port</p>
+                            <h2>Set up the workspace that fits your work on the water.</h2>
+                            <p>Choose a role to see what your IsdaLog workspace supports. Account access remains role-based.</p>
                         </div>
 
-                        <div className="flex gap-6 items-center pt-1">
-                            {/* Sonar scope */}
-                            <svg viewBox="0 0 220 220" className="w-40 h-40 shrink-0" role="img" aria-label="Platform role scope">
-                                <circle cx="110" cy="110" r="100" className="fill-slate-900/70 stroke-slate-800" strokeWidth="1" />
-                                <circle cx="110" cy="110" r="76" className="fill-none stroke-slate-800" strokeWidth="1" />
-                                <circle cx="110" cy="110" r="42" className="fill-none stroke-slate-800" strokeWidth="1" />
-                                <line x1="10" y1="110" x2="210" y2="110" className="stroke-slate-800" strokeWidth="1" />
-                                <line x1="110" y1="10" x2="110" y2="210" className="stroke-slate-800" strokeWidth="1" />
-
-                                <g className="vela-sweep-arm">
-                                    <path d="M110 110 L110 10 A100 100 0 0 1 178 42 Z" fill="url(#regSweepGradient)" opacity="0.55" />
-                                </g>
-                                <defs>
-                                    <linearGradient id="regSweepGradient" x1="110" y1="10" x2="178" y2="42" gradientUnits="userSpaceOnUse">
-                                        <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.5" />
-                                        <stop offset="100%" stopColor="#22d3ee" stopOpacity="0" />
-                                    </linearGradient>
-                                </defs>
-
-                                {Object.keys(roleData).map((role) => {
-                                    const { x, y } = contactPoint(roleData[role].angle);
-                                    const active = data.role === role;
-                                    return (
-                                        <g key={role} onClick={() => setData('role', role)} className="cursor-pointer">
-                                            {active && (
-                                                <circle cx={x} cy={y} r="6" className={`${roleData[role].fill} vela-contact-ping`} />
-                                            )}
-                                            <circle
-                                                cx={x}
-                                                cy={y}
-                                                r={active ? 6 : 4}
-                                                className={`${roleData[role].fill} transition-all duration-300`}
-                                                stroke="#020617"
-                                                strokeWidth="1.5"
-                                            />
-                                        </g>
-                                    );
-                                })}
-                                <circle cx="110" cy="110" r="3" className="fill-slate-300" />
-                            </svg>
-
-                            {/* Role contacts tabs */}
-                            <div className="flex-1 grid grid-cols-1 gap-1.5">
-                                {Object.keys(roleData).map((role) => (
-                                    <button
-                                        key={role}
-                                        type="button"
-                                        onClick={() => setData('role', role)}
-                                        className={`py-2 px-2.5 rounded-lg text-[11px] font-bold capitalize transition-all text-left border ${
-                                            data.role === role
-                                                ? 'bg-slate-800/90 text-white border-slate-700 shadow-sm'
-                                                : 'bg-transparent text-slate-500 border-transparent hover:text-slate-300 hover:border-slate-800'
-                                        }`}
-                                    >
-                                        <span className={`inline-block w-1.5 h-1.5 rounded-full mr-1.5 align-middle ${data.role === role ? roleData[role].fill : 'bg-slate-700'}`} />
-                                        {roleData[role].title}
-                                    </button>
-                                ))}
+                        <div className="isd-role-preview" aria-live="polite">
+                            <div className="isd-role-compass" aria-hidden="true">
+                                <span className="isd-compass-sweep" aria-hidden="true" />
+                                <span className="isd-compass-ring isd-ring-one" /><span className="isd-compass-ring isd-ring-two" />
+                                <span className="isd-compass-line isd-line-horizontal" /><span className="isd-compass-line isd-line-vertical" />
+                                {Object.entries(roles).map(([key, role]) => <button key={key} type="button" tabIndex={-1} onClick={() => setData('role', key)} className={`isd-compass-point isd-compass-${key} ${data.role === key ? 'is-active' : ''}`} aria-label={`Choose ${role.label}`} />)}
+                                <span className="isd-compass-center" />
+                            </div>
+                            <div className="isd-role-list">
+                                {Object.entries(roles).map(([key, role]) => <button key={key} type="button" onClick={() => setData('role', key)} aria-pressed={data.role === key} className={data.role === key ? 'is-active' : ''}><span className={`isd-role-dot isd-tone-${role.tone}`} />{role.title}</button>)}
                             </div>
                         </div>
 
-                        {/* Active Role Card */}
-                        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 backdrop-blur-md transition-all duration-300">
-                            <div className="flex items-center gap-3">
-                                <div className={`p-2.5 rounded-lg border ${currentRole.bg}`}>
-                                    <CurrentRoleIcon className={`w-5 h-5 ${currentRole.color}`} />
-                                </div>
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <h4 className="text-sm font-bold text-white">{currentRole.title}</h4>
-                                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                                            {currentRole.badge}
-                                        </span>
-                                    </div>
-                                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                                        {currentRole.desc}
-                                    </p>
-                                </div>
-                            </div>
+                        <div className={`isd-role-summary isd-tone-${currentRole.tone}`}>
+                            <span className="isd-role-summary-icon"><CurrentRoleIcon aria-hidden="true" /></span>
+                            <span><strong>{currentRole.title}</strong><small>{currentRole.badge}</small><p>{currentRole.description}</p></span>
                         </div>
                     </div>
+                    <p className="isd-auth-assurance isd-auth-desktop-assurance"><ShieldCheckIcon aria-hidden="true" /> Built for secure, traceable catch operations</p>
+                </aside>
 
-                    <div className="pt-6 border-t border-slate-900 flex items-center justify-between text-xs text-slate-500 font-mono">
-                        <span>LAT 8.58° N, LON 123.33° E</span>
-                        <span className="text-emerald-400 font-semibold">BFAR Compliant</span>
+                <main className="isd-auth-main">
+                    <div className="isd-auth-mobile-topbar">
+                        <Link href="/" className="isd-auth-brand"><span className="isd-auth-brand-mark"><img src="/images/isdalog-logo-mark.png" alt="" /></span><strong>IsdaLog</strong></Link>
                     </div>
-                </div>
+                    <section className="isd-auth-card" aria-labelledby="register-title">
+                        <div className="isd-auth-heading"><h1 id="register-title">Create your account</h1><p>Already have an account? <Link href={route('login')}>Sign in</Link></p></div>
 
-                {/* ========================================================================= */}
-                {/* RIGHT FORM CONTAINER (7 Columns)                                          */}
-                {/* ========================================================================= */}
-                <div className="col-span-1 lg:col-span-7 flex items-center justify-center p-6 sm:p-12 relative z-10">
-                    <div className="w-full max-w-md space-y-6">
-                        <div>
-                            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                                Create Operator Account
-                            </h1>
-                            <p className="text-sm text-slate-400 mt-1.5">
-                                Already registered on this node?{' '}
-                                <Link
-                                    href={route('login')}
-                                    className="text-cyan-400 hover:text-cyan-300 font-bold transition-colors underline-offset-4 hover:underline"
-                                >
-                                    Sign in to terminal
-                                </Link>
-                            </p>
-                        </div>
-
-                        <form onSubmit={submit} className="space-y-4">
-                            {/* Hidden Input to Guarantee Payload Sync */}
+                        <form onSubmit={submit} className="isd-registration-form">
                             <input type="hidden" name="role" value={data.role} />
-
-                            {/* ROLE SELECTION BUTTONS */}
-                            <div>
-                                <InputLabel value="Operational Role Designation" className="!text-slate-300 !text-xs !font-bold !uppercase !tracking-wider" />
-                                <div className="mt-1.5 grid grid-cols-3 gap-2 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800">
-                                    {Object.keys(roleData).map((roleKey) => (
-                                        <button
-                                            key={roleKey}
-                                            type="button"
-                                            onClick={() => setData('role', roleKey)}
-                                            className={`py-2.5 px-2 rounded-lg text-xs font-bold capitalize transition-all cursor-pointer ${
-                                                data.role === roleKey
-                                                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-600/30'
-                                                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-                                            }`}
-                                        >
-                                            {roleKey}
-                                        </button>
-                                    ))}
+                            <fieldset className="isd-role-fieldset" aria-describedby={errors.role ? 'register-role-error' : undefined}>
+                                <legend>Choose your role</legend>
+                                <div className="isd-role-selector">
+                                    {Object.entries(roles).map(([key, role]) => <button key={key} type="button" onClick={() => setData('role', key)} className={data.role === key ? 'is-active' : ''} aria-pressed={data.role === key}>{role.label}</button>)}
                                 </div>
-                                <InputError message={errors.role} className="mt-1 text-xs" />
-                            </div>
+                                <InputError id="register-role-error" message={errors.role} className="mt-2 text-xs" />
+                            </fieldset>
 
-                            {/* NAME */}
-                            <div>
-                                <InputLabel htmlFor="name" value="Full Name / Operating Call-Sign" className="!text-slate-300 !text-xs !font-bold !uppercase !tracking-wider" />
-                                <div className="mt-1.5 relative rounded-xl shadow-sm group">
-                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-cyan-400 transition-colors">
-                                        <UserIcon className="h-5 w-5" />
-                                    </div>
-                                    <TextInput
-                                        id="name"
-                                        name="name"
-                                        value={data.name}
-                                        className="!bg-slate-900/90 !border-slate-800 !text-white !pl-11 !py-3.5 !rounded-xl focus:!border-cyan-500 focus:!ring-2 focus:!ring-cyan-500/30 block w-full text-sm placeholder:text-slate-600 transition-all shadow-inner"
-                                        autoComplete="name"
-                                        isFocused={true}
-                                        placeholder="e.g. Juan Dela Cruz"
-                                        onChange={(e) => setData('name', e.target.value)}
-                                        required
-                                    />
-                                </div>
-                                <InputError message={errors.name} className="mt-1 text-xs" />
+                            <div className="isd-auth-field">
+                                <InputLabel htmlFor="name" value="Full name" />
+                                <div className="isd-auth-input-wrap"><UserIcon aria-hidden="true" /><TextInput id="name" name="name" value={data.name} className="isd-auth-input" autoComplete="name" placeholder="Juan Dela Cruz" aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? 'register-name-error' : undefined} onChange={(event) => setData('name', event.target.value)} required /></div>
+                                <InputError id="register-name-error" message={errors.name} className="mt-2 text-xs" />
                             </div>
-
-                            {/* EMAIL */}
-                            <div>
-                                <InputLabel htmlFor="email" value="Account Email" className="!text-slate-300 !text-xs !font-bold !uppercase !tracking-wider" />
-                                <div className="mt-1.5 relative rounded-xl shadow-sm group">
-                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-cyan-400 transition-colors">
-                                        <EnvelopeIcon className="h-5 w-5" />
-                                    </div>
-                                    <TextInput
-                                        id="email"
-                                        type="email"
-                                        name="email"
-                                        value={data.email}
-                                        className="!bg-slate-900/90 !border-slate-800 !text-white !pl-11 !py-3.5 !rounded-xl focus:!border-cyan-500 focus:!ring-2 focus:!ring-cyan-500/30 block w-full text-sm placeholder:text-slate-600 transition-all shadow-inner"
-                                        autoComplete="username"
-                                        placeholder="operator@isdalog.ph"
-                                        onChange={(e) => setData('email', e.target.value)}
-                                        required
-                                    />
-                                </div>
-                                <InputError message={errors.email} className="mt-1 text-xs" />
+                            <div className="isd-auth-field">
+                                <InputLabel htmlFor="email" value="Email address" />
+                                <div className="isd-auth-input-wrap"><EnvelopeIcon aria-hidden="true" /><TextInput id="email" type="email" name="email" value={data.email} className="isd-auth-input" autoComplete="username" placeholder="operator@isdalog.ph" aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? 'register-email-error' : undefined} onChange={(event) => setData('email', event.target.value)} required /></div>
+                                <InputError id="register-email-error" message={errors.email} className="mt-2 text-xs" />
                             </div>
-
-                            {/* PASSWORD */}
-                            <div>
-                                <InputLabel htmlFor="password" value="Security Key" className="!text-slate-300 !text-xs !font-bold !uppercase !tracking-wider" />
-                                <div className="mt-1.5 relative rounded-xl shadow-sm group">
-                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-cyan-400 transition-colors">
-                                        <LockClosedIcon className="h-5 w-5" />
-                                    </div>
-                                    <TextInput
-                                        id="password"
-                                        type={showPassword ? 'text' : 'password'}
-                                        name="password"
-                                        value={data.password}
-                                        className="!bg-slate-900/90 !border-slate-800 !text-white !pl-11 !pr-11 !py-3.5 !rounded-xl focus:!border-cyan-500 focus:!ring-2 focus:!ring-cyan-500/30 block w-full text-sm placeholder:text-slate-600 transition-all shadow-inner"
-                                        autoComplete="new-password"
-                                        placeholder="••••••••••••"
-                                        onChange={(e) => setData('password', e.target.value)}
-                                        required
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
-                                    >
-                                        {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
-                                    </button>
-                                </div>
-                                <InputError message={errors.password} className="mt-1 text-xs" />
+                            <div className="isd-auth-field">
+                                <InputLabel htmlFor="password" value="Password" />
+                                <div className="isd-auth-input-wrap"><LockClosedIcon aria-hidden="true" /><TextInput id="password" type={showPassword ? 'text' : 'password'} name="password" value={data.password} className="isd-auth-input isd-auth-input-password" autoComplete="new-password" placeholder="••••••••••••" aria-invalid={Boolean(errors.password)} aria-describedby={errors.password ? 'register-password-error' : undefined} onChange={(event) => setData('password', event.target.value)} required /><button type="button" className="isd-password-visibility" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Hide password' : 'Show password'}>{showPassword ? <EyeSlashIcon aria-hidden="true" /> : <EyeIcon aria-hidden="true" />}</button></div>
+                                <InputError id="register-password-error" message={errors.password} className="mt-2 text-xs" />
                             </div>
-
-                            {/* CONFIRM PASSWORD */}
-                            <div>
-                                <InputLabel htmlFor="password_confirmation" value="Confirm Security Key" className="!text-slate-300 !text-xs !font-bold !uppercase !tracking-wider" />
-                                <div className="mt-1.5 relative rounded-xl shadow-sm group">
-                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-cyan-400 transition-colors">
-                                        <LockClosedIcon className="h-5 w-5" />
-                                    </div>
-                                    <TextInput
-                                        id="password_confirmation"
-                                        type={showPassword ? 'text' : 'password'}
-                                        name="password_confirmation"
-                                        value={data.password_confirmation}
-                                        className="!bg-slate-900/90 !border-slate-800 !text-white !pl-11 !py-3.5 !rounded-xl focus:!border-cyan-500 focus:!ring-2 focus:!ring-cyan-500/30 block w-full text-sm placeholder:text-slate-600 transition-all shadow-inner"
-                                        autoComplete="new-password"
-                                        placeholder="••••••••••••"
-                                        onChange={(e) => setData('password_confirmation', e.target.value)}
-                                        required
-                                    />
-                                </div>
-                                <InputError message={errors.password_confirmation} className="mt-1 text-xs" />
+                            <div className="isd-auth-field">
+                                <InputLabel htmlFor="password_confirmation" value="Confirm password" />
+                                <div className="isd-auth-input-wrap"><LockClosedIcon aria-hidden="true" /><TextInput id="password_confirmation" type={showPassword ? 'text' : 'password'} name="password_confirmation" value={data.password_confirmation} className="isd-auth-input" autoComplete="new-password" placeholder="••••••••••••" aria-invalid={Boolean(errors.password_confirmation)} aria-describedby={errors.password_confirmation ? 'register-password-confirmation-error' : undefined} onChange={(event) => setData('password_confirmation', event.target.value)} required /></div>
+                                <InputError id="register-password-confirmation-error" message={errors.password_confirmation} className="mt-2 text-xs" />
                             </div>
-
-                            {/* SUBMIT BUTTON */}
-                            <button
-                                type="submit"
-                                disabled={processing}
-                                className="w-full inline-flex items-center justify-center gap-2.5 py-4 px-4 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-xl shadow-cyan-600/25 transition-all duration-200 active:scale-[0.98] disabled:opacity-50 mt-4 cursor-pointer"
-                            >
-                                {processing ? (
-                                    <span>Registering Operator Node...</span>
-                                ) : (
-                                    <>
-                                        <span>Establish {currentRole.title} Node</span>
-                                        <ArrowRightIcon className="w-4 h-4" />
-                                    </>
-                                )}
-                            </button>
+                            <button type="submit" disabled={processing} className="isd-auth-submit"><span>{processing ? 'Creating account...' : `Create ${currentRole.label} account`}</span>{!processing && <ArrowRightIcon aria-hidden="true" />}</button>
                         </form>
-
-                        <div className="pt-2 flex items-center justify-center gap-2 text-[11px] text-slate-500">
-                            <ShieldCheckIcon className="w-4 h-4 text-emerald-500" />
-                            <span>Encrypted operational credentials</span>
-                        </div>
-                    </div>
-                </div>
+                        <p className="isd-auth-assurance"><ShieldCheckIcon aria-hidden="true" /> Your account details are protected</p>
+                    </section>
+                </main>
             </div>
         </>
     );
