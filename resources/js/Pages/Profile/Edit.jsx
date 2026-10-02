@@ -16,18 +16,18 @@ export default function Edit({ mustVerifyEmail, status, botUsername }) {
             header={
                 <div>
                     <h2 className="font-black text-xl text-white tracking-tight">
-                        Profile Configuration
+                        Profile and account
                     </h2>
                     <p className="text-xs font-mono text-slate-400">
-                        Manage security credentials, operating role clearance, and Telegram AI hooks
+                        Manage your details, security, role, and Telegram connection
                     </p>
                 </div>
             }
         >
-            <Head title="Profile Configuration — IsdaLog" />
+            <Head title="Profile and account — IsdaLog" />
 
-            <div className="py-8">
-                <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+            <div className="isd-profile-page py-8">
+                <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
                     {flashStatus && (
                         <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 p-4 rounded-xl shadow-lg font-mono text-xs font-semibold">
                             ✓ {flashStatus}
@@ -42,9 +42,11 @@ export default function Edit({ mustVerifyEmail, status, botUsername }) {
                     )}
 
                     {/* Operating Clearance & Role Upgrade Card */}
-                    <div className="bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl p-4 shadow-lg sm:rounded-2xl sm:p-8">
-                        <UpgradeRoleForm className="max-w-xl" />
-                    </div>
+                    {user?.role !== 'admin' && (
+                        <div className="bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl p-4 shadow-lg sm:rounded-2xl sm:p-8">
+                            <UpgradeRoleForm className="max-w-xl" />
+                        </div>
+                    )}
 
                     {/* Profile Credentials Card */}
                     <div className="bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl p-4 shadow-lg sm:rounded-2xl sm:p-8">

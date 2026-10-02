@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/react';
 import { useState } from 'react';
 import {
     ChartBarIcon,
+    ShieldCheckIcon,
     ShieldExclamationIcon,
     CircleStackIcon,
     UsersIcon,
@@ -30,116 +31,116 @@ export default function BfarDashboard({
         <AuthenticatedLayout
             user={auth.user}
             header={
-                <div className="flex items-center justify-between">
+                <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white font-black">
-                            🛡️
+                        <div className="isd-bfar-header-icon w-10 h-10 rounded-xl flex items-center justify-center">
+                            <ShieldCheckIcon className="h-5 w-5" aria-hidden="true" />
                         </div>
                         <div>
-                            <h2 className="font-black text-xl text-slate-900 leading-tight tracking-tight">
-                                BFAR Supervisory Gateway & Telemetry
+                            <h2 className="font-black text-xl isd-text-primary leading-tight tracking-tight">
+                                BFAR oversight
                             </h2>
-                            <p className="text-xs font-mono text-slate-500">
-                                Region IX Marine Biomass & Sustainability Compliance Desk
+                            <p className="text-xs font-mono isd-text-muted">
+                                Regional catch, trade, and compliance activity
                             </p>
                         </div>
                     </div>
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span>Live Conservation Ledger</span>
+                    <div className="isd-bfar-status inline-flex w-fit items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold">
+                        <span className="w-2 h-2 rounded-full bg-current" />
+                        <span>Compliance overview</span>
                     </div>
                 </div>
             }
         >
-            <Head title="BFAR Maritime Analytics — IsdaLog" />
+            <Head title="BFAR oversight — IsdaLog" />
 
-            <div className="py-8 bg-slate-50 min-h-screen">
+            <div className="isd-bfar-dashboard py-8 isd-canvas min-h-screen">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
                     
                     {/* Top Tier: Telemetry Metric Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-                            <div className="flex items-center justify-between text-slate-500">
+                        <div className="isd-surface p-5 rounded-2xl border isd-border shadow-sm space-y-2">
+                            <div className="flex items-center justify-between isd-text-muted">
                                 <span className="text-xs font-mono font-bold uppercase tracking-wider">Total Biomass</span>
-                                <ChartBarIcon className="w-5 h-5 text-cyan-600" />
+                                <ChartBarIcon className="isd-bfar-icon w-5 h-5" />
                             </div>
-                            <div className="text-2xl font-black text-slate-900 font-mono">
-                                {Number(metrics.total_biomass_kg || 0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} <span className="text-sm font-normal text-slate-500">kg</span>
+                            <div className="text-2xl font-black isd-text-primary font-mono">
+                                {Number(metrics.total_biomass_kg || 0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} <span className="text-sm font-normal isd-text-muted">kg</span>
                             </div>
-                            <p className="text-[11px] text-slate-500">Aggregated landing volume</p>
+                            <p className="text-[11px] isd-text-muted">Aggregated landing volume</p>
                         </div>
 
-                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-                            <div className="flex items-center justify-between text-slate-500">
+                        <div className="isd-surface p-5 rounded-2xl border isd-border shadow-sm space-y-2">
+                            <div className="flex items-center justify-between isd-text-muted">
                                 <span className="text-xs font-mono font-bold uppercase tracking-wider">Market Turnover</span>
-                                <CircleStackIcon className="w-5 h-5 text-emerald-600" />
+                                <CircleStackIcon className="isd-bfar-icon w-5 h-5" />
                             </div>
-                            <div className="text-2xl font-black text-slate-900 font-mono">
+                            <div className="text-2xl font-black isd-text-primary font-mono">
                                 ₱{Number(metrics.total_market_value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </div>
-                            <p className="text-[11px] text-slate-500">Gross settled escrow trading</p>
+                            <p className="text-[11px] isd-text-muted">Gross settled escrow trading</p>
                         </div>
 
-                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-                            <div className="flex items-center justify-between text-slate-500">
+                        <div className="isd-surface p-5 rounded-2xl border isd-border shadow-sm space-y-2">
+                            <div className="flex items-center justify-between isd-text-muted">
                                 <span className="text-xs font-mono font-bold uppercase tracking-wider">Avg Market Rate</span>
-                                <ArrowTrendingUpIcon className="w-5 h-5 text-indigo-600" />
+                                <ArrowTrendingUpIcon className="isd-bfar-icon w-5 h-5" />
                             </div>
-                            <div className="text-2xl font-black text-slate-900 font-mono">
-                                ₱{Number(metrics.avg_price_per_kg || 0).toFixed(2)} <span className="text-sm font-normal text-slate-500">/kg</span>
+                            <div className="text-2xl font-black isd-text-primary font-mono">
+                                ₱{Number(metrics.avg_price_per_kg || 0).toFixed(2)} <span className="text-sm font-normal isd-text-muted">/kg</span>
                             </div>
-                            <p className="text-[11px] text-slate-500">Mean municipal valuation</p>
+                            <p className="text-[11px] isd-text-muted">Mean municipal valuation</p>
                         </div>
 
-                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-                            <div className="flex items-center justify-between text-slate-500">
+                        <div className="isd-surface p-5 rounded-2xl border isd-border shadow-sm space-y-2">
+                            <div className="flex items-center justify-between isd-text-muted">
                                 <span className="text-xs font-mono font-bold uppercase tracking-wider">Harvesters</span>
-                                <UsersIcon className="w-5 h-5 text-amber-600" />
+                                <UsersIcon className="isd-bfar-icon w-5 h-5" />
                             </div>
-                            <div className="text-2xl font-black text-slate-900 font-mono">
+                            <div className="text-2xl font-black isd-text-primary font-mono">
                                 {metrics.active_fishermen || 0}
                             </div>
-                            <p className="text-[11px] text-slate-500">Registered fleet operators</p>
+                            <p className="text-[11px] isd-text-muted">Registered fleet operators</p>
                         </div>
 
-                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-                            <div className="flex items-center justify-between text-slate-500">
+                        <div className="isd-surface p-5 rounded-2xl border isd-border shadow-sm space-y-2">
+                            <div className="flex items-center justify-between isd-text-muted">
                                 <span className="text-xs font-mono font-bold uppercase tracking-wider">Logistics Fleet</span>
-                                <TruckIcon className="w-5 h-5 text-purple-600" />
+                                <TruckIcon className="isd-bfar-icon w-5 h-5" />
                             </div>
-                            <div className="text-2xl font-black text-slate-900 font-mono">
+                            <div className="text-2xl font-black isd-text-primary font-mono">
                                 {metrics.active_riders || 0}
                             </div>
-                            <p className="text-[11px] text-slate-500">Active cold-chain couriers</p>
+                            <p className="text-[11px] isd-text-muted">Active cold-chain couriers</p>
                         </div>
                     </div>
 
                     {/* Sustainability Infractions Banner */}
                     {alerts.length > 0 && (
-                        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 shadow-sm space-y-4">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2.5 bg-rose-100 text-rose-700 rounded-xl">
+                        <div className="isd-bfar-alert isd-soft-danger border isd-border-danger rounded-2xl p-6 shadow-sm space-y-4">
+                            <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+                                <div className="flex min-w-0 items-start gap-3 sm:items-center">
+                                    <div className="isd-bfar-alert-icon p-2.5 isd-soft-danger isd-text-danger rounded-xl">
                                         <ShieldExclamationIcon className="w-6 h-6" />
                                     </div>
-                                    <div>
-                                        <h3 className="text-base font-bold text-rose-900">
+                                    <div className="min-w-0">
+                                        <h3 className="isd-bfar-alert-heading text-base font-bold isd-text-danger">
                                             Restricted Marine Species Alert ({alerts.length} Flagged Catches)
                                         </h3>
-                                        <p className="text-xs text-rose-700">
+                                        <p className="isd-bfar-alert-description text-xs isd-text-danger">
                                             Catches cross-referenced against BFAR restricted species protection registers.
                                         </p>
                                     </div>
                                 </div>
-                                <span className="text-xs font-bold font-mono px-3 py-1 bg-rose-200 text-rose-900 rounded-full">
+                                <span className="isd-bfar-alert-badge shrink-0 text-xs font-bold font-mono px-3 py-1 isd-soft-danger isd-text-danger rounded-full">
                                     CRITICAL OVERSIGHT
                                 </span>
                             </div>
 
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full text-xs text-left divide-y divide-rose-200">
+                            <div className="isd-scroll-region overflow-x-auto" tabIndex={0} role="region" aria-label="Restricted species alerts">
+                                <table className="min-w-full text-xs text-left isd-divide isd-divide">
                                     <thead>
-                                        <tr className="text-rose-800 font-mono uppercase tracking-wider">
+                                        <tr className="isd-text-danger font-mono uppercase tracking-wider">
                                             <th className="py-2 px-3">Listing ID</th>
                                             <th className="py-2 px-3">Protected Species</th>
                                             <th className="py-2 px-3">Harvest Weight</th>
@@ -148,15 +149,15 @@ export default function BfarDashboard({
                                             <th className="py-2 px-3">Logged Date</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-rose-100">
+                                    <tbody className="isd-divide isd-divide">
                                         {alerts.map((alert) => (
-                                            <tr key={alert.listing_id} className="hover:bg-rose-100/50">
+                                            <tr key={alert.listing_id} className="isd-hover-subtle">
                                                 <td className="py-2 px-3 font-mono font-bold">#{alert.listing_id}</td>
-                                                <td className="py-2 px-3 font-bold text-rose-950">{alert.fish_name}</td>
+                                                <td className="py-2 px-3 font-bold isd-text-danger">{alert.fish_name}</td>
                                                 <td className="py-2 px-3 font-mono">{alert.weight_kg} kg</td>
                                                 <td className="py-2 px-3">{alert.location}</td>
                                                 <td className="py-2 px-3 font-semibold">{alert.fisherman_name}</td>
-                                                <td className="py-2 px-3 font-mono text-slate-600">{alert.captured_at}</td>
+                                                <td className="py-2 px-3 font-mono isd-text-secondary">{alert.captured_at}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -166,34 +167,36 @@ export default function BfarDashboard({
                     )}
 
                     {/* Middle Tier: Time-Series Catch Trends Visualization */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                    <div className="isd-surface p-6 rounded-2xl border isd-border shadow-sm space-y-6">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
-                                <h3 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-                                    <SparklesIcon className="w-5 h-5 text-cyan-600" />
-                                    Historical Catch Volume & Valuation Timeline
+                                <h3 className="text-lg font-black isd-text-primary tracking-tight flex items-center gap-2">
+                                    <SparklesIcon className="w-5 h-5 isd-text-brand" />
+                                    Catch volume and trade value
                                 </h3>
-                                <p className="text-xs text-slate-500">
+                                <p className="text-xs isd-text-muted">
                                     Daily aggregated municipal biomass yields and trading turnover
                                 </p>
                             </div>
-                            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold">
+                            <div role="group" aria-label="Chart measurement" className="flex flex-wrap items-center gap-1 isd-subtle p-1 rounded-xl border isd-border text-xs font-bold">
                                 <button
                                     onClick={() => setActiveTab('biomass')}
+                                    aria-pressed={activeTab === 'biomass'}
                                     className={`px-3 py-1.5 rounded-lg transition-all ${
                                         activeTab === 'biomass'
-                                            ? 'bg-white text-slate-900 shadow-sm'
-                                            : 'text-slate-500 hover:text-slate-900'
+                                            ? 'isd-surface isd-text-primary shadow-sm'
+                                            : 'isd-text-muted isd-hover-text'
                                     }`}
                                 >
                                     Biomass (kg)
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('value')}
+                                    aria-pressed={activeTab === 'value'}
                                     className={`px-3 py-1.5 rounded-lg transition-all ${
                                         activeTab === 'value'
-                                            ? 'bg-white text-slate-900 shadow-sm'
-                                            : 'text-slate-500 hover:text-slate-900'
+                                            ? 'isd-surface isd-text-primary shadow-sm'
+                                            : 'isd-text-muted isd-hover-text'
                                     }`}
                                 >
                                     Market Value (₱)
@@ -202,12 +205,12 @@ export default function BfarDashboard({
                         </div>
 
                         {catchVolumeTrends.length === 0 ? (
-                            <div className="text-center py-12 text-slate-400 font-mono text-sm">
+                            <div className="isd-empty">
                                 No historical landing records logged in this interval.
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                <div className="h-64 flex items-end gap-2 sm:gap-4 pt-8 pb-2 border-b border-slate-200 overflow-x-auto">
+                                <div className="h-64 flex items-end gap-2 sm:gap-4 pt-8 pb-2 border-b isd-border overflow-x-auto">
                                     {catchVolumeTrends.map((point) => {
                                         const value = activeTab === 'biomass' ? point.biomass_kg : point.traded_value;
                                         const max = activeTab === 'biomass' ? maxBiomass : maxValue;
@@ -216,24 +219,26 @@ export default function BfarDashboard({
                                         return (
                                             <div
                                                 key={point.date}
-                                                className="flex-1 min-w-[48px] flex flex-col items-center gap-2 group relative"
+                                                className="flex-none w-14 h-full flex flex-col items-center gap-2 group relative"
                                             >
                                                 {/* Hover Tooltip */}
-                                                <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-[11px] font-mono py-1 px-2 rounded-lg pointer-events-none whitespace-nowrap z-20 shadow-lg">
+                                                <div className="isd-chart-tooltip absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity text-[11px] font-mono py-1 px-2 rounded-lg pointer-events-none whitespace-nowrap z-20 shadow-lg">
                                                     {point.date}: {activeTab === 'biomass' ? `${point.biomass_kg} kg` : `₱${point.traded_value}`} ({point.total_catches} catches)
                                                 </div>
 
-                                                <div className="w-full bg-slate-100 rounded-t-lg h-full flex items-end overflow-hidden">
+                                                <div className="w-full isd-subtle rounded-t-lg flex-1 min-h-0 flex items-end overflow-hidden">
                                                     <div
                                                         style={{ height: `${heightPercent}%` }}
-                                                        className={`w-full rounded-t-md transition-all duration-500 ${
+                                                        role="img"
+                                                        aria-label={`${point.date}: ${activeTab === 'biomass' ? `${point.biomass_kg} kg` : `₱${point.traded_value}`}, ${point.total_catches} catches`}
+                                                        className={`w-full rounded-t-md transition-[height] duration-300 ${
                                                             activeTab === 'biomass'
-                                                                ? 'bg-gradient-to-t from-cyan-600 to-teal-400 group-hover:from-cyan-500 group-hover:to-teal-300'
-                                                                : 'bg-gradient-to-t from-emerald-600 to-green-400 group-hover:from-emerald-500 group-hover:to-green-300'
+                                                                ? 'isd-bfar-chart-biomass'
+                                                                : 'isd-bfar-chart-value'
                                                         }`}
                                                     />
                                                 </div>
-                                                <span className="text-[10px] font-mono text-slate-400 rotate-45 sm:rotate-0 mt-1">
+                                                <span className="text-[10px] font-mono isd-text-muted rotate-45 sm:rotate-0 mt-1">
                                                     {point.date.slice(5)}
                                                 </span>
                                             </div>
@@ -248,30 +253,31 @@ export default function BfarDashboard({
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         
                         {/* Species Distribution */}
-                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                            <h3 className="text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
-                                <ChartBarIcon className="w-5 h-5 text-indigo-600" />
-                                Species Biomass Matrix
+                        <div className="isd-surface p-6 rounded-2xl border isd-border shadow-sm space-y-4">
+                            <h3 className="text-base font-black isd-text-primary tracking-tight flex items-center gap-2">
+                                <ChartBarIcon className="w-5 h-5 isd-text-brand" />
+                                Catch by species
                             </h3>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs isd-text-muted">
                                 Harvest distribution by taxonomic category
                             </p>
 
                             <div className="space-y-3 pt-2">
+                                {speciesDistribution.length === 0 && <p className="isd-empty">No species records are available for this overview.</p>}
                                 {speciesDistribution.map((species) => {
                                     const percent = Math.round((species.total_weight / maxSpeciesWeight) * 100);
                                     return (
                                         <div key={species.fish_name} className="space-y-1">
-                                            <div className="flex justify-between text-xs font-semibold text-slate-800">
+                                            <div className="flex flex-wrap justify-between gap-x-3 gap-y-1 text-xs font-semibold isd-text-primary">
                                                 <span>{species.fish_name}</span>
-                                                <span className="font-mono text-slate-600">
+                                                <span className="font-mono isd-text-secondary">
                                                     {species.total_weight} kg ({species.catch_count} lots · avg ₱{species.avg_price})
                                                 </span>
                                             </div>
-                                            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                                            <div className="h-2 w-full isd-subtle rounded-full overflow-hidden">
                                                 <div
                                                     style={{ width: `${percent}%` }}
-                                                    className="h-full bg-indigo-600 rounded-full"
+                                                    className="h-full isd-fill-brand rounded-full"
                                                 />
                                             </div>
                                         </div>
@@ -281,29 +287,30 @@ export default function BfarDashboard({
                         </div>
 
                         {/* Port Landing Volume Matrix */}
-                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                            <h3 className="text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
-                                <MapPinIcon className="w-5 h-5 text-emerald-600" />
-                                Port Landing Volume Distribution
+                        <div className="isd-surface p-6 rounded-2xl border isd-border shadow-sm space-y-4">
+                            <h3 className="text-base font-black isd-text-primary tracking-tight flex items-center gap-2">
+                                <MapPinIcon className="w-5 h-5 isd-text-success" />
+                                Landings by port
                             </h3>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs isd-text-muted">
                                 Intake capacity across municipal docking facilities
                             </p>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                                {portDistribution.length === 0 && <p className="isd-empty col-span-full">No port landings are available for this overview.</p>}
                                 {portDistribution.map((port) => (
                                     <div
                                         key={port.location}
-                                        className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2"
+                                        className="p-4 rounded-xl isd-subtle border isd-border space-y-2"
                                     >
-                                        <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                                            <MapPinIcon className="w-4 h-4 text-emerald-600 shrink-0" />
+                                        <div className="flex items-center gap-2 isd-text-primary font-bold text-sm">
+                                            <MapPinIcon className="w-4 h-4 isd-text-success shrink-0" />
                                             <span>{port.location}</span>
                                         </div>
-                                        <div className="text-xl font-black font-mono text-slate-900">
-                                            {port.total_weight.toLocaleString()} <span className="text-xs font-normal text-slate-500">kg</span>
+                                        <div className="text-xl font-black font-mono isd-text-primary">
+                                            {port.total_weight.toLocaleString()} <span className="text-xs font-normal isd-text-muted">kg</span>
                                         </div>
-                                        <div className="flex justify-between text-[11px] text-slate-500 font-mono">
+                                        <div className="flex justify-between text-[11px] isd-text-muted font-mono">
                                             <span>{port.total_landings} Landings</span>
                                             <span>₱{Number(port.total_value).toLocaleString()}</span>
                                         </div>
