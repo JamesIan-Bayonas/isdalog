@@ -347,7 +347,6 @@ export default function Dashboard({
 
     return (
         <AuthenticatedLayout
-            theme={['fisherman', 'rider', 'buyer'].includes(userRole) ? 'light' : 'dark'}
             header={
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full">
                     <div className="flex items-center gap-3">
@@ -355,12 +354,14 @@ export default function Dashboard({
                             {userRole === 'fisherman' && <SparklesIcon className="w-6 h-6" />}
                             {userRole === 'buyer' && <ShoppingBagIcon className="w-6 h-6" />}
                             {userRole === 'rider' && <TruckIcon className="w-6 h-6" />}
+                            {userRole === 'admin' && <ShieldCheckIcon className="w-6 h-6" />}
                         </div>
                         <div>
                             <h2 className="font-black text-xl text-white tracking-tight flex items-center gap-2">
                                 {userRole === 'fisherman' && 'Fisherman Dashboard'}
                                 {userRole === 'buyer' && 'Buyer Dashboard'}
                                 {userRole === 'rider' && 'Rider Dashboard'}
+                                {userRole === 'admin' && 'Admin Dashboard'}
                             </h2>
                             {userRole === 'fisherman' ? (
                                 <p className="text-sm text-slate-400">
@@ -376,7 +377,7 @@ export default function Dashboard({
                                 </p>
                             ) : (
                                 <p className="text-xs font-mono text-slate-400">
-                                    Node Identity: <span className="text-cyan-400 font-bold">{auth.user.name}</span> · Terminal Context: <span className="text-slate-200 font-bold capitalize">{userRole}</span>
+                                    Welcome, <span className="text-cyan-400 font-bold">{auth.user.name}</span>. Review your operational workspace.
                                 </p>
                             )}
                         </div>
@@ -415,7 +416,7 @@ export default function Dashboard({
                 </div>
             }
         >
-            <Head title={`${userRole.toUpperCase()} Terminal — IsdaLog`} />
+            <Head title={`${userRole.charAt(0).toUpperCase() + userRole.slice(1)} Dashboard — IsdaLog`} />
 
             <div className={`${userRole === 'fisherman' ? 'isdalog-fisherman-dashboard' : userRole === 'rider' ? 'isdalog-rider-dashboard' : userRole === 'buyer' ? 'isdalog-buyer-dashboard' : ''} py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6`}>
                 
@@ -434,6 +435,28 @@ export default function Dashboard({
                     </div>
                 )}
 
+                {userRole === 'admin' && (
+                    <section aria-labelledby="admin-work-heading" className="space-y-3">
+                        <h3 id="admin-work-heading" className="text-lg font-bold">Administration</h3>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <Link href={route('bfar.dashboard')} className="isd-app-quick-link">
+                                <ShieldCheckIcon className="h-6 w-6 shrink-0" aria-hidden="true" />
+                                <span>
+                                    <strong>BFAR oversight</strong>
+                                    <small>Review catch, trade, and compliance activity</small>
+                                </span>
+                            </Link>
+                            <Link href={route('admin.users')} className="isd-app-quick-link">
+                                <UserIcon className="h-6 w-6 shrink-0" aria-hidden="true" />
+                                <span>
+                                    <strong>User management</strong>
+                                    <small>Review accounts and access requests</small>
+                                </span>
+                            </Link>
+                        </div>
+                    </section>
+                )}
+
                 {/* ========================================================================= */}
                 {/* 1. BUYER ROLE BANNER & UPGRADE WORKFLOW                                   */}
                 {/* ========================================================================= */}
@@ -442,11 +465,11 @@ export default function Dashboard({
                         <div className="space-y-1">
                             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[11px] font-bold font-mono">
                                 <SparklesIcon className="w-3.5 h-3.5" />
-                                <span>Harbor Maritime Access</span>
+                                <span>Fisherman access</span>
                             </div>
-                            <h3 className="text-lg font-black text-white">Harvesting Catch at Galas Port?</h3>
+                            <h3 className="text-lg font-black text-white">Want to sell your catch?</h3>
                             <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
-                                Upgrade your account to a certified Fisherman profile to access Telegram Zero-Typing AI Logging and direct catch auctioning.
+                                Apply for a fisherman account to record catches through Telegram and create auctions.
                             </p>
                         </div>
                         <button 
@@ -576,7 +599,7 @@ export default function Dashboard({
                                     <h3 className="text-2xl font-black text-white tracking-tight font-mono">
                                         {parseFloat(metrics.totalWeight || 0).toLocaleString()} <span className="text-sm text-purple-400 font-bold">KG</span>
                                     </h3>
-                                    <p className="text-xs font-mono text-slate-400 mt-1">{metrics.totalCatches || 0} batches recorded via Edge AI</p>
+                                    <p className="text-xs font-mono text-slate-400 mt-1">{metrics.totalCatches || 0} catch batches recorded</p>
                                 </div>
                             </div>
                         </>
@@ -641,7 +664,7 @@ export default function Dashboard({
                                     </h4>
                                     <span className="text-[11px] font-mono text-slate-400 font-semibold flex items-center gap-1 mt-1">
                                         <LockClosedIcon className="w-3.5 h-3.5 text-amber-400" />
-                                        Protected Cargo Settlement
+                                        Funds held for delivery
                                     </span>
                                 </div>
                             </div>
@@ -761,7 +784,7 @@ export default function Dashboard({
                                             <th className="py-3 px-3">Fee (3%)</th>
                                             <th className="py-3 px-3">Net Payout (97%)</th>
                                             <th className="py-3 px-3">Buyer</th>
-                                            <th className="py-3 px-3">Status / Handshake</th>
+                                            <th className="py-3 px-3">Delivery status</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-800/60 font-mono">
@@ -816,7 +839,7 @@ export default function Dashboard({
                             <div className="flex items-center gap-2">
                                 <TruckIcon className="w-5 h-5 text-cyan-400" />
                                 <h3 className="font-black text-sm text-white">
-                                    Active Consignments & Escrow Clearance Console ({activeShipments.length})
+                                    Active shipments and escrow ({activeShipments.length})
                                 </h3>
                             </div>
                             <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/30">
@@ -894,13 +917,13 @@ export default function Dashboard({
                             <div className="flex items-center gap-2">
                                 <FireIcon className="w-5 h-5 text-cyan-400" />
                                 <h3 className="font-black text-sm text-white">
-                                    Live Auction Bidding Watchlist & Counter-Bid Console
+                                    Active bids and counteroffers
                                 </h3>
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-400 bg-emerald-950/70 px-2.5 py-0.5 rounded border border-emerald-500/30">
                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                    WEBSOCKETS SYNCED
+                                    Bid watchlist
                                 </span>
                             </div>
                         </div>
@@ -1004,7 +1027,7 @@ export default function Dashboard({
                                     href={route('marketplace.index')}
                                     className="inline-flex items-center gap-1.5 text-cyan-400 font-bold hover:underline"
                                 >
-                                    <span>Browse Live Trading Floor →</span>
+                                    <span>Browse live listings →</span>
                                 </Link>
                             </div>
                         )}
@@ -1178,7 +1201,7 @@ export default function Dashboard({
                                     <CheckBadgeIcon className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h3 className="text-base font-black text-white">Confirm Consignment & Release</h3>
+                                    <h3 className="text-base font-black text-white">Confirm delivery and release funds</h3>
                                     <p className="text-xs font-mono text-slate-400">Order #{selectedOrderToConfirm.order_id} • {selectedOrderToConfirm.fish_name}</p>
                                 </div>
                             </div>

@@ -2,6 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import InputError from '@/Components/InputError';
 import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
+import { DialogTitle } from '@headlessui/react';
 import { Head, useForm } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -113,43 +114,42 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
     return (
         <AuthenticatedLayout
             user={auth.user}
-            theme="light"
             header={
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
                     <div className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shadow-lg shadow-cyan-500/10">
+                        <div className="p-2.5 rounded-2xl isd-soft-brand border isd-border-brand isd-text-brand shadow-lg ">
                             <TruckIcon className="w-6 h-6" />
                         </div>
                         <div>
-                            <h2 className="font-black text-xl text-white tracking-tight flex items-center gap-2">
+                            <h2 className="font-black text-xl isd-text-primary tracking-tight flex items-center gap-2">
                                 Dispatch Board
                                 <span className={`whitespace-nowrap text-[10px] font-mono uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full border ${
                                     isVerified 
-                                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
-                                        : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                                        ? 'isd-soft-success isd-text-success isd-border-success'
+                                        : 'isd-soft-warning isd-text-warning isd-border-warning'
                                 }`}>
                                     {isVerified ? 'Verified' : 'Pending'}
                                 </span>
                             </h2>
-                            <p className="text-sm text-slate-400">Available jobs and active deliveries at Galas Port</p>
+                            <p className="text-sm isd-text-muted">Available jobs and active deliveries at Galas Port</p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3 self-start sm:self-auto text-xs font-mono text-slate-400 bg-slate-900/90 px-4 py-2 rounded-2xl border border-slate-800 shadow-inner">
+                    <div className="flex items-center gap-3 self-start sm:self-auto text-xs font-mono isd-text-muted isd-surface px-4 py-2 rounded-2xl border isd-border isd-inset">
                         <div className="flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                            <span>Available jobs: <strong className="text-white">{availableJobs.length}</strong></span>
+                            <span className="w-2 h-2 rounded-full isd-fill-brand animate-pulse" />
+                            <span>Available jobs: <strong className="isd-text-primary">{availableJobs.length}</strong></span>
                         </div>
-                        <span className="text-slate-700">|</span>
+                        <span className="isd-text-secondary">|</span>
                         <div className="flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                            <span>Active deliveries: <strong className="text-white">{activeRuns.length}</strong></span>
+                            <span className="w-2 h-2 rounded-full isd-fill-success" />
+                            <span>Active deliveries: <strong className="isd-text-primary">{activeRuns.length}</strong></span>
                         </div>
                     </div>
                 </div>
             }
         >
-            <Head title="Logistics Dispatch Matrix — IsdaLog" />
+            <Head title="Dispatch — IsdaLog" />
 
             <div className="isdalog-dispatch-dashboard py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
@@ -175,16 +175,16 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
 
                 {/* --- ACTIVE ASSIGNED CUSTODY RUNS --- */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between pb-1 border-b border-slate-800/80">
+                    <div className="flex items-center justify-between pb-1 border-b isd-border">
                         <div className="flex items-center gap-2">
-                            <BoltIcon className="w-5 h-5 text-cyan-400" />
-                            <h3 className="text-base font-black text-white tracking-tight">Active deliveries</h3>
+                            <BoltIcon className="w-5 h-5 isd-text-brand" />
+                            <h3 className="text-base font-black isd-text-primary tracking-tight">Active deliveries</h3>
                         </div>
-                        <span className="text-xs font-mono text-slate-400">Jobs assigned to you</span>
+                        <span className="text-xs font-mono isd-text-muted">Jobs assigned to you</span>
                     </div>
 
                     {activeRuns.length === 0 ? (
-                        <div className="text-center py-12 bg-slate-900/40 rounded-3xl border border-dashed border-slate-800 text-slate-500 font-mono text-xs">
+                        <div className="isd-empty">
                             You have no active deliveries. Choose an available job below when you are ready.
                         </div>
                     ) : (
@@ -192,51 +192,51 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
                             {activeRuns.map((run) => (
                                 <div
                                     key={run.order_id}
-                                    className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl space-y-4 flex flex-col justify-between hover:border-slate-700 transition-all"
+                                    className="p-6 rounded-2xl isd-surface border isd-border isd-shadow space-y-4 flex flex-col justify-between isd-hover-border transition-all"
                                 >
                                     <div className="space-y-3">
                                         <div className="flex justify-between items-start">
                                             <div>
-                                                <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-400 bg-cyan-950/70 px-2.5 py-0.5 rounded-full border border-cyan-800/60 font-bold">
+                                                <span className="text-[10px] font-mono uppercase tracking-wider isd-text-brand isd-soft-brand px-2.5 py-0.5 rounded-full border isd-border-brand font-bold">
                                                     Run #{run.order_id}
                                                 </span>
-                                                <h4 className="text-lg font-black text-white mt-1.5">{run.fish_name}</h4>
-                                                <p className="text-xs font-mono text-slate-400 flex items-center gap-1 mt-0.5">
-                                                    <MapPinIcon className="w-3.5 h-3.5 text-slate-500" />
+                                                <h4 className="text-lg font-black isd-text-primary mt-1.5">{run.fish_name}</h4>
+                                                <p className="text-xs font-mono isd-text-muted flex items-center gap-1 mt-0.5">
+                                                    <MapPinIcon className="w-3.5 h-3.5 isd-text-muted" />
                                                     Pickup: {run.origin_port || 'Galas Port'}
                                                 </p>
                                             </div>
 
                                             <span className={`text-xs font-mono font-bold uppercase px-3 py-1 rounded-full border flex items-center gap-1.5 ${
                                                 run.status === 'en_route'
-                                                    ? 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30'
-                                                    : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                                                    ? 'isd-soft-brand isd-text-brand isd-border-brand'
+                                                    : 'isd-soft-success isd-text-success isd-border-success'
                                             }`}>
-                                                {run.status === 'en_route' && <span className="w-2 h-2 bg-cyan-400 rounded-full animate-ping" />}
+                                                {run.status === 'en_route' && <span className="w-2 h-2 isd-fill-brand rounded-full animate-ping" />}
                                                 {run.status.replace('_', ' ')}
                                             </span>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-3 p-3.5 bg-slate-950/80 rounded-2xl border border-slate-800/80 text-xs font-mono shadow-inner">
+                                        <div className="grid grid-cols-2 gap-3 p-3.5 isd-subtle rounded-2xl border isd-border text-xs font-mono isd-inset">
                                             <div>
-                                                <span className="text-slate-500 text-[10px] uppercase">Cargo weight</span>
-                                                <p className="font-bold text-slate-200 mt-0.5">{run.weight_kg} KG</p>
+                                                <span className="isd-text-muted text-[10px] uppercase">Cargo weight</span>
+                                                <p className="font-bold isd-text-primary mt-0.5">{run.weight_kg} KG</p>
                                             </div>
                                             <div>
-                                                <span className="text-slate-500 text-[10px] uppercase">Consignment value</span>
-                                                <p className="font-bold text-emerald-400 mt-0.5">₱{parseFloat(run.final_price).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                                                <span className="isd-text-muted text-[10px] uppercase">Consignment value</span>
+                                                <p className="font-bold isd-text-success mt-0.5">₱{parseFloat(run.final_price).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                                             </div>
                                         </div>
 
                                         {run.buyer_name && (
-                                            <div className="p-3.5 rounded-2xl bg-slate-950/50 border border-slate-800/60 space-y-1 text-xs font-mono">
-                                                <div className="flex items-center gap-1.5 text-slate-300 font-semibold">
-                                                    <UserIcon className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                            <div className="p-3.5 rounded-2xl isd-subtle border isd-border space-y-1 text-xs font-mono">
+                                                <div className="flex items-center gap-1.5 isd-text-secondary font-semibold">
+                                                    <UserIcon className="w-3.5 h-3.5 isd-text-muted shrink-0" />
                                                     <span>Buyer: {run.buyer_name}</span>
                                                 </div>
                                                 {run.buyer_contact && (
-                                                    <div className="flex items-center gap-1.5 text-slate-400">
-                                                        <PhoneIcon className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                                                    <div className="flex items-center gap-1.5 isd-text-muted">
+                                                        <PhoneIcon className="w-3.5 h-3.5 isd-text-muted shrink-0" />
                                                         <span>{run.buyer_contact}</span>
                                                     </div>
                                                 )}
@@ -248,7 +248,7 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
                                         <button
                                             type="button"
                                             onClick={() => setSelectedDeliverOrder(run)}
-                                            className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs font-mono uppercase tracking-wider shadow-lg shadow-emerald-600/25 transition-all active:scale-[0.98] cursor-pointer"
+                                            className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl isd-action isd-on-action font-bold text-xs font-mono uppercase tracking-wider shadow-lg transition-all active:scale-[0.98] cursor-pointer"
                                         >
                                             <KeyIcon className="w-4 h-4" />
                                             <span>Complete delivery · Enter OTP</span>
@@ -256,8 +256,8 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
                                     )}
 
                                     {run.status === 'delivered' && (
-                                        <div className="p-3.5 bg-emerald-950/30 border border-emerald-500/30 rounded-xl text-center text-xs font-mono text-emerald-300 flex items-center justify-center gap-2">
-                                            <CheckCircleIcon className="w-4 h-4 text-emerald-400" />
+                                        <div className="p-3.5 isd-soft-success border isd-border-success rounded-xl text-center text-xs font-mono isd-text-success flex items-center justify-center gap-2">
+                                            <CheckCircleIcon className="w-4 h-4 isd-text-success" />
                                             <span>Delivered · Awaiting buyer confirmation</span>
                                         </div>
                                     )}
@@ -269,16 +269,16 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
 
                 {/* --- AVAILABLE CARGO DISPATCH FLOOR --- */}
                 <div className="space-y-4 pt-4">
-                    <div className="flex items-center justify-between pb-1 border-b border-slate-800/80">
+                    <div className="flex items-center justify-between pb-1 border-b isd-border">
                         <div className="flex items-center gap-2">
-                            <ClockIcon className="w-5 h-5 text-cyan-400" />
-                            <h3 className="text-base font-black text-white tracking-tight">Available delivery jobs</h3>
+                            <ClockIcon className="w-5 h-5 isd-text-brand" />
+                            <h3 className="text-base font-black isd-text-primary tracking-tight">Available delivery jobs</h3>
                         </div>
-                        <span className="text-xs font-mono text-slate-400">Ready for pickup</span>
+                        <span className="text-xs font-mono isd-text-muted">Ready for pickup</span>
                     </div>
 
                     {availableJobs.length === 0 ? (
-                        <div className="text-center py-16 bg-slate-900/40 rounded-3xl border border-dashed border-slate-800 text-slate-500 font-mono text-xs">
+                        <div className="isd-empty">
                             No delivery jobs are waiting to be claimed right now.
                         </div>
                     ) : (
@@ -286,35 +286,35 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
                             {availableJobs.map((job) => (
                                 <div
                                     key={job.order_id}
-                                    className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800/80 hover:border-slate-700 backdrop-blur-xl shadow-xl space-y-4 flex flex-col justify-between transition-all group"
+                                    className="p-6 rounded-2xl isd-surface border isd-border isd-hover-border isd-shadow space-y-4 flex flex-col justify-between transition-all group"
                                 >
                                     <div className="space-y-3">
                                         <div className="flex justify-between items-start">
-                                            <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-400 bg-cyan-950/70 px-2.5 py-0.5 rounded-full border border-cyan-800/60 font-bold">
+                                            <span className="text-[10px] font-mono uppercase tracking-wider isd-text-brand isd-soft-brand px-2.5 py-0.5 rounded-full border isd-border-brand font-bold">
                                                 Order #{job.order_id}
                                             </span>
-                                            <span className="text-xs font-mono font-bold text-slate-300 bg-slate-800/90 border border-slate-700 px-2.5 py-0.5 rounded-xl">
+                                            <span className="text-xs font-mono font-bold isd-text-secondary isd-subtle border isd-border px-2.5 py-0.5 rounded-xl">
                                                 {job.weight_kg} KG
                                             </span>
                                         </div>
 
                                         <div>
-                                            <h4 className="text-lg font-black text-white">{job.fish_name}</h4>
-                                            <p className="text-xs font-mono text-slate-400 flex items-center gap-1 mt-0.5">
-                                                <MapPinIcon className="w-3.5 h-3.5 text-slate-500" />
+                                            <h4 className="text-lg font-black isd-text-primary">{job.fish_name}</h4>
+                                            <p className="text-xs font-mono isd-text-muted flex items-center gap-1 mt-0.5">
+                                                <MapPinIcon className="w-3.5 h-3.5 isd-text-muted" />
                                                 {job.origin_port || 'Galas Port (Dockside)'}
                                             </p>
                                         </div>
 
-                                        <div className="p-3.5 bg-slate-950/80 rounded-2xl border border-slate-800/80 flex justify-between items-center text-xs font-mono shadow-inner">
-                                            <span className="text-slate-500 uppercase text-[10px]">Consignment value</span>
-                                            <span className="font-black text-emerald-400 text-sm">₱{parseFloat(job.final_price).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                        <div className="p-3.5 isd-subtle rounded-2xl border isd-border flex justify-between items-center text-xs font-mono isd-inset">
+                                            <span className="isd-text-muted uppercase text-[10px]">Consignment value</span>
+                                            <span className="font-black isd-text-success text-sm">₱{parseFloat(job.final_price).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                         </div>
 
                                         {job.fisherman_name && (
-                                            <div className="text-[11px] font-mono text-slate-400 space-y-0.5 pt-1">
-                                                <p className="truncate">Harvester: <span className="text-slate-200 font-semibold">{job.fisherman_name}</span></p>
-                                                {job.buyer_name && <p className="truncate">Destination: <span className="text-slate-200 font-semibold">{job.buyer_name}</span></p>}
+                                            <div className="text-[11px] font-mono isd-text-muted space-y-0.5 pt-1">
+                                                <p className="truncate">Harvester: <span className="isd-text-primary font-semibold">{job.fisherman_name}</span></p>
+                                                {job.buyer_name && <p className="truncate">Destination: <span className="isd-text-primary font-semibold">{job.buyer_name}</span></p>}
                                             </div>
                                         )}
                                     </div>
@@ -323,7 +323,7 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
                                         type="button"
                                         // disabled={!isVerified}
                                         onClick={() => setSelectedClaimOrder(job)}
-                                        className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white font-bold text-xs font-mono uppercase tracking-wider shadow-lg shadow-cyan-600/25 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98] cursor-pointer"
+                                        className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl isd-action isd-on-action font-bold text-xs font-mono uppercase tracking-wider shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98] cursor-pointer"
                                     >
                                         <KeyIcon className="w-4 h-4" />
                                         <span>Claim delivery · Enter pickup OTP</span>
@@ -375,46 +375,50 @@ function ClaimCargoModal({ order, show, onClose }) {
 
     return (
         <Modal show={show} onClose={onClose} maxWidth="md">
-            <form onSubmit={submit} className="isdalog-light-modal p-6 bg-slate-950 text-slate-100 rounded-3xl border border-slate-800 space-y-5 shadow-2xl">
-                <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-                    <div className="p-2.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shadow-inner">
+            <form onSubmit={submit} className="isd-modal-content p-4 sm:p-6 space-y-5">
+                <div className="flex items-center gap-3 border-b isd-border pb-4">
+                    <div className="p-2.5 rounded-2xl isd-soft-brand border isd-border-brand isd-text-brand isd-inset">
                         <KeyIcon className="w-6 h-6" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-black text-white tracking-tight">Claim delivery</h3>
-                        <p className="text-xs font-mono text-slate-400">Order #{order.order_id} · {order.fish_name}</p>
+                        <DialogTitle as="h3" className="text-lg font-black isd-text-primary tracking-tight">Claim delivery</DialogTitle>
+                        <p className="text-xs font-mono isd-text-muted">Order #{order.order_id} · {order.fish_name}</p>
                     </div>
                 </div>
 
-                <p className="text-xs font-mono text-slate-300 leading-relaxed">
-                    Ask <strong className="text-white">{order.fisherman_name || 'the fisherman'}</strong> for the 6-digit pickup OTP to confirm the dockside handover.
+                <p className="text-xs font-mono isd-text-secondary leading-relaxed">
+                    Ask <strong className="isd-text-primary">{order.fisherman_name || 'the fisherman'}</strong> for the 6-digit pickup OTP to confirm the dockside handover.
                 </p>
 
                 <div>
-                    <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-400 mb-2">
+                    <label htmlFor="pickup-otp" className="block text-xs font-mono font-bold uppercase tracking-wider isd-text-secondary mb-2">
                         Pickup OTP
                     </label>
                     <input
+                        id="pickup-otp"
+                        inputMode="numeric"
+                        aria-invalid={Boolean(errors.pickup_otp)}
+                        aria-describedby={errors.pickup_otp ? 'pickup-otp-error' : undefined}
                         type="text"
                         maxLength="6"
                         value={data.pickup_otp}
                         onChange={(e) => setData('pickup_otp', e.target.value.replace(/[^0-9]/g, ''))}
                         placeholder="••••••"
-                        className="w-full bg-slate-900/90 border border-slate-800 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 rounded-2xl py-3.5 px-4 text-center font-mono text-2xl font-black tracking-[0.3em] text-cyan-400 placeholder:text-slate-700 shadow-inner transition-all"
+                        className="isd-otp w-full isd-subtle border isd-border-strong isd-focus-field focus:ring-2 rounded-xl py-3.5 px-4 text-center font-mono text-2xl font-black tracking-[0.3em] isd-text-primary isd-placeholder transition-all"
                         autoFocus
                         required
                     />
-                    <InputError message={errors.pickup_otp} className="mt-2 text-xs" />
+                    <InputError id="pickup-otp-error" message={errors.pickup_otp} className="mt-2 text-xs" />
                 </div>
 
-                <div className="flex justify-end gap-3 pt-2">
-                    <SecondaryButton type="button" onClick={onClose} disabled={processing} className="!rounded-xl !bg-slate-900 !border-slate-800 !text-slate-300 hover:!bg-slate-800 !text-xs font-mono">
+                <div className="flex flex-wrap justify-end gap-3 pt-2">
+                    <SecondaryButton type="button" onClick={onClose} disabled={processing} className="!rounded-xl isd-surface isd-border isd-text-secondary isd-hover-subtle !text-xs font-mono">
                         Cancel
                     </SecondaryButton>
                     <button
                         type="submit"
                         disabled={processing || data.pickup_otp.length !== 6}
-                        className="inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold text-xs font-mono uppercase tracking-wider shadow-lg shadow-cyan-600/25 disabled:opacity-50 transition-all cursor-pointer"
+                        className="inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl isd-action isd-on-action font-bold text-xs font-mono uppercase tracking-wider shadow-lg disabled:opacity-50 transition-all cursor-pointer"
                     >
                         {processing ? 'Verifying pickup...' : 'Confirm pickup'}
                     </button>
@@ -442,46 +446,50 @@ function DeliverCargoModal({ order, show, onClose }) {
 
     return (
         <Modal show={show} onClose={onClose} maxWidth="md">
-            <form onSubmit={submit} className="isdalog-light-modal p-6 bg-slate-950 text-slate-100 rounded-3xl border border-slate-800 space-y-5 shadow-2xl">
-                <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-                    <div className="p-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-inner">
+            <form onSubmit={submit} className="isd-modal-content p-4 sm:p-6 space-y-5">
+                <div className="flex items-center gap-3 border-b isd-border pb-4">
+                    <div className="p-2.5 rounded-2xl isd-soft-success border isd-border-success isd-text-success isd-inset">
                         <CheckCircleIcon className="w-6 h-6" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-black text-white tracking-tight">Complete delivery</h3>
-                        <p className="text-xs font-mono text-slate-400">Order #{order.order_id} · {order.fish_name}</p>
+                        <DialogTitle as="h3" className="text-lg font-black isd-text-primary tracking-tight">Complete delivery</DialogTitle>
+                        <p className="text-xs font-mono isd-text-muted">Order #{order.order_id} · {order.fish_name}</p>
                     </div>
                 </div>
 
-                <p className="text-xs font-mono text-slate-300 leading-relaxed">
-                    Ask <strong className="text-white">{order.buyer_name || 'the buyer'}</strong> for the 6-digit delivery OTP after the physical inspection.
+                <p className="text-xs font-mono isd-text-secondary leading-relaxed">
+                    Ask <strong className="isd-text-primary">{order.buyer_name || 'the buyer'}</strong> for the 6-digit delivery OTP after the physical inspection.
                 </p>
 
                 <div>
-                    <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-400 mb-2">
+                    <label htmlFor="delivery-otp" className="block text-xs font-mono font-bold uppercase tracking-wider isd-text-secondary mb-2">
                         Delivery OTP
                     </label>
                     <input
+                        id="delivery-otp"
+                        inputMode="numeric"
+                        aria-invalid={Boolean(errors.delivery_otp)}
+                        aria-describedby={errors.delivery_otp ? 'delivery-otp-error' : undefined}
                         type="text"
                         maxLength="6"
                         value={data.delivery_otp}
                         onChange={(e) => setData('delivery_otp', e.target.value.replace(/[^0-9]/g, ''))}
                         placeholder="••••••"
-                        className="w-full bg-slate-900/90 border border-slate-800 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30 rounded-2xl py-3.5 px-4 text-center font-mono text-2xl font-black tracking-[0.3em] text-emerald-400 placeholder:text-slate-700 shadow-inner transition-all"
+                        className="isd-otp w-full isd-subtle border isd-border-strong isd-focus-field focus:ring-2 rounded-xl py-3.5 px-4 text-center font-mono text-2xl font-black tracking-[0.3em] isd-text-primary isd-placeholder transition-all"
                         autoFocus
                         required
                     />
-                    <InputError message={errors.delivery_otp} className="mt-2 text-xs" />
+                    <InputError id="delivery-otp-error" message={errors.delivery_otp} className="mt-2 text-xs" />
                 </div>
 
-                <div className="flex justify-end gap-3 pt-2">
-                    <SecondaryButton type="button" onClick={onClose} disabled={processing} className="!rounded-xl !bg-slate-900 !border-slate-800 !text-slate-300 hover:!bg-slate-800 !text-xs font-mono">
+                <div className="flex flex-wrap justify-end gap-3 pt-2">
+                    <SecondaryButton type="button" onClick={onClose} disabled={processing} className="!rounded-xl isd-surface isd-border isd-text-secondary isd-hover-subtle !text-xs font-mono">
                         Cancel
                     </SecondaryButton>
                     <button
                         type="submit"
                         disabled={processing || data.delivery_otp.length !== 6}
-                        className="inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs font-mono uppercase tracking-wider shadow-lg shadow-emerald-600/25 disabled:opacity-50 transition-all cursor-pointer"
+                        className="inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl isd-action isd-on-action font-bold text-xs font-mono uppercase tracking-wider shadow-lg disabled:opacity-50 transition-all cursor-pointer"
                     >
                         {processing ? 'Verifying delivery...' : 'Confirm delivery'}
                     </button>
