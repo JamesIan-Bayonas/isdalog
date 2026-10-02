@@ -2,13 +2,13 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
+import ThemeToggle from '@/Components/ThemeToggle';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function AuthenticatedLayout({ header, children, theme = 'dark' }) {
+export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
-    const isLightTheme = theme === 'light';
 
     const getRoleBadge = (role) => {
         switch (role) {
@@ -39,10 +39,7 @@ export default function AuthenticatedLayout({ header, children, theme = 'dark' }
     const roleBadge = getRoleBadge(user?.role);
 
     return (
-        <div className={`${isLightTheme ? 'isdalog-light-shell' : ''} min-h-screen bg-[#020617] text-slate-100 selection:bg-cyan-500 selection:text-white relative overflow-x-hidden`}>
-            {/* Ambient Background Gradient Glows */}
-            <div className="fixed top-[-10%] left-[-10%] w-[38rem] h-[38rem] bg-gradient-to-br from-cyan-600/10 via-blue-700/[0.04] to-transparent rounded-full blur-3xl pointer-events-none" />
-            <div className="fixed bottom-[-10%] right-[-10%] w-[38rem] h-[38rem] bg-gradient-to-tr from-emerald-600/[0.05] via-cyan-900/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="isdalog-light-shell min-h-screen relative overflow-x-hidden">
 
             {/* Top Navigation Bar */}
             <nav className="border-b border-slate-800/80 bg-slate-950/75 backdrop-blur-xl sticky top-0 z-40">
@@ -67,50 +64,54 @@ export default function AuthenticatedLayout({ header, children, theme = 'dark' }
                             </div>
 
                             {/* Primary Navigation Links */}
-                            <div className="hidden space-x-2 sm:-my-px sm:flex items-center">
+                            <div className="hidden space-x-2 xl:-my-px xl:flex items-center">
                                 <NavLink
                                     href={route('dashboard')}
                                     active={route().current('dashboard')}
-                                    className="!border-b-0 !px-3.5 !py-2 !rounded-xl !text-xs !font-mono !font-bold transition-all"
                                 >
-                                    Terminal
+                                    Dashboard
                                 </NavLink>
 
                                 <NavLink
                                     href={route('marketplace.index')}
                                     active={route().current('marketplace.*')}
-                                    className="!border-b-0 !px-3.5 !py-2 !rounded-xl !text-xs !font-mono !font-bold transition-all"
                                 >
-                                    Live Floor
+                                    Marketplace
                                 </NavLink>
 
                                 {(user?.role === 'rider' || user?.role === 'admin') && (
                                     <NavLink
                                         href={route('dispatch.index')}
                                         active={route().current('dispatch.*')}
-                                        className="!border-b-0 !px-3.5 !py-2 !rounded-xl !text-xs !font-mono !font-bold transition-all"
                                     >
-                                        Logistics Matrix
+                                        Dispatch
                                     </NavLink>
                                 )}
 
                                 {user?.role === 'admin' && (
-                                    <NavLink
-                                        href={route('bfar.dashboard')}
-                                        active={route().current('bfar.dashboard')}
-                                        className="!border-b-0 !px-3.5 !py-2 !rounded-xl !text-xs !font-mono !font-bold transition-all"
-                                    >
-                                        BFAR Oversight
-                                    </NavLink>
+                                    <>
+                                        <NavLink
+                                            href={route('bfar.dashboard')}
+                                            active={route().current('bfar.dashboard')}
+                                        >
+                                            BFAR Oversight
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('admin.users')}
+                                            active={route().current('admin.users')}
+                                        >
+                                            Users
+                                        </NavLink>
+                                    </>
                                 )}
                             </div>
                         </div>
 
                         {/* Right Section: Role Badge + User Dropdown */}
-                        <div className="hidden sm:flex sm:items-center sm:gap-4">
+                        <div className="hidden xl:flex xl:items-center xl:gap-4">
                             {/* Role Badge */}
                             <span
-                                className={`text-[10px] font-mono uppercase font-bold tracking-wider px-2.5 py-1 rounded-full border ${roleBadge.classes}`}
+                                className={`isd-app-role-badge text-[10px] font-mono uppercase font-bold tracking-wider px-2.5 py-1 rounded-full border ${roleBadge.classes}`}
                             >
                                 {roleBadge.label}
                             </span>
@@ -155,7 +156,7 @@ export default function AuthenticatedLayout({ header, children, theme = 'dark' }
                                             href={route('profile.edit')}
                                             className="!text-xs !font-mono !text-slate-300 hover:!bg-slate-900 hover:!text-white"
                                         >
-                                            Profile Security & Keys
+                                            Profile and account
                                         </Dropdown.Link>
                                         <Dropdown.Link
                                             href={route('logout')}
@@ -163,7 +164,7 @@ export default function AuthenticatedLayout({ header, children, theme = 'dark' }
                                             as="button"
                                             className="!text-xs !font-mono !text-rose-400 hover:!bg-rose-500/10 hover:!text-rose-300"
                                         >
-                                            Terminate Session
+                                            Sign out
                                         </Dropdown.Link>
                                     </Dropdown.Content>
                                 </Dropdown>
@@ -171,8 +172,12 @@ export default function AuthenticatedLayout({ header, children, theme = 'dark' }
                         </div>
 
                         {/* Hamburger Button for Mobile */}
-                        <div className="-me-2 flex items-center sm:hidden">
+                        <div className="-me-2 flex items-center xl:hidden">
                             <button
+                                type="button"
+                                aria-label={showingNavigationDropdown ? 'Close navigation menu' : 'Open navigation menu'}
+                                aria-expanded={showingNavigationDropdown}
+                                aria-controls="isdalog-mobile-navigation"
                                 onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
                                 className="inline-flex items-center justify-center rounded-xl p-2 text-slate-400 hover:bg-slate-900 hover:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
                             >
@@ -198,42 +203,46 @@ export default function AuthenticatedLayout({ header, children, theme = 'dark' }
                 </div>
 
                 {/* Mobile Responsive Navigation Menu */}
-                <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden border-t border-slate-800/80 bg-slate-950/95 backdrop-blur-2xl'}>
+                <div id="isdalog-mobile-navigation" className={(showingNavigationDropdown ? 'block' : 'hidden') + ' xl:hidden border-t border-slate-800/80 bg-slate-950/95 backdrop-blur-2xl'}>
                     <div className="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink
                             href={route('dashboard')}
                             active={route().current('dashboard')}
-                            className="!font-mono !text-xs !text-slate-300"
                         >
-                            Terminal
+                            Dashboard
                         </ResponsiveNavLink>
 
                         <ResponsiveNavLink
                             href={route('marketplace.index')}
                             active={route().current('marketplace.*')}
-                            className="!font-mono !text-xs !text-slate-300"
                         >
-                            Live Floor
+                            Marketplace
                         </ResponsiveNavLink>
 
                         {(user?.role === 'rider' || user?.role === 'admin') && (
                             <ResponsiveNavLink
                                 href={route('dispatch.index')}
                                 active={route().current('dispatch.*')}
-                                className="!font-mono !text-xs !text-slate-300"
                             >
-                                Logistics Matrix
+                                Dispatch
                             </ResponsiveNavLink>
                         )}
 
                         {user?.role === 'admin' && (
-                            <ResponsiveNavLink
-                                href={route('bfar.dashboard')}
-                                active={route().current('bfar.dashboard')}
-                                className="!font-mono !text-xs !text-slate-300"
-                            >
-                                BFAR Oversight
-                            </ResponsiveNavLink>
+                            <>
+                                <ResponsiveNavLink
+                                    href={route('bfar.dashboard')}
+                                    active={route().current('bfar.dashboard')}
+                                >
+                                    BFAR Oversight
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('admin.users')}
+                                    active={route().current('admin.users')}
+                                >
+                                    User management
+                                </ResponsiveNavLink>
+                            </>
                         )}
                     </div>
 
@@ -244,7 +253,7 @@ export default function AuthenticatedLayout({ header, children, theme = 'dark' }
                                 <div className="text-xs font-mono text-slate-400">{user?.email}</div>
                             </div>
                             <span
-                                className={`text-[9px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border ${roleBadge.classes}`}
+                                className={`isd-app-role-badge text-[9px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border ${roleBadge.classes}`}
                             >
                                 {roleBadge.label}
                             </span>
@@ -253,17 +262,15 @@ export default function AuthenticatedLayout({ header, children, theme = 'dark' }
                         <div className="space-y-1">
                             <ResponsiveNavLink
                                 href={route('profile.edit')}
-                                className="!font-mono !text-xs !text-slate-300"
                             >
-                                Profile Security & Keys
+                                Profile and account
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 method="post"
                                 href={route('logout')}
                                 as="button"
-                                className="!font-mono !text-xs !text-rose-400"
                             >
-                                Terminate Session
+                                Sign out
                             </ResponsiveNavLink>
                         </div>
                     </div>
@@ -281,6 +288,7 @@ export default function AuthenticatedLayout({ header, children, theme = 'dark' }
 
             {/* View Body */}
             <main className="relative z-10">{children}</main>
+            <ThemeToggle className="isd-auth-theme-fab" />
         </div>
     );
 }
