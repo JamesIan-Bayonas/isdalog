@@ -122,34 +122,34 @@ export default function DeliveryTracker({
     };
 
     return (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden p-6 space-y-6">
+        <div className="isd-surface rounded-xl border isd-border shadow-sm overflow-hidden p-4 sm:p-6 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
-                    <h4 className="text-lg font-bold text-slate-800">Live Logistics Routing</h4>
-                    <p className="text-xs text-slate-500">Real-time cold-chain stream from {resolvedLocation}</p>
+                    <h4 className="text-lg font-bold isd-text-primary">Live Logistics Routing</h4>
+                    <p className="text-xs isd-text-muted">Real-time cold-chain stream from {resolvedLocation}</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                     <span className={`inline-flex items-center gap-1.5 font-mono text-[11px] px-2.5 py-1 rounded-full border ${
                         connectionState === 'connected'
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                            : 'bg-amber-50 text-amber-700 border-amber-200'
+                            ? 'isd-soft-success isd-text-success isd-border-success'
+                            : 'isd-soft-warning isd-text-warning isd-border-warning'
                     }`}>
-                        <span className={`w-2 h-2 rounded-full ${connectionState === 'connected' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+                        <span className={`w-2 h-2 rounded-full ${connectionState === 'connected' ? 'isd-fill-success animate-pulse' : 'isd-fill-warning'}`} />
                         <span>{connectionState === 'connected' ? 'STREAM ACTIVE' : 'RECONNECTING'}</span>
                     </span>
 
-                    <div className="flex items-center gap-1.5 font-mono text-[11px] bg-slate-100 px-3 py-1 rounded-full text-slate-700 font-bold">
-                        <span className={`w-2 h-2 rounded-full ${currentStatus === 'en_route' ? 'bg-cyan-500 animate-ping' : 'bg-slate-500'}`} />
+                    <div className="flex items-center gap-1.5 font-mono text-[11px] isd-subtle px-3 py-1 rounded-full isd-text-secondary font-bold">
+                        <span className={`w-2 h-2 rounded-full ${currentStatus === 'en_route' ? 'isd-fill-brand animate-ping' : 'isd-fill-muted'}`} />
                         <span>{currentStatus.toUpperCase().replace('_', ' ')}</span>
                     </div>
                 </div>
             </div>
 
             {/* Stepper Progression Matrix */}
-            <div className="relative flex items-center justify-between w-full px-4">
-                <div className="absolute left-4 right-4 top-1/2 h-1 bg-slate-200 -translate-y-1/2 z-0">
+            <div className="relative grid grid-cols-3 gap-2 w-full text-center">
+                <div className="absolute left-[16.67%] right-[16.67%] top-4 h-1 isd-track -translate-y-1/2 z-0">
                     <div 
-                        className="h-full bg-blue-600 transition-all duration-700 ease-in-out"
+                        className="h-full isd-fill-brand transition-all duration-700 ease-in-out"
                         style={{ width: `${(Math.max(0, resolvedStepIndex) / (steps.length - 1)) * 100}%` }}
                     />
                 </div>
@@ -159,13 +159,13 @@ export default function DeliveryTracker({
                     const isActive = idx === resolvedStepIndex;
 
                     return (
-                        <div key={step.key} className="flex flex-col items-center relative z-10">
+                        <div key={step.key} className="min-w-0 flex flex-col items-center relative z-10">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-500 shadow-sm ${
-                                isCompleted ? 'bg-blue-600 text-white' : 'bg-white border-2 border-slate-200 text-slate-400'
-                            } ${isActive ? 'ring-4 ring-blue-100 animate-pulse' : ''}`}>
+                                isCompleted ? 'isd-progress-step' : 'isd-surface border-2 isd-border isd-text-muted'
+                            } ${isActive ? 'ring-4 isd-ring-brand animate-pulse' : ''}`}>
                                 {idx + 1}
                             </div>
-                            <span className={`text-xs font-semibold mt-2 ${isCompleted ? 'text-blue-600 font-bold' : 'text-slate-400'}`}>
+                            <span className={`text-[11px] sm:text-xs leading-snug font-semibold mt-2 ${isCompleted ? 'isd-text-brand font-bold' : 'isd-text-muted'}`}>
                                 {step.label}
                             </span>
                         </div>
@@ -174,7 +174,7 @@ export default function DeliveryTracker({
             </div>
 
             {/* Telemetry Leaflet Container with Recenter Synchronization */}
-            <div className="h-64 w-full rounded-lg overflow-hidden border border-slate-200 shadow-inner z-0 relative">
+            <div className="h-64 w-full rounded-lg overflow-hidden border isd-border isd-inset z-0 relative">
                 <MapContainer center={courierLocation} zoom={14} className="h-full w-full relative z-0">
                     <TileLayer
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -184,7 +184,7 @@ export default function DeliveryTracker({
                         <Popup>
                             <div className="font-bold text-center text-xs">
                                 {currentStatus === 'en_route' ? '🚚 Courier En Route' : '⚓ IsdaLog Loading Dock'}<br/>
-                                <span className="text-blue-600 font-normal">
+                                <span className="isd-text-brand font-normal">
                                     {currentStatus === 'en_route' 
                                         ? `Lat: ${courierLocation[0].toFixed(4)}, Lon: ${courierLocation[1].toFixed(4)}`
                                         : resolvedLocation}
@@ -196,7 +196,7 @@ export default function DeliveryTracker({
                 </MapContainer>
 
                 {lastTelemetryTimestamp && (
-                    <div className="absolute bottom-2 right-2 bg-slate-900/80 text-white text-[10px] font-mono px-2 py-0.5 rounded shadow z-[400] backdrop-blur-sm">
+                    <div className="absolute bottom-2 right-2 isd-surface isd-text-primary text-[10px] font-mono px-2 py-0.5 rounded shadow z-[400] ">
                         Ping: {new Date(lastTelemetryTimestamp).toLocaleTimeString()}
                     </div>
                 )}
@@ -208,7 +208,7 @@ export default function DeliveryTracker({
                     <button
                         type="button"
                         onClick={() => setIsRatingModalOpen(true)}
-                        className="w-full py-3 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm tracking-wide shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                        className="w-full py-3 px-4 rounded-lg isd-action isd-on-action font-bold text-sm tracking-wide shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                     >
                         <span>✓ Verify Inspection & Release Escrow</span>
                     </button>
