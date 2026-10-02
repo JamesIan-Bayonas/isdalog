@@ -18,15 +18,15 @@ export default function UpgradeRoleForm({ className = '' }) {
                     <div className="flex items-center gap-2">
                         <ShieldCheckIcon className="w-5 h-5 text-emerald-400" />
                         <h2 className="text-base font-black text-white tracking-tight">
-                            Active Operating Clearance
+                            Current account access
                         </h2>
                     </div>
                     <p className="mt-1 text-xs font-mono text-slate-400">
-                        Your account is provisioned as an active <strong className="capitalize text-cyan-400">{user.role}</strong> operator node.
+                        Your account is active as a <strong className="capitalize text-cyan-400">{user.role}</strong>.
                     </p>
                 </header>
                 <div className="mt-4 p-4 rounded-xl bg-slate-950/70 border border-slate-800 text-xs font-mono space-y-1.5 text-slate-300">
-                    <p><strong className="text-slate-400 uppercase tracking-wider">Designated Role:</strong> <span className="text-white font-bold">{user.role.toUpperCase()}</span></p>
+                    <p><strong className="text-slate-400 uppercase tracking-wider">Role:</strong> <span className="text-white font-bold">{user.role.toUpperCase()}</span></p>
                     <p><strong className="text-slate-400 uppercase tracking-wider">Verification Status:</strong> <span className="text-emerald-400 font-black">{user.status.toUpperCase()}</span></p>
                 </div>
             </section>
@@ -50,22 +50,22 @@ export default function UpgradeRoleForm({ className = '' }) {
         <section className={className}>
             <header>
                 <h2 className="text-base font-black text-white tracking-tight">
-                    Ecosystem Compliance & Vetting
+                    Request a new role
                 </h2>
                 <p className="mt-1 text-xs font-mono text-slate-400">
-                    Request an upgrade to Harvester or Courier status. All submitted credentials will be securely audited by BFAR administration.
+                    Apply for fisherman or rider access. BFAR will review the details you provide.
                 </p>
             </header>
 
             {isPending && (
                 <div className="mt-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-mono font-semibold">
-                    ⏳ Your compliance application for <strong>{user.requested_role}</strong> is currently pending administrative review.
+                    Your application for <strong>{user.requested_role}</strong> is awaiting review.
                 </div>
             )}
 
             <form onSubmit={submit} className="mt-6 space-y-5">
                 <div>
-                    <InputLabel htmlFor="requested_role" value="Requested Operating Role" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" />
+                    <InputLabel htmlFor="requested_role" value="Requested role" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" />
                     <select
                         id="requested_role"
                         disabled={isPending}
@@ -74,8 +74,8 @@ export default function UpgradeRoleForm({ className = '' }) {
                         onChange={(e) => setData('requested_role', e.target.value)}
                         required
                     >
-                        <option value="fisherman">Local Fisherman (Requires BFAR Registration)</option>
-                        <option value="rider">Logistics Courier (Requires Valid Vehicle/Plate No.)</option>
+                        <option value="fisherman">Fisherman (BFAR registration required)</option>
+                        <option value="rider">Rider (vehicle and plate number required)</option>
                     </select>
                     <InputError className="mt-2 text-xs" message={errors.requested_role} />
                 </div>
@@ -98,7 +98,7 @@ export default function UpgradeRoleForm({ className = '' }) {
 
                 {data.requested_role === 'rider' && (
                     <div>
-                        <InputLabel htmlFor="vehicle_details" value="Vehicle Details & Plate Number" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" />
+                        <InputLabel htmlFor="vehicle_details" value="Vehicle and plate number" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" />
                         <TextInput
                             id="vehicle_details"
                             disabled={isPending}
@@ -119,7 +119,7 @@ export default function UpgradeRoleForm({ className = '' }) {
                             disabled={processing}
                             className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs font-mono uppercase tracking-wider rounded-xl shadow-lg shadow-cyan-600/20 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                         >
-                            {processing ? 'Transmitting...' : 'Submit Compliance Documents'}
+                            {processing ? 'Submitting...' : 'Send application'}
                         </button>
                         <Transition
                             show={recentlySuccessful}
@@ -128,7 +128,7 @@ export default function UpgradeRoleForm({ className = '' }) {
                             leave="transition ease-in-out"
                             leaveTo="opacity-0"
                         >
-                            <p className="text-xs text-emerald-400 font-mono font-semibold">Application Transmitted.</p>
+                            <p className="text-xs text-emerald-400 font-mono font-semibold">Application submitted.</p>
                         </Transition>
                     </div>
                 )}

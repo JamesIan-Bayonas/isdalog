@@ -45,10 +45,10 @@ export default function UpdatePasswordForm({ className = '' }) {
         <section className={className}>
             <header>
                 <h2 className="text-base font-black text-white tracking-tight">
-                    Update Security Key
+                    Update password
                 </h2>
                 <p className="mt-1 text-xs font-mono text-slate-400">
-                    Ensure your account is protected using a long, cryptographic security key.
+                    Use a strong password to keep your account secure.
                 </p>
             </header>
 
@@ -56,7 +56,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                 <div>
                     <InputLabel
                         htmlFor="current_password"
-                        value="Current Security Key"
+                        value="Current password"
                         className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300"
                     />
                     <TextInput
@@ -79,7 +79,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                 <div>
                     <InputLabel 
                         htmlFor="password" 
-                        value="New Security Key" 
+                        value="New password"
                         className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" 
                     />
                     <TextInput
@@ -97,7 +97,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                 <div>
                     <InputLabel
                         htmlFor="password_confirmation"
-                        value="Confirm Security Key"
+                        value="Confirm password"
                         className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300"
                     />
                     <TextInput
@@ -122,7 +122,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                         disabled={processing}
                         className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs font-mono uppercase tracking-wider rounded-xl shadow-lg shadow-cyan-600/20 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                     >
-                        {processing ? 'Authorizing Key Update...' : 'Save New Security Key'}
+                        {processing ? 'Saving password...' : 'Save password'}
                     </button>
                     <Transition
                         show={recentlySuccessful}

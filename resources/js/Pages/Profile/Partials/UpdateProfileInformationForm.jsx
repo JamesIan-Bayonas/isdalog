@@ -26,16 +26,16 @@ export default function UpdateProfileInformation({
         <section className={className}>
             <header>
                 <h2 className="text-base font-black text-white tracking-tight">
-                    Profile Information
+                    Profile information
                 </h2>
                 <p className="mt-1 text-xs font-mono text-slate-400">
-                    Update your account's call-sign designation and official contact email address.
+                    Update your name and email address.
                 </p>
             </header>
 
             <form onSubmit={submit} className="mt-6 space-y-5">
                 <div>
-                    <InputLabel htmlFor="name" value="Operator Name" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" />
+                    <InputLabel htmlFor="name" value="Name" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" />
                     <TextInput
                         id="name"
                         className="mt-1.5 block w-full !bg-slate-950/80 !border-slate-800 !text-white font-mono text-sm shadow-inner"
@@ -49,7 +49,7 @@ export default function UpdateProfileInformation({
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="email" value="Operator Email" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" />
+                    <InputLabel htmlFor="email" value="Email address" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" />
                     <TextInput
                         id="email"
                         type="email"
@@ -89,7 +89,7 @@ export default function UpdateProfileInformation({
                         disabled={processing}
                         className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs font-mono uppercase tracking-wider rounded-xl shadow-lg shadow-cyan-600/20 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                     >
-                        {processing ? 'Saving...' : 'Save Profile Changes'}
+                        {processing ? 'Saving...' : 'Save changes'}
                     </button>
                     <Transition
                         show={recentlySuccessful}
