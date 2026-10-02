@@ -2,7 +2,8 @@ export default function InputError({ message, className = '', ...props }) {
     return message ? (
         <p
             {...props}
-            className={'text-sm text-red-600 ' + className}
+            role="alert"
+            className={`isd-ui-error ${className}`}
         >
             {message}
         </p>
