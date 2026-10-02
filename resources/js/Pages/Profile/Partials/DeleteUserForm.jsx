@@ -47,10 +47,10 @@ export default function DeleteUserForm({ className = '' }) {
         <section className={`space-y-6 ${className}`}>
             <header>
                 <h2 className="text-base font-black text-rose-400 tracking-tight">
-                    Terminate Operator Account
+                    Delete account
                 </h2>
                 <p className="mt-1 text-xs font-mono text-slate-400 leading-relaxed">
-                    Once your terminal identity is purged, all associated telemetry, biometric models, and ledger records will be permanently deleted.
+                    Deleting your account is permanent. Review this action carefully before continuing.
                 </p>
             </header>
 
@@ -61,16 +61,16 @@ export default function DeleteUserForm({ className = '' }) {
             <Modal show={confirmingUserDeletion} onClose={closeModal} maxWidth="md">
                 <form onSubmit={deleteUser} className="p-6 space-y-5 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100">
                     <h2 className="text-base font-black text-white tracking-tight">
-                        Confirm Identity Termination
+                        Confirm account deletion
                     </h2>
                     <p className="text-xs font-mono text-slate-400 leading-relaxed">
-                        Please enter your account password to confirm permanent decommission of this operator profile.
+                        Enter your password to confirm that you want to delete your account.
                     </p>
 
                     <div className="mt-4">
                         <InputLabel
                             htmlFor="password"
-                            value="Security Key"
+                            value="Password"
                             className="sr-only"
                         />
                         <TextInput
@@ -103,7 +103,7 @@ export default function DeleteUserForm({ className = '' }) {
                             disabled={processing}
                             className="!bg-rose-600 hover:!bg-rose-500 !rounded-xl !text-xs !font-mono !font-bold"
                         >
-                            {processing ? 'Terminating...' : 'Confirm Termination'}
+                            {processing ? 'Deleting...' : 'Delete account'}
                         </DangerButton>
                     </div>
                 </form>

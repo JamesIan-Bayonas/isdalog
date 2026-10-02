@@ -46,11 +46,11 @@ export default function ConnectTelegramForm({ className = '' }) {
                 <div className="flex items-center gap-2">
                     <PaperAirplaneIcon className="w-5 h-5 text-cyan-400" />
                     <h2 className="text-base font-black text-white tracking-tight">
-                        Telegram AI Telemetry Link
+                        Telegram connection
                     </h2>
                 </div>
                 <p className="mt-1 text-xs font-mono text-slate-400">
-                    Connect your personal Telegram account to enable Edge-AI fish classification and automatic catch logging.
+                    Connect Telegram to classify catch photos and save catch records to your account.
                 </p>
             </header>
 
@@ -74,9 +74,9 @@ export default function ConnectTelegramForm({ className = '' }) {
                     <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 text-sm text-slate-300">
                         <p className="font-bold text-white text-xs uppercase font-mono tracking-wider">Why link Telegram?</p>
                         <ul className="list-disc list-inside mt-2 text-xs font-mono text-slate-400 space-y-1">
-                            <li>Instant camera photo catch logging via your Telegram bot</li>
-                            <li>Real-time push notifications for winning bids and consignment settlements</li>
-                            <li>Automatic mapping of sea catches to your registered account</li>
+                            <li>Log a catch by sending a photo to the Telegram bot</li>
+                            <li>Get updates about winning bids and completed sales</li>
+                            <li>Keep catch records linked to your account</li>
                         </ul>
                     </div>
 
