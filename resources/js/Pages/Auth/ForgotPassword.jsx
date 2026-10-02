@@ -1,6 +1,7 @@
 import InputError from '@/Components/InputError';
 import TextInput from '@/Components/TextInput';
 import InputLabel from '@/Components/InputLabel';
+import ThemeToggle from '@/Components/ThemeToggle';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { EnvelopeIcon, ArrowRightIcon, ShieldCheckIcon, SparklesIcon } from '@heroicons/react/24/outline';
 
@@ -16,9 +17,10 @@ export default function ForgotPassword({ status }) {
 
     return (
         <>
-            <Head title="Reset Key Clearance — IsdaLog Maritime Hub" />
+            <Head title="Forgot password — IsdaLog" />
 
-            <div className="min-h-screen flex items-center justify-center bg-[#020617] text-slate-100 p-6 relative overflow-hidden selection:bg-cyan-500 selection:text-white">
+            <div className="isd-auth-secondary-page min-h-screen flex items-center justify-center bg-[#020617] text-slate-100 p-6 relative overflow-hidden selection:bg-cyan-500 selection:text-white">
+                <ThemeToggle className="isd-auth-theme-fab" />
                 {/* Background Ambient Glows */}
                 <div className="absolute top-[-10%] left-[-10%] w-[38rem] h-[38rem] bg-gradient-to-br from-cyan-600/10 via-blue-700/[0.05] to-transparent rounded-full blur-3xl pointer-events-none" />
                 <div className="absolute bottom-[-10%] right-[-10%] w-[38rem] h-[38rem] bg-gradient-to-tr from-emerald-600/[0.06] via-cyan-900/10 to-transparent rounded-full blur-3xl pointer-events-none" />
@@ -30,12 +32,12 @@ export default function ForgotPassword({ status }) {
                         <Link href="/" className="inline-flex items-center gap-2 mb-2">
                             <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-tr from-cyan-400 to-blue-400">⚓ IsdaLog</span>
                             <span className="text-[10px] font-mono uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-500/30">
-                                Terminal Security
+                                Account security
                             </span>
                         </Link>
-                        <h1 className="text-2xl font-black text-white tracking-tight">Forgot Security Key?</h1>
+                        <h1 className="text-2xl font-black text-white tracking-tight">Forgot your password?</h1>
                         <p className="text-xs text-slate-400 leading-relaxed font-mono">
-                            Enter your registered operator email to transmit an encrypted password recovery authorization link.
+                            Enter your account email and we’ll send you a password reset link.
                         </p>
                     </div>
 
@@ -49,7 +51,7 @@ export default function ForgotPassword({ status }) {
 
                     <form onSubmit={submit} className="space-y-4">
                         <div>
-                            <InputLabel htmlFor="email" value="Operator Account Email" className="!text-slate-300 !text-xs !font-mono !font-bold !uppercase !tracking-wider" />
+                            <InputLabel htmlFor="email" value="Email address" className="!text-slate-300 !text-xs !font-mono !font-bold !uppercase !tracking-wider" />
                             <div className="mt-1.5 relative rounded-xl group shadow-inner">
                                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-cyan-400 transition-colors">
                                     <EnvelopeIcon className="h-5 w-5" />
@@ -74,14 +76,14 @@ export default function ForgotPassword({ status }) {
                             disabled={processing}
                             className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-xl shadow-cyan-600/25 transition-all duration-200 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                         >
-                            {processing ? 'Transmitting Key Request...' : 'Transmit Recovery Link'}
+                            {processing ? 'Sending reset link...' : 'Send reset link'}
                             <ArrowRightIcon className="w-4 h-4" />
                         </button>
                     </form>
 
                     <div className="text-center pt-2">
                         <Link href={route('login')} className="text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold transition-colors">
-                            ← Return to terminal login
+                            ← Back to sign in
                         </Link>
                     </div>
 
