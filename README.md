@@ -45,6 +45,24 @@ IsdaLog bridges these operational gaps through a decoupled microservices archite
 
 ---
 
+## Project Structure
+
+```text
+IsdaLog/
+├── isdalog/                 # Laravel 11 backend, Inertia.js + React frontend, and Reverb WebSockets
+│   ├── app/                 # Domain models, controllers, WebSocket events, jobs, and escrow services
+│   ├── database/            # Relational schema migrations, model factories, and database seeders
+│   ├── resources/js/        # React pages (Marketplace, Dispatch, BFAR Analytics) and tracking UI
+│   └── routes/              # Web, REST API, Reverb channel, and authentication routing
+├── fishery-ai/              # Node.js Edge AI ingestion gateway and Telegram bot microservice
+│   ├── services/            # Dual-tier vision pipeline (Gemini / Ollama), API bridge, and weather service
+│   ├── index.js             # Telegram bot event handler and multi-step harvest session state machine
+│   └── Modelfile            # VRAM-optimized Ollama model definition for local llama3.2-vision inference
+├── important/               # Production environment variable reference configurations
+├── DEPLOYMENT.md            # Multi-service deployment documentation (Render, Supabase, and local XAMPP)
+└── .railwayignore           # Cloud deployment build ignore rules
+```
+
 ## Key Features & Engineering Capabilities
 
 * **Zero-Typing Computer Vision Catch Logging:** Multi-modal pipeline identifies fish species directly from captured imagery, cross-referencing regional market price indices and checking for BFAR endangered species restrictions (`restricted_species`) → **Impact:** Reduces catch logging time from minutes of manual entry to seconds at the pier.
