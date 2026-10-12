@@ -279,57 +279,6 @@ if ($order->rider_id && $riderShare > 0) {
   <img src="docs/demo/11-buyer-verify-release-escrow.png" alt="Buyer Verify Inspection and Release Escrow" width="850"/>
 </p>
 
-
----
-
-
-
-
-## Project Structure
-
-```text
-isdalog-ecosystem/
-├── app/                                   # Laravel Core Application Layer
-│   ├── Events/                            # WebSocket Broadcast Events
-│   │   ├── CargoStatusUpdated.php         # Logistics state change broadcasts
-│   │   ├── CatchBidUpdated.php            # Live auction bid updates
-│   │   ├── OrderDispatched.php            # Courier dispatch broadcast
-│   │   └── RiderLocationUpdated.php       # Live GPS telemetry stream
-│   ├── Http/
-│   │   ├── Controllers/                   # Marketplace, Dispatch, Wallet & Admin Controllers
-│   │   │   └── Api/                       # External Ingestion Endpoints (CatchController, UserController)
-│   │   ├── Middleware/                    # Inertia shared state & Sanctum auth gates
-│   │   └── Requests/                      # Rate-limited Form Requests (LoginRequest, ProfileRequest)
-│   ├── Jobs/                              # Asynchronous Queue Workers (SendSmsNotification)
-│   ├── Models/                            # Eloquent Models (User, Listing, Bid, FishCatch, MarketPrice)
-│   └── Services/                          # Domain Services (PayoutDisbursement, Sms, WeatherTelemetry)
-├── bootstrap/                             # Application bootstrap & middleware configuration
-├── config/                                # Subsystem configs (broadcasting, reverb, sanctum, database)
-├── database/
-│   ├── factories/                         # Model factories for automated feature testing
-│   ├── migrations/                        # Relational schemas (users, listings, bids, orders_logistics, escrows)
-│   └── seeders/                           # Seeders (AdminSeeder, HistoricalListings, DefenseDaySeeder)
-├── resources/
-│   ├── js/
-│   │   ├── Components/                    # Atomic UI components & DeliveryTracker (Leaflet)
-│   │   ├── Layouts/                       # Authenticated and Guest Layout shells
-│   │   └── Pages/                         # Inertia Views (Marketplace, Dispatch, BfarDashboard, Profile)
-│   └── views/                             # Root Blade application view (app.blade.php)
-├── routes/                                # Route definitions (web.php, api.php, channels.php, auth.php)
-├── services/                              # Node.js Edge Microservice Services
-│   ├── ai.service.js                      # Dual Cloud (Gemini) / Edge (Ollama) inference client
-│   ├── isdalog.api.js                     # Secure HTTP payload bridge to Laravel Core
-│   └── weather.service.js                 # Open-Meteo port wind speed & safety threshold evaluator
-├── tests/
-│   └── Feature/                           # Comprehensive PHPUnit Test Suites (Bidding, Escrow, Telemetry)
-├── index.js                               # Node.js Telegram Bot Gateway Entry Point
-├── Modelfile                              # Ollama LLaMA 3.2 Vision VRAM-optimized model manifest
-├── package.json                           # Workspace Node.js dependency manifest
-├── composer.json                          # Laravel PHP dependency manifest
-└── vite.config.js                         # Vite build pipeline configuration
-
-```
-
 ---
 
 ## Environment Configuration
