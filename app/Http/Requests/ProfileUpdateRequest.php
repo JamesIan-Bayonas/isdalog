@@ -1,4 +1,4 @@
-<?php
+<?php // File: isdalog/app/Http/Requests/ProfileUpdateRequest.php
 
 namespace App\Http\Requests;
 
@@ -17,6 +17,7 @@ class ProfileUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'contact_number' => ['sometimes', 'nullable', 'string', 'regex:/^(09[0-9]{9}|\\+?639[0-9]{9})$/'],
             'name' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',

@@ -24,11 +24,17 @@ class WithdrawalRequest extends Model
     {
         return [
             'amount' => 'decimal:2',
+            'reviewed_at' => 'datetime',
         ];
     }
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function payout(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(WithdrawalPayout::class);
     }
 }

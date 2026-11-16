@@ -1,4 +1,4 @@
-<?php
+<?php // File: isdalog/app/Http/Controllers/DashboardController.php
 
 namespace App\Http\Controllers;
 
@@ -72,7 +72,8 @@ class DashboardController extends Controller
         // 2. Active Auctions & Bidding Status
         $activeAuctions = DB::table('listings')
             ->where('user_id', $user->id)
-            ->where('status', 'active')
+            ->where('status', 'active')->whereNull('withdrawn_at')->whereNull('expired_at')
+            ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))
             ->orderByDesc('created_at')
             ->get()
             ->map(function ($listing) {
@@ -108,11 +109,10 @@ class DashboardController extends Controller
                 'listings.location',
                 'orders_logistics.final_price',
                 'orders_logistics.escrow_balance',
+                'orders_logistics.logistics_type',
                 'orders_logistics.delivery_fee',
                 'orders_logistics.status',
-                'orders_logistics.pickup_otp',
-                'orders_logistics.delivery_otp',
-                'orders_logistics.logistics_type',
+                DB::raw("CASE WHEN orders_logistics.status = 'pending_dispatch' THEN orders_logistics.pickup_otp ELSE NULL END as pickup_otp"),
                 'orders_logistics.rating',
                 'buyers.name as buyer_name',
                 'buyers.contact_number as buyer_contact',
@@ -178,6 +178,28 @@ class DashboardController extends Controller
             'activeListings'    => $activeAuctions,
             'activeAuctions'    => $activeAuctions,
             'salesHistory'      => $consignmentLedger,
+            'withdrawalHistory' => \App\Models\WithdrawalRequest::with('payout')->where('user_id', $user->id)
+                ->orderByDesc('created_at')->orderByDesc('id')->get()
+                ->map(fn ($withdrawal) => [
+                    'id' => $withdrawal->id,
+                    'amount' => $withdrawal->amount,
+                    'payment_method' => $withdrawal->payment_method,
+                    'account_last_four' => substr($withdrawal->account_number, -4),
+                    'status' => $withdrawal->status,
+                    'reviewed_at' => $withdrawal->reviewed_at?->toIso8601String(),
+                    'review_note' => $withdrawal->review_note,
+                    'refund_transaction_id' => $withdrawal->refund_transaction_id,
+                    'payout' => $withdrawal->payout ? [
+                        'reference' => $withdrawal->payout->reference,
+                        'provider_reference' => $withdrawal->payout->provider_reference,
+                        'status' => $withdrawal->payout->status,
+                        'mode' => $withdrawal->payout->mode,
+                        'paid_at' => $withdrawal->payout->paid_at?->toIso8601String(),
+                        'failed_at' => $withdrawal->payout->failed_at?->toIso8601String(),
+                        'failure_reason' => $withdrawal->payout->failure_reason,
+                    ] : null,
+                    'created_at' => $withdrawal->created_at?->toIso8601String(),
+                ]),
             'consignmentLedger' => $consignmentLedger,
             'consignmentOrders' => $consignmentLedger,
             'consignmentSales'  => $consignmentLedger,
@@ -253,12 +275,18 @@ class DashboardController extends Controller
                 'listings.location',
                 'listings.current_bid',
                 'listings.status as listing_status',
+                'listings.ends_at', 'listings.expired_at', 'listings.withdrawn_at',
                 DB::raw('MAX(bids.amount) as my_highest_bid'),
             ])
-            ->groupBy('listings.id', 'listings.fish_name', 'listings.weight_kg', 'listings.location', 'listings.current_bid', 'listings.status')
+            ->groupBy('listings.id', 'listings.fish_name', 'listings.weight_kg', 'listings.location', 'listings.current_bid', 'listings.status', 'listings.ends_at', 'listings.expired_at', 'listings.withdrawn_at')
             ->get()
             ->map(function ($item) {
+                if ($item->listing_status === 'active' && ($item->expired_at || ($item->ends_at && \Illuminate\Support\Carbon::parse($item->ends_at)->lte(now())))) {
+                    $item->listing_status = 'expired';
+                }
+                if ($item->withdrawn_at) $item->listing_status = 'withdrawn';
                 $item->bid_status = ((float) $item->my_highest_bid >= (float) $item->current_bid) ? 'WINNING' : 'OUTBID';
+                if ($item->listing_status !== 'active') $item->bid_status = strtoupper($item->listing_status);
                 return $item;
             });
 
@@ -275,6 +303,7 @@ class DashboardController extends Controller
                 'listings.weight_kg',
                 'listings.location',
                 'orders_logistics.final_price',
+                'orders_logistics.logistics_type',
                 'orders_logistics.delivery_fee',
                 'orders_logistics.escrow_balance',
                 'orders_logistics.status',
@@ -296,7 +325,8 @@ class DashboardController extends Controller
         $activeBidsCount = DB::table('bids')
             ->join('listings', 'bids.listing_id', '=', 'listings.id')
             ->where('bids.buyer_id', $user->id)
-            ->where('listings.status', 'active')
+            ->where('listings.status', 'active')->whereNull('listings.withdrawn_at')->whereNull('listings.expired_at')
+            ->where(fn ($q) => $q->whereNull('listings.ends_at')->orWhere('listings.ends_at', '>', now()))
             ->distinct('bids.listing_id')
             ->count('bids.listing_id');
 
@@ -346,7 +376,7 @@ class DashboardController extends Controller
             'role' => 'admin',
             'stats' => [
                 'totalUsers'     => User::count(),
-                'activeListings' => Listing::where('status', 'active')->count(),
+                'activeListings' => Listing::openForTrading()->count(),
                 'totalBiomass'   => (float) DB::table('catches')->sum('weight'),
                 'totalOrders'    => DB::table('orders_logistics')->count(),
             ],

@@ -1,4 +1,4 @@
-<?php
+<?php // File: isdalog/app/Jobs/SendSmsNotification.php
 
 namespace App\Jobs;
 
@@ -10,11 +10,12 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class SendSmsNotification implements ShouldQueue
+class SendSmsNotification implements \Illuminate\Contracts\Queue\ShouldBeEncrypted, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public string $phoneNumber;
+
     public string $message;
 
     /**
@@ -51,8 +52,20 @@ class SendSmsNotification implements ShouldQueue
         $success = SmsNotificationService::send($this->phoneNumber, $this->message);
 
         if (! $success) {
-            Log::warning("Asynchronous SMS delivery attempt failed for recipient: {$this->phoneNumber}");
-            $this->release(30);
+            Log::warning('SMS dispatch unavailable or failed.');
+            throw new \RuntimeException('SMS provider unavailable; no delivery confirmed.');
         }
+    }
+
+    /** Notification transport must not turn a committed sale into an HTTP failure. */
+    public static function enqueue(string $phoneNumber, string $message): void
+    {
+        \Illuminate\Support\Facades\DB::afterCommit(function () use ($phoneNumber, $message) {
+            try {
+                self::dispatch($phoneNumber, $message);
+            } catch (\Throwable $exception) {
+                Log::warning('SMS job could not be delivered or queued after commit. Domain records remain committed.');
+            }
+        });
     }
 }

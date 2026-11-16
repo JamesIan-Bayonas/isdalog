@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 class WalletWithdrawalTest extends TestCase
@@ -33,10 +32,8 @@ class WalletWithdrawalTest extends TestCase
         $this->assertEquals(3000.00, (float) $fisherman->fresh()->wallet_balance);
     }
 
-    public function test_withdrawal_executes_disbursement_gateway_logging(): void
+    public function test_withdrawal_records_pending_request_without_claiming_provider_payment(): void
     {
-        Log::spy();
-
         /** @var User $fisherman */
         $fisherman = User::factory()->create([
             'role' => 'fisherman',
@@ -55,10 +52,13 @@ class WalletWithdrawalTest extends TestCase
 
         $this->assertEquals(2000.00, (float) $fisherman->fresh()->wallet_balance);
 
-        Log::shouldHaveReceived('info')
-            ->withArgs(function ($message) {
-                return str_contains($message, 'ISDALOG AUTOMATED PAYOUT GATEWAY DISPATCH');
-            });
+        $this->assertDatabaseHas('withdrawal_requests', [
+            'user_id' => $fisherman->id, 'amount' => 1500,
+            'payment_method' => 'maya', 'status' => 'pending',
+        ]);
+        $this->assertDatabaseHas('wallet_transactions', [
+            'type' => 'debit', 'purpose' => 'withdrawal', 'amount' => 1500, 'balance_after' => 2000,
+        ]);
     }
 
     public function test_withdrawal_fails_if_amount_exceeds_wallet_balance(): void

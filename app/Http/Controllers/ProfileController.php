@@ -1,16 +1,20 @@
-<?php
+<?php // File: isdalog/app/Http/Controllers/ProfileController.php
 
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\User;
+use App\Services\AccountResponsibilities;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -22,6 +26,7 @@ class ProfileController extends Controller
     public function edit(Request $request): Response
     {
         return Inertia::render('Profile/Edit', [
+            'accountReviews' => \Illuminate\Support\Facades\DB::table('account_reviews')->where('user_id', $request->user()->id)->select('action', 'resulting_role', 'resulting_status', 'reason', 'created_at')->orderByDesc('id')->limit(10)->get(),
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
             'botUsername' => env('TELEGRAM_BOT_USERNAME', 'isdalog_connect_bot'),
@@ -37,7 +42,7 @@ class ProfileController extends Controller
         $token = Str::random(32);
 
         // Valid for 10 minutes
-        Cache::put('telegram_bind_' . $token, $user->id, now()->addMinutes(10));
+        Cache::put('telegram_bind_'.$token, $user->id, now()->addMinutes(10));
 
         $botUsername = env('TELEGRAM_BOT_USERNAME', 'isdalog_connect_bot');
         $deepLinkUrl = "https://t.me/{$botUsername}?start=link_{$token}";
@@ -89,14 +94,24 @@ class ProfileController extends Controller
             'vehicle_details' => ['nullable', 'string', 'max:255', 'required_if:requested_role,rider'],
         ]);
 
-        $request->user()->update([
-            'requested_role' => $validated['requested_role'],
-            'bfar_registration_number' => $validated['bfar_registration_number'] ?? null,
-            'vehicle_details' => $validated['vehicle_details'] ?? null,
-            'status' => 'pending_review',
-        ]);
+        DB::transaction(function () use ($request, $validated) {
+            $user = User::whereKey($request->user()->id)->lockForUpdate()->firstOrFail();
+            if (! $user->contact_number) {
+                throw ValidationException::withMessages(['requested_role' => 'Save your contact number in Profile information first.']);
+            }
+            if ($user->status === 'pending_review' || ($user->role !== 'buyer' && $user->status === 'verified') || $user->role === 'admin') {
+                abort(403);
+            }
+            AccountResponsibilities::assertNoActiveOrders($user->id);
+            $user->update([
+                'requested_role' => $validated['requested_role'],
+                'bfar_registration_number' => $validated['bfar_registration_number'] ?? null,
+                'vehicle_details' => $validated['vehicle_details'] ?? null,
+                'status' => 'pending_review',
+            ]);
+        });
 
-        return Redirect::route('profile.edit')->with('success', 'Compliance documents submitted. Account is pending BFAR administrative review.');
+        return Redirect::route('profile.edit')->with('success', 'Role details submitted for IsdaLog administrator review. This is not government certification.');
     }
 
     /**
@@ -108,11 +123,20 @@ class ProfileController extends Controller
             'password' => ['required', 'current_password'],
         ]);
 
-        $user = $request->user();
-
+        DB::transaction(function () use ($request) {
+            $user = User::whereKey($request->user()->id)->lockForUpdate()->firstOrFail();
+            AccountResponsibilities::assertNoActiveOrders($user->id);
+            if ($user->wallet_balance != 0
+                || DB::table('orders_logistics')->where(fn ($q) => $q->where('user_id', $user->id)->orWhere('fisherman_id', $user->id)->orWhere('rider_id', $user->id))->exists()
+                || DB::table('support_requests')->where('user_id', $user->id)->orWhere('reviewer_id', $user->id)->exists()
+                || DB::table('account_reviews')->where('user_id', $user->id)->orWhere('reviewer_id', $user->id)->exists()
+                || DB::table('wallet_transactions')->whereIn('wallet_id', DB::table('wallets')->select('id')->where('user_id', $user->id))->exists()
+                || DB::table('withdrawal_requests')->where('user_id', $user->id)->exists()) {
+                throw ValidationException::withMessages(['password' => 'This account has financial or support records. Request account closure through Help & support so records and responsibilities can be reviewed.']);
+            }
+            $user->delete();
+        });
         Auth::logout();
-
-        $user->delete();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

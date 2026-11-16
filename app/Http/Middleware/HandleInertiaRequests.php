@@ -1,4 +1,4 @@
-<?php
+<?php // File: isdalog/app/Http/Middleware/HandleInertiaRequests.php
 
 namespace App\Http\Middleware;
 
@@ -31,6 +31,12 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+            'flash' => ['success' => fn () => $request->session()->get('success'), 'error' => fn () => $request->session()->get('error')],
+            'gettingStarted' => fn () => $request->routeIs('dashboard') && $request->user() ? \App\Services\GettingStarted::forUser($request->user()) : null,
+            'integrations' => \App\Services\IntegrationState::publicState(),
+            'withdrawalUnreadCount' => fn () => $request->user()
+                ? \App\Models\WithdrawalNotification::where('user_id', $request->user()->id)->whereNull('read_at')->count()
+                : 0,
             'auth' => [
                 'user' => $request->user() ? [
                     ...$request->user()->toArray(),

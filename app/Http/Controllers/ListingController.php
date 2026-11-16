@@ -1,4 +1,4 @@
-<?php
+<?php // File: isdalog/app/Http/Controllers/ListingController.php
 
 namespace App\Http\Controllers;
 
@@ -14,6 +14,7 @@ class ListingController extends Controller
 {
     public function store(Request $request)
     {
+        abort_unless($request->user()->role === 'fisherman', 403);
         $validated = $request->validate([
             'fish_name' => 'required|string|max:255',
             'weight_kg' => 'required|numeric|min:0.1',
@@ -22,13 +23,14 @@ class ListingController extends Controller
         ]);
 
         Listing::create([
-            'user_id' => Auth::id(), 
+            'user_id' => Auth::id(),
             'fish_name' => $validated['fish_name'],
             'weight_kg' => $validated['weight_kg'],
             'starting_price' => $validated['starting_price'],
             'current_bid' => $validated['starting_price'],
             'location' => $validated['location'],
             'status' => 'active',
+            'ends_at' => now()->addDays(2),
         ]);
 
         return Redirect::route('dashboard')->with('success', 'Listing created successfully!');
@@ -39,71 +41,40 @@ class ListingController extends Controller
      */
     public function acceptBid(Request $request, Listing $listing): RedirectResponse
     {
-        $user = $request->user();
-
-        // 1. Authorization Guardrail: Only the listing creator can award the auction
-        if ((int) $listing->user_id !== (int) $user->id) {
-            abort(403, 'Unauthorized action. You do not own this harvest listing.');
-        }
-
-        if ($listing->status !== 'active') {
-            return redirect()->back()->withErrors([
-                'error' => 'This harvest auction is already closed or completed.',
+        return DB::transaction(function () use ($request, $listing) {
+            // Same lock order as direct purchase: listing, then buyer account.
+            $lockedListing = Listing::whereKey($listing->id)->lockForUpdate()->firstOrFail();
+            abort_unless($request->user()->role === 'fisherman' && (int) $lockedListing->user_id === (int) $request->user()->id, 403);
+            if (! $lockedListing->isOpenForTrading()
+                || $lockedListing->orders()->exists()) {
+                return back()->withErrors(['error' => 'This harvest auction is already closed or completed.']);
+            }
+            // Bidding locks this same listing, so the winning offer stays stable until commit.
+            $topBid = $lockedListing->bids()->orderByDesc('amount')->orderBy('id')->first();
+            if (! $topBid) {
+                return back()->withErrors(['error' => 'Cannot award auction: No bids have been placed on this catch yet.']);
+            }
+            $buyer = User::whereKey($topBid->buyer_id)->lockForUpdate()->first();
+            if (! $buyer || $buyer->role !== 'buyer' || (int) $buyer->id === (int) $lockedListing->user_id
+                || \App\Services\AccountLedger::cents($topBid->amount) <= 0 || \App\Services\AccountLedger::cents($buyer->wallet_balance) < \App\Services\AccountLedger::cents($topBid->amount)) {
+                return back()->withErrors(['error' => 'Leading bidder is ineligible or has insufficient wallet funds to lock escrow.']);
+            }
+            $lockedListing->update(['status' => 'completed']);
+            $orderId = DB::table('orders_logistics')->insertGetId([
+                ...\App\Services\SaleFacts::capture($lockedListing),
+                'listing_id' => $lockedListing->id, 'user_id' => $buyer->id,
+                'fisherman_id' => $lockedListing->user_id, 'rider_id' => null,
+                'final_price' => $topBid->amount, 'escrow_balance' => $topBid->amount,
+                'pickup_otp' => (string) random_int(100000, 999999),
+                'delivery_otp' => (string) random_int(100000, 999999),
+                'delivery_details_required' => true,
+                'logistics_type' => 'request_rider', 'status' => 'pending_dispatch',
+                'created_at' => now(), 'updated_at' => now(),
             ]);
-        }
+            \App\Services\AccountLedger::move($buyer->id, -\App\Services\AccountLedger::cents($topBid->amount), 'escrow_reservation', $orderId);
+            \App\Services\TransactionNotifications::order($orderId, 'created', 'Catch sale recorded', 'Order #'.$orderId.' is awaiting handover. Funds are held in the internal escrow record.');
 
-        // 2. Fetch the highest submitted bid
-        $topBid = $listing->bids()->orderByDesc('amount')->first();
-
-        if (! $topBid) {
-            return redirect()->back()->withErrors([
-                'error' => 'Cannot award auction: No bids have been placed on this catch yet.',
-            ]);
-        }
-
-        // 3. Verify the winning buyer has sufficient funds in virtual wallet
-        /** @var User|null $buyer */
-        $buyer = User::find($topBid->buyer_id);
-        if (! $buyer || (float) $buyer->wallet_balance < (float) $topBid->amount) {
-            return redirect()->back()->withErrors([
-                'error' => "Leading bidder ({$buyer->name}) has insufficient wallet funds to lock escrow.",
-            ]);
-        }
-
-        // 4. Atomic Escrow Transaction & Handshake Generation
-        DB::transaction(function () use ($listing, $topBid, $buyer, $user) {
-            // Deduct funds from buyer's liquid balance
-            $buyer->decrement('wallet_balance', $topBid->amount);
-
-            // Mark auction as completed
-            $listing->update([
-                'status' => 'completed',
-            ]);
-
-            // Cryptographic Handshake 6-digit OTPs
-            $pickupOtp = str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
-            $deliveryOtp = str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
-
-            // Create Escrow Logistics Entry
-            DB::table('orders_logistics')->insert([
-                'listing_id' => $listing->id,
-                'user_id' => $buyer->id,
-                'fisherman_id' => $user->id,
-                'rider_id' => null,
-                'final_price' => $topBid->amount,
-                'escrow_balance' => $topBid->amount,
-                'pickup_otp' => $pickupOtp,
-                'delivery_otp' => $deliveryOtp,
-                'logistics_type' => 'request_rider',
-                'status' => 'pending_dispatch',
-            'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        });
-
-        return redirect()->back()->with(
-            'success',
-            "Winning bid of ₱" . number_format($topBid->amount, 2) . " accepted from {$buyer->name}! Escrow secured and courier pickup code generated."
-        );
+            return back()->with('success', 'Winning bid of ₱'.number_format($topBid->amount, 2).' accepted from '.$buyer->name.'! Escrow secured and courier pickup code generated.');
+        }, 3);
     }
 }

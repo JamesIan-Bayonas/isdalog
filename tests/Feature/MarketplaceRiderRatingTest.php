@@ -1,4 +1,4 @@
-<?php
+<?php // File: isdalog/tests/Feature/MarketplaceRiderRatingTest.php
 
 namespace Tests\Feature;
 
@@ -36,7 +36,7 @@ class MarketplaceRiderRatingTest extends TestCase
             'fisherman_id' => $fisherman->id,
             'rider_id' => $rider->id,
             'final_price' => 1000.00,
-            'escrow_balance' => 1000.00,
+            'escrow_balance' => 1150.00,
             'delivery_fee' => 150.00,
             'logistics_type' => 'request_rider',
             'status' => 'delivered',

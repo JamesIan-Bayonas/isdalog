@@ -123,7 +123,7 @@ class RiderFullLifecycleTest extends TestCase
         $this->assertEquals(150.00, (float) $rider->fresh()->wallet_balance);
 
         // 7. Rider dashboard reflects 1 completed run and credited balance
-        $dashRes = $this->actingAs($rider)->get('/dashboard');
+        $dashRes = $this->actingAs($rider->fresh())->get('/dashboard');
         $dashRes->assertStatus(200);
         $dashRes->assertInertia(fn ($page) => $page
             ->component('Dashboard')

@@ -1,4 +1,4 @@
-<?php
+<?php // File: isdalog/app/Models/FishCatch.php
 
 namespace App\Models;
 
@@ -18,6 +18,11 @@ class FishCatch extends Model
      *
      * @var list<string>
      */
+    protected static function booted(): void
+    {
+        static::saving(fn ($record) => \App\Services\MarketVocabulary::attach($record, 'species'));
+    }
+
     protected $fillable = [
         'user_id',
         'species',

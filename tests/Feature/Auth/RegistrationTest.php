@@ -1,4 +1,4 @@
-<?php
+<?php // File: isdalog/tests/Feature/Auth/RegistrationTest.php
 
 namespace Tests\Feature\Auth;
 
@@ -31,6 +31,7 @@ class RegistrationTest extends TestCase
         $this->assertDatabaseHas('users', [
             'email' => 'rider@isdalog.ph',
             'role' => 'rider',
+            'status' => 'unverified',
         ]);
         $response->assertRedirect(route('dashboard', absolute: false));
     }
@@ -49,6 +50,7 @@ class RegistrationTest extends TestCase
         $this->assertDatabaseHas('users', [
             'email' => 'fisherman@isdalog.ph',
             'role' => 'fisherman',
+            'status' => 'unverified',
         ]);
         $response->assertRedirect(route('dashboard', absolute: false));
     }

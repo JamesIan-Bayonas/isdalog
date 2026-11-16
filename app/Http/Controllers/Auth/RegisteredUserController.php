@@ -1,4 +1,4 @@
-<?php
+<?php // File: isdalog/app/Http/Controllers/Auth/RegisteredUserController.php
 
 namespace App\Http\Controllers\Auth;
 
@@ -18,9 +18,9 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): Response
+    public function create(Request $request): Response
     {
-        return Inertia::render('Auth/Register');
+        return Inertia::render('Auth/Register', ['initialRole' => in_array($request->query('role'), ['buyer', 'fisherman', 'rider'], true) ? $request->query('role') : 'fisherman']);
     }
 
     /**
@@ -35,8 +35,8 @@ class RegisteredUserController extends Controller
             'role' => ['required', 'string', 'in:buyer,fisherman,rider'],
         ]);
 
-        // In demo/local testing environments, grant verified operational status immediately
-        $initialStatus = config('app.env') === 'production' ? 'unverified' : 'verified';
+        // Registration does not constitute an administrator review.
+        $initialStatus = 'unverified';
 
         $user = User::create([
             'name' => $validated['name'],
@@ -50,6 +50,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 }

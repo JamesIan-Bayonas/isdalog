@@ -1,4 +1,4 @@
-<?php
+<?php // File: isdalog/tests/Feature/CatchImageStorageTest.php
 // File: tests/Feature/CatchImageStorageTest.php
 namespace Tests\Feature;
 
@@ -13,7 +13,7 @@ class CatchImageStorageTest extends TestCase
 
     public function test_catch_ingestion_stores_image_on_public_disk(): void
     {
-        $diskName = config('filesystems.default', 'public');
+        $diskName = 'public';
         Storage::fake($diskName);
 
         /** @var User $fisherman */
@@ -22,9 +22,12 @@ class CatchImageStorageTest extends TestCase
             'telegram_chat_id' => '99887766',
         ]);
 
-        $base64Sample = 'data:image/jpeg;base64,' . base64_encode('fake-image-binary');
+        $base64Sample = 'data:image/jpeg;base64,' . 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=';
 
+        config(['ingestion.bot_secret' => 'test-secret']);
+        $this->withHeader('X-Isdalog-Bot-Secret', 'test-secret');
         $response = $this->postJson('/api/catches', [
+            'submission_id' => (string) \Illuminate\Support\Str::uuid(),
             'telegram_chat_id' => '99887766',
             'species' => 'Bangus',
             'weight' => 10.5,

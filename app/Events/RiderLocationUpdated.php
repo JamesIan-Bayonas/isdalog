@@ -1,4 +1,4 @@
-<?php
+<?php // File: isdalog/app/Events/RiderLocationUpdated.php
 
 namespace App\Events;
 
@@ -45,6 +45,7 @@ class RiderLocationUpdated implements ShouldBroadcastNow
             'order_id' => $this->orderId,
             'latitude' => $this->latitude,
             'longitude' => $this->longitude,
+            'recorded_at' => now()->toISOString(),
         ];
     }
 }

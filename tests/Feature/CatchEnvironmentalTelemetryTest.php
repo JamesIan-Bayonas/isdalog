@@ -1,4 +1,4 @@
-<?php
+<?php // File: isdalog/tests/Feature/CatchEnvironmentalTelemetryTest.php
 
 namespace Tests\Feature;
 
@@ -22,7 +22,10 @@ class CatchEnvironmentalTelemetryTest extends TestCase
             'telegram_chat_id' => '987654321',
         ]);
 
+        config(['ingestion.bot_secret' => 'test-secret']);
+        $this->withHeader('X-Isdalog-Bot-Secret', 'test-secret');
         $response = $this->postJson('/api/catches', [
+            'submission_id' => (string) \Illuminate\Support\Str::uuid(),
             'telegram_chat_id' => '987654321',
             'species' => 'Yellowfin Tuna',
             'weight' => 45.5,
@@ -70,7 +73,10 @@ class CatchEnvironmentalTelemetryTest extends TestCase
             'telegram_chat_id' => '123456789',
         ]);
 
+        config(['ingestion.bot_secret' => 'test-secret']);
+        $this->withHeader('X-Isdalog-Bot-Secret', 'test-secret');
         $response = $this->postJson('/api/catches', [
+            'submission_id' => (string) \Illuminate\Support\Str::uuid(),
             'telegram_chat_id' => '123456789',
             'species' => 'Lapu-Lapu',
             'weight' => 12.0,
@@ -108,9 +114,12 @@ class CatchEnvironmentalTelemetryTest extends TestCase
             'telegram_chat_id' => '987654321',
         ]);
 
-        $dummyBase64 = 'data:image/jpeg;base64,' . base64_encode('fake-image-binary-stream');
+        $dummyBase64 = 'data:image/jpeg;base64,' . 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=';
 
+        config(['ingestion.bot_secret' => 'test-secret']);
+        $this->withHeader('X-Isdalog-Bot-Secret', 'test-secret');
         $response = $this->postJson('/api/catches', [
+            'submission_id' => (string) \Illuminate\Support\Str::uuid(),
             'telegram_chat_id' => '987654321',
             'species' => 'Sardines',
             'weight' => 12.0,
@@ -139,9 +148,12 @@ class CatchEnvironmentalTelemetryTest extends TestCase
             'telegram_chat_id' => '1122334455',
         ]);
 
-        $dummyBase64 = 'data:image/jpeg;base64,' . base64_encode('fake-binary-stream');
+        $dummyBase64 = 'data:image/jpeg;base64,' . 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=';
 
+        config(['ingestion.bot_secret' => 'test-secret']);
+        $this->withHeader('X-Isdalog-Bot-Secret', 'test-secret');
         $response = $this->postJson('/api/catches', [
+            'submission_id' => (string) \Illuminate\Support\Str::uuid(),
             'telegram_chat_id' => '1122334455',
             'species'          => 'Silver Pomfret',
             'weight'           => 15.0,

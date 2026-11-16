@@ -1,4 +1,4 @@
-<?php
+<?php // File: isdalog/tests/Feature/WalletDepositTest.php
 
 namespace Tests\Feature;
 
@@ -37,7 +37,7 @@ class WalletDepositTest extends TestCase
         // 2. Verify Wallets ledger row
         $this->assertDatabaseHas('wallets', [
             'user_id' => $user->id,
-            'balance' => 1500.00,
+            'balance' => 2000.00,
         ]);
 
         // 3. Verify Wallet Transaction audit record

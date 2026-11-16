@@ -90,6 +90,7 @@ class SystemEdgeCaseHardeningTest extends TestCase
 
     public function test_payout_disbursement_service_returns_structured_sandbox_reference(): void
     {
+        config(['payouts.driver' => 'sandbox']);
         $result = PayoutDisbursementService::disburse(
             'gcash',
             '09170001122',

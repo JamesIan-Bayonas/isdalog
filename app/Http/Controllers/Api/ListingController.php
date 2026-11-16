@@ -12,7 +12,7 @@ class ListingController extends Controller
     {
         // Fetch all active listings, and include the fisherman's details so React can display their name
         $activeListings = Listing::with('fisherman')
-                                 ->where('status', 'active')
+                                 ->openForTrading()
                                  ->orderBy('created_at', 'desc')
                                  ->get();
 

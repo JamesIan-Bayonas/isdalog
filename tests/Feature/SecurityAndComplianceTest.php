@@ -1,4 +1,4 @@
-<?php
+<?php // File: isdalog/tests/Feature/SecurityAndComplianceTest.php
 
 namespace Tests\Feature;
 
@@ -17,6 +17,7 @@ class SecurityAndComplianceTest extends TestCase
         $user = User::factory()->create([
             'role' => 'buyer',
             'status' => 'unverified',
+            'contact_number' => '09171234567',
         ]);
 
         $response = $this->actingAs($user)->patch('/profile/upgrade', [
@@ -41,6 +42,7 @@ class SecurityAndComplianceTest extends TestCase
         $user = User::factory()->create([
             'role' => 'buyer',
             'status' => 'unverified',
+            'contact_number' => '09171234567',
         ]);
 
         $response = $this->actingAs($user)->patch('/profile/upgrade', [
@@ -162,6 +164,8 @@ class SecurityAndComplianceTest extends TestCase
     $token = $tokenResponse->json('token');
 
     // 2. Simulate Telegram Gateway Bot handshake callback
+    config(['ingestion.bot_secret' => 'test-secret']);
+    $this->withHeader('X-Isdalog-Bot-Secret', 'test-secret');
     $handshakeResponse = $this->postJson('/api/telegram/link', [
         'token' => $token,
         'telegram_chat_id' => '9988776655',
