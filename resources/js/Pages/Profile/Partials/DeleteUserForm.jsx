@@ -1,4 +1,4 @@
-// File: resources/js/Pages/Profile/Partials/DeleteUserForm.jsx
+// File: isdalog/resources/js/Pages/Profile/Partials/DeleteUserForm.jsx
 import DangerButton from '@/Components/DangerButton';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
@@ -87,7 +87,7 @@ export default function DeleteUserForm({ className = '' }) {
                             placeholder="••••••••••••"
                         />
                         <InputError
-                            message={errors.password}
+                            message={errors.password || errors.account}
                             className="mt-2 text-xs"
                         />
                     </div>

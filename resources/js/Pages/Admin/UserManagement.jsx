@@ -1,184 +1,28 @@
+// File: isdalog/resources/js/Pages/Admin/UserManagement.jsx
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
-
-export default function UserManagement({ auth, users }) {
-    const [processingId, setProcessingId] = useState(null);
-
-    // Fallback role selection mechanic handler
-    const handleRoleChange = (userId, newRole) => {
-        setProcessingId(userId);
-        
-        router.patch(`/admin/users/${userId}/role`, { role: newRole }, {
-            preserveScroll: true,
-            onFinish: () => setProcessingId(null),
-        });
-    };
-
-    // Handler for official programmatic rider verification approval
-    const handleApproveRider = (userId) => {
-        setProcessingId(userId);
-        router.patch(route('admin.users.approve-rider', userId), {}, {
-            preserveScroll: true,
-            onFinish: () => setProcessingId(null),
-        });
-    };
-
-    // Handler for rejecting or resetting compliance document applications
-    const handleRejectUser = (userId) => {
-        setProcessingId(userId);
-        router.patch(route('admin.users.reject', userId), {}, {
-            preserveScroll: true,
-            onFinish: () => setProcessingId(null),
-        });
-    };
-
-    const renderStatus = (user) => user.status === 'pending_review' ? (
-        <div className="isd-admin-warning p-3 rounded-lg border text-xs space-y-1">
-            <p className="font-bold flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full isd-fill-warning" aria-hidden="true" />
-                Vetting verification requested
-            </p>
-            <p><strong>License ID:</strong> <span className="font-mono isd-text-secondary">{user.license_number || 'Not provided'}</span></p>
-            <p><strong>Plate registration:</strong> <span className="font-mono isd-text-secondary">{user.vehicle_plate || 'Not provided'}</span></p>
+import { Head, useForm, usePage } from '@inertiajs/react';
+function Account({user,own}) {
+    const form=useForm({reason:'',role:user.role});
+    const send=action=>form.patch(route(action,user.id),{preserveScroll:true,onSuccess:()=>form.reset('reason')});
+    return <article className="isd-surface border isd-border rounded-xl p-5 space-y-3 min-w-0 break-words">
+        <h2 className="font-bold">{user.name}</h2><p>{user.email} · {user.contact_number || 'No contact number'}</p>
+        <p>Role: {user.role} · Access status: {user.status || 'unverified'}</p>
+        <p>Requested role: {user.requested_role || 'None'}</p>
+        <p>Self-reported registration: {user.bfar_registration_number || 'Not provided'}</p><p>Self-reported vehicle and plate: {user.vehicle_details || 'Not provided'}</p>
+        {!own && <><label className="block">Decision reason and next steps (visible to account owner)<textarea className="isd-ui-input block w-full" value={form.data.reason} maxLength={1000} onChange={e=>form.setData('reason',e.target.value)} /></label>
+        {Object.entries(form.errors).map(([key,value])=><p key={key} role="alert">{value}</p>)}
+        <div className="flex flex-wrap gap-3">
+            {user.status==='pending_review' ? <><button disabled={form.processing} onClick={()=>send('admin.users.approve-rider')} className="isd-ui-button isd-ui-button-primary">Approve requested role</button><button disabled={form.processing} onClick={()=>send('admin.users.reject')} className="isd-ui-button isd-ui-button-danger">Decline application</button></> : <><button disabled={form.processing} onClick={()=>send('admin.users.toggle-verification')} className="isd-ui-button">{user.status==='verified'?'Remove access approval':'Approve access'}</button><label>Role<select className="isd-ui-input" value={form.data.role} onChange={e=>form.setData('role',e.target.value)}>{['buyer','fisherman','rider','admin'].map(r=><option key={r}>{r}</option>)}</select></label><button disabled={form.processing} onClick={()=>send('admin.users.role')} className="isd-ui-button">Change role; reset approval</button></>}
+        </div></>}
+    </article>;
+}
+export default function UserManagement({auth,users}) {
+    const flash=usePage().props.flash;
+    return <AuthenticatedLayout header={<h2 className="text-xl font-bold">Account review</h2>}><Head title="Account review" />
+        <div className="max-w-6xl mx-auto p-4 py-8 space-y-4 isd-text-primary">
+            {flash?.success && <p role="status">{flash.success}</p>}
+            <p>Approval grants IsdaLog account access. It does not establish government certification, identity verification or catch safety. Record what you checked and what the applicant should do next. Access changes are blocked while the account has active orders; resolve those responsibilities first. This is not an immediate suspension tool.</p>
+            <div className="grid gap-4 lg:grid-cols-2">{users.map(u=><Account key={u.id} user={u} own={u.id===auth.user.id} />)}</div>
         </div>
-    ) : (
-        <div className="isd-admin-success flex items-center gap-1 text-xs font-semibold w-fit px-2 py-1 rounded border">
-            ✓ Compliant ({user.status ?? 'active'})
-        </div>
-    );
-
-    const renderActions = (user) => user.status === 'pending_review' ? (
-        <div className="flex flex-wrap items-center gap-2">
-            <button
-                type="button"
-                disabled={processingId === user.id}
-                onClick={() => handleApproveRider(user.id)}
-                className="isd-ui-button isd-ui-button-primary text-xs disabled:opacity-50"
-            >
-                Accept document
-            </button>
-            <button
-                type="button"
-                disabled={processingId === user.id}
-                onClick={() => handleRejectUser(user.id)}
-                className="isd-ui-button isd-ui-button-danger text-xs disabled:opacity-50"
-            >
-                Decline
-            </button>
-        </div>
-    ) : (
-        <select
-            aria-label={`Change role for ${user.name}`}
-            disabled={processingId === user.id || user.id === auth.user.id}
-            value={user.role}
-            onChange={(e) => handleRoleChange(user.id, e.target.value)}
-            className="isd-ui-input block w-36 py-1.5 px-2 text-xs disabled:opacity-50"
-        >
-            <option value="buyer">Buyer</option>
-            <option value="fisherman">Fisherman</option>
-            <option value="rider">Rider</option>
-            <option value="admin">Admin</option>
-        </select>
-    );
-
-    return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={<h2 className="font-semibold text-xl isd-text-primary leading-tight">User management</h2>}
-        >
-            <Head title="Manage Users" />
-
-            <div className="isd-admin-users py-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="isd-surface border isd-border overflow-hidden shadow-sm rounded-xl p-4 sm:p-6">
-                        {users.length === 0 && <p className="isd-empty">No user accounts are available to review.</p>}
-                        
-                        <div className="grid gap-3 md:hidden">
-                            {users.map((user) => (
-                                <article key={user.id} className="isd-admin-mobile-card rounded-xl border p-4">
-                                    <div className="flex flex-wrap items-start justify-between gap-2">
-                                        <div className="min-w-0">
-                                            <h3 className="font-semibold break-words">{user.name}</h3>
-                                            <p className="text-sm break-all">{user.email}</p>
-                                        </div>
-                                        <span className="isd-app-role-badge px-2 inline-flex text-xs leading-5 font-bold rounded-full uppercase tracking-wider border">
-                                            {user.role}
-                                        </span>
-                                    </div>
-                                    {user.requested_role && (
-                                        <p className="isd-admin-warning mt-3 rounded-lg border px-2 py-1 text-xs font-semibold">
-                                            Requested role: {user.requested_role}
-                                        </p>
-                                    )}
-                                    <div className="mt-4 space-y-1">
-                                        <p className="text-xs font-semibold uppercase tracking-wide">Verification status</p>
-                                        {renderStatus(user)}
-                                    </div>
-                                    <div className="mt-4 space-y-1">
-                                        <p className="text-xs font-semibold uppercase tracking-wide">Actions</p>
-                                        {renderActions(user)}
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
-
-                        <div className="isd-scroll-region hidden overflow-x-auto md:block" tabIndex={0} role="region" aria-label="User accounts and administrative actions">
-                        <table className="min-w-[860px] w-full isd-divide isd-divide">
-                            <thead className="isd-subtle">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium isd-text-muted uppercase tracking-wider">Account Operator</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium isd-text-muted uppercase tracking-wider">Email Address</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium isd-text-muted uppercase tracking-wider">Current System Role</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium isd-text-muted uppercase tracking-wider">Compliance Vetting Status</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium isd-text-muted uppercase tracking-wider">Administrative Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="isd-surface isd-divide isd-divide">
-                                {users.map((user) => (
-                                    <tr key={user.id} className="isd-hover-subtle transition">
-                                        
-                                        {/* 1. NAME & REQUEST SPECIFICATION */}
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium isd-text-primary">
-                                            <div className="font-semibold isd-text-primary">{user.name}</div>
-                                            {user.requested_role && (
-                                                <span className="mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium isd-soft-warning isd-text-warning animate-pulse">
-                                                    Wants to be: {user.requested_role}
-                                                </span>
-                                            )}
-                                        </td>
-                                        
-                                        {/* 2. EMAIL */}
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm isd-text-muted">
-                                            {user.email}
-                                        </td>
-                                        
-                                        {/* 3. CURRENT ROLE BADGE */}
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="isd-app-role-badge px-2 inline-flex text-xs leading-5 font-bold rounded-full uppercase tracking-wider border">
-                                                {user.role}
-                                            </span>
-                                        </td>
-                                        
-                                        {/* 4. 📑 ROBUST VETTING INTERFACE INSIGHT PANEL */}
-                                        <td className="px-6 py-4 text-sm isd-text-muted">
-                                            {renderStatus(user)}
-                                        </td>
-
-                                        {/* 5. 📥 DYNAMIC APPROVAL ACTION TRIGGERS */}
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                            {renderActions(user)}
-                                        </td>
-
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-        </AuthenticatedLayout>
-    );
+    </AuthenticatedLayout>;
 }

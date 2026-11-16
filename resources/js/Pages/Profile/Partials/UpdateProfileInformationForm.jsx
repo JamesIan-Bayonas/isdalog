@@ -1,4 +1,4 @@
-// File: resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.jsx
+// File: isdalog/resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.jsx
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
@@ -15,6 +15,7 @@ export default function UpdateProfileInformation({
         useForm({
             name: user.name,
             email: user.email,
+            contact_number: user.contact_number || '',
         });
 
     const submit = (e) => {
@@ -29,7 +30,7 @@ export default function UpdateProfileInformation({
                     Profile information
                 </h2>
                 <p className="mt-1 text-xs font-mono text-slate-400">
-                    Update your name and email address.
+                    Keep your name, email and contact number current. A contact number is required for a role review. Delivery recipients are saved separately on each order.
                 </p>
             </header>
 
@@ -42,7 +43,6 @@ export default function UpdateProfileInformation({
                         value={data.name}
                         onChange={(e) => setData('name', e.target.value)}
                         required
-                        isFocused
                         autoComplete="name"
                     />
                     <InputError className="mt-2 text-xs" message={errors.name} />
@@ -62,6 +62,7 @@ export default function UpdateProfileInformation({
                     <InputError className="mt-2 text-xs" message={errors.email} />
                 </div>
 
+                <div><InputLabel htmlFor="contact_number" value="Contact number (Philippines)" /><TextInput id="contact_number" type="tel" autoComplete="tel" className="mt-1 block w-full" value={data.contact_number} onChange={e=>setData('contact_number',e.target.value)} placeholder="09… or +639…" /><InputError message={errors.contact_number} /></div>
                 {mustVerifyEmail && user.email_verified_at === null && (
                     <div>
                         <p className="mt-2 text-xs font-mono text-amber-400">

@@ -1,4 +1,4 @@
-// File: resources/js/Pages/Profile/Partials/UpgradeRoleForm.jsx
+// File: isdalog/resources/js/Pages/Profile/Partials/UpgradeRoleForm.jsx
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
@@ -9,9 +9,15 @@ import { ShieldCheckIcon } from '@heroicons/react/24/outline';
 export default function UpgradeRoleForm({ className = '' }) {
     const user = usePage().props.auth.user;
 
+    const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
+        requested_role: user.requested_role || (user.role === 'rider' ? 'rider' : 'fisherman'),
+        bfar_registration_number: user.bfar_registration_number || '',
+        vehicle_details: user.vehicle_details || '',
+    });
+
     if (user.role === 'admin') return null;
 
-    if (user.role === 'fisherman' || user.role === 'rider') {
+    if ((user.role === 'fisherman' || user.role === 'rider') && user.status === 'verified') {
         return (
             <section className={className}>
                 <header>
@@ -27,17 +33,11 @@ export default function UpgradeRoleForm({ className = '' }) {
                 </header>
                 <div className="mt-4 p-4 rounded-xl bg-slate-950/70 border border-slate-800 text-xs font-mono space-y-1.5 text-slate-300">
                     <p><strong className="text-slate-400 uppercase tracking-wider">Role:</strong> <span className="text-white font-bold">{user.role.toUpperCase()}</span></p>
-                    <p><strong className="text-slate-400 uppercase tracking-wider">Verification Status:</strong> <span className="text-emerald-400 font-black">{user.status.toUpperCase()}</span></p>
+                    <p><strong className="text-slate-400 uppercase tracking-wider">Access status:</strong> <span className="text-emerald-400 font-black">{user.status.toUpperCase()}</span></p>
                 </div>
             </section>
         );
     }
-
-    const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
-        requested_role: 'fisherman',
-        bfar_registration_number: user.bfar_registration_number || '',
-        vehicle_details: user.vehicle_details || '',
-    });
 
     const submit = (e) => {
         e.preventDefault();
@@ -53,7 +53,7 @@ export default function UpgradeRoleForm({ className = '' }) {
                     Request a new role
                 </h2>
                 <p className="mt-1 text-xs font-mono text-slate-400">
-                    Apply for fisherman or rider access. BFAR will review the details you provide.
+                    Apply for fisherman or rider access. Save your contact number first. An IsdaLog administrator reviews these self-reported details; this is not BFAR certification.
                 </p>
             </header>
 
@@ -64,6 +64,7 @@ export default function UpgradeRoleForm({ className = '' }) {
             )}
 
             <form onSubmit={submit} className="mt-6 space-y-5">
+                <InputError message={errors.account} />
                 <div>
                     <InputLabel htmlFor="requested_role" value="Requested role" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300" />
                     <select

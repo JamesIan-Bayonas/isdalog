@@ -1,3 +1,4 @@
+// File: isdalog/resources/js/Pages/Dispatch.jsx
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import InputError from '@/Components/InputError';
 import Modal from '@/Components/Modal';
@@ -26,6 +27,8 @@ import {
 
 export default function Dispatch({ auth, availableJobs: initialJobs = [], activeRuns: initialRuns = [], riderStatus = 'unverified' }) {
     const [availableJobs, setAvailableJobs] = useState(initialJobs);
+    const [gpsEnabled, setGpsEnabled] = useState(false);
+    const [gpsMessage, setGpsMessage] = useState('Location sharing is off. Use the address and handover codes without GPS.');
     const [activeRuns, setActiveRuns] = useState(initialRuns);
 
     const [selectedClaimOrder, setSelectedClaimOrder] = useState(null);
@@ -42,28 +45,32 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
     // Background GPS Telemetry Daemon
     useEffect(() => {
         const enRouteRuns = activeRuns.filter(run => run.status === 'en_route');
-        if (enRouteRuns.length === 0) return;
+        if (enRouteRuns.length === 0 || !gpsEnabled) return;
+        let stopped = false;
+        if (!('geolocation' in navigator)) { setGpsMessage('GPS is unavailable on this device. Use the delivery address and contacts.'); setGpsEnabled(false); return; }
 
         const interval = setInterval(() => {
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
+                        if (stopped) return;
                         const { latitude, longitude } = position.coords;
 
                         // Push coordinates to the backend for WebSocket distribution
                         enRouteRuns.forEach(run => {
                             axios.post(route('dispatch.location', run.order_id), { latitude, longitude })
-                                .catch(err => console.error("GPS Telemetry push failed:", err));
+                                .then(() => { if (!stopped) setGpsMessage('Last location saved at ' + new Date().toLocaleTimeString()); })
+                                .catch(() => { if (!stopped) setGpsMessage('Update failed. Check your connection; use the address and contacts meanwhile.'); });
                         });
                     },
-                    (error) => console.warn("GPS Tracking Warning:", error.message),
+                    () => { if (!stopped) { setGpsMessage('GPS permission or position unavailable. Check browser location permission and device settings, then retry. Address and handover codes still work.'); setGpsEnabled(false); } },
                     { enableHighAccuracy: true, timeout: 5000 }
                 );
             }
         }, 10000); // 10-second polling interval
 
-        return () => clearInterval(interval);
-    }, [activeRuns]);
+        return () => { stopped = true; clearInterval(interval); };
+    }, [activeRuns, gpsEnabled]);
 
     useEffect(() => {
         if (window.Echo) {
@@ -150,6 +157,7 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
             }
         >
             <Head title="Dispatch — IsdaLog" />
+            <section className="max-w-7xl mx-auto px-4 pt-5 space-y-2"><p role="status" className="text-sm isd-text-muted">{gpsMessage}</p><button type="button" disabled={riderStatus !== 'verified' || !activeRuns.some(run => run.status === 'en_route')} className="rounded-xl border isd-border px-4 py-2 isd-text-brand disabled:opacity-50" onClick={() => { setGpsEnabled(!gpsEnabled); setGpsMessage(gpsEnabled ? 'Sharing stopped; previously saved fixes remain visible with their timestamp.' : 'Waiting for GPS permission or position. Updates run every ten seconds.'); }}>{gpsEnabled ? 'Stop location sharing' : 'Enable location sharing'}</button></section>
 
             <div className="isdalog-dispatch-dashboard py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
@@ -234,6 +242,9 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
                                                     <UserIcon className="w-3.5 h-3.5 isd-text-muted shrink-0" />
                                                     <span>Buyer: {run.buyer_name}</span>
                                                 </div>
+                                                <p className="text-sm isd-text-primary">Drop-off: {run.delivery_address || 'Not recorded — coordinate before travel'}</p>
+                                                <p className="text-sm isd-text-secondary">Recipient: {run.recipient_name || run.buyer_name} · {run.recipient_phone || 'No recipient number'}</p>
+                                                {run.delivery_instructions && <p className="text-sm isd-text-muted">Instructions: {run.delivery_instructions}</p>}
                                                 {run.buyer_contact && (
                                                     <div className="flex items-center gap-1.5 isd-text-muted">
                                                         <PhoneIcon className="w-3.5 h-3.5 isd-text-muted shrink-0" />
@@ -300,6 +311,7 @@ export default function Dispatch({ auth, availableJobs: initialJobs = [], active
 
                                         <div>
                                             <h4 className="text-lg font-black isd-text-primary">{job.fish_name}</h4>
+                                            <p className="text-sm isd-text-secondary">Destination area: {job.destination_area || 'Not recorded for this older order'} · recorded delivery charge ₱{Number(job.delivery_fee || 0).toFixed(2)}</p>
                                             <p className="text-xs font-mono isd-text-muted flex items-center gap-1 mt-0.5">
                                                 <MapPinIcon className="w-3.5 h-3.5 isd-text-muted" />
                                                 {job.origin_port || 'Galas Port (Dockside)'}

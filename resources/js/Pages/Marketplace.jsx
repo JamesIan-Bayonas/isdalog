@@ -1,7 +1,8 @@
+// File: isdalog/resources/js/Pages/Marketplace.jsx
 // resources/js/Pages/Marketplace.jsx
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { useState, useEffect, useRef } from 'react';
 import { 
     TruckIcon, 
     ArrowTrendingUpIcon, 
@@ -15,11 +16,15 @@ import {
     SparklesIcon,
     BoltIcon
 } from '@heroicons/react/24/outline';
+import FavoriteButton from '@/Components/FavoriteButton';
+import MarketBenchmark from '@/Components/MarketBenchmark';
 import DeliveryTracker from '@/Components/DeliveryTracker';
 import OrderRatingModal from '@/Components/OrderRatingModal';
 
-export default function Marketplace({ auth, activeListings = [], activeOrders: initialActiveOrders = [], trends = [] }) {
+export default function Marketplace({ auth, activeListings = [], activeOrders: initialActiveOrders = [], trends = [], serverNow = null, filters = {}, ports = [], pagination = null }) {
     const [listings, setListings] = useState(activeListings);
+    const refreshMarket = useRef(null);
+    const [marketRefreshing, setMarketRefreshing] = useState(false);
     const [orders, setOrders] = useState(initialActiveOrders);
     const [copiedOtpId, setCopiedOtpId] = useState(null);
     const isFisherman = auth?.user?.role === 'fisherman';
@@ -34,26 +39,37 @@ export default function Marketplace({ auth, activeListings = [], activeOrders: i
         setOrders(initialActiveOrders);
     }, [initialActiveOrders]);
 
-    // Global Marketplace Echo Subscription
+    // Requery the current URL after changes: price changes can alter membership, order and page totals.
     useEffect(() => {
+        let timer = null, busy = false, dirty = false, stopped = false;
+        const schedule = () => {
+            if (stopped) return;
+            dirty = true;
+            setMarketRefreshing(true);
+            if (timer || busy) return;
+            timer = setTimeout(() => {
+                timer = null; busy = true; dirty = false;
+                router.reload({ only: ['activeListings', 'pagination', 'serverNow'], preserveScroll: true,
+                    onFinish: () => { busy = false; if (!stopped) { setMarketRefreshing(false); if (dirty) schedule(); } } });
+            }, 750);
+        };
+        refreshMarket.current = schedule;
         if (window.Echo) {
             const channel = window.Echo.channel('marketplace');
-
-            channel.listen('CatchBidUpdated', (e) => {
-                setListings(currentListings =>
-                    currentListings.map(listing =>
-                        listing.id === e.listing_id
-                            ? { ...listing, current_bid: e.current_bid }
-                            : listing
-                    )
-                );
-            });
-
-            return () => {
-                window.Echo.leaveChannel('marketplace');
-            };
+            channel.listen('ListingAvailabilityUpdated', schedule);
+            channel.listen('CatchBidUpdated', schedule);
         }
+        return () => { stopped = true; clearTimeout(timer); refreshMarket.current = null; window.Echo?.leaveChannel('marketplace'); };
     }, []);
+
+    useEffect(() => {
+        if (!serverNow) return;
+        const deadlines = activeListings.map(listing => Date.parse(listing.ends_at)).filter(Number.isFinite);
+        if (!deadlines.length) return;
+        const delay = Math.max(0, Math.min(...deadlines) - Date.parse(serverNow));
+        const timer = setTimeout(() => refreshMarket.current?.(), Math.min(delay + 50, 2147483647));
+        return () => clearTimeout(timer);
+    }, [activeListings, serverNow]);
 
     const handleCopyOtp = (orderId, otp) => {
         navigator.clipboard.writeText(otp);
@@ -84,7 +100,7 @@ export default function Marketplace({ auth, activeListings = [], activeOrders: i
                             <h2 className="font-black text-xl isd-text-primary tracking-tight flex items-center gap-2">
                                 Marketplace
                                 <span className="whitespace-nowrap text-[10px] font-mono uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full isd-soft-brand isd-text-brand border isd-border-brand">
-                                    {isRider ? 'Live' : isFisherman || isBuyer ? 'Live offers' : 'Active deliveries'}
+                                    Offers
                                 </span>
                             </h2>
                             <p className="text-xs font-mono isd-text-muted">
@@ -102,8 +118,8 @@ export default function Marketplace({ auth, activeListings = [], activeOrders: i
                     <div className="flex items-center gap-2 self-start sm:self-auto">
                         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl isd-surface border isd-border text-xs font-mono">
                             <span className="w-2 h-2 rounded-full isd-fill-success animate-pulse" />
-                            <span className="isd-text-muted">Active listings:</span>
-                            <span className="font-bold isd-text-primary">{listings.length}</span>
+                            <span className="isd-text-muted">Matching listings:</span>
+                            <span className="font-bold isd-text-primary">{pagination?.total ?? listings.length}</span>
                         </div>
                     </div>
                 </div>
@@ -161,6 +177,7 @@ export default function Marketplace({ auth, activeListings = [], activeOrders: i
                                                 orderId={order.order_id}
                                                 status={order.status} 
                                                 location={order.location} 
+                                                logisticsType={order.logistics_type}
                                                 onStatusUpdate={handleOrderTelemetryUpdate}
                                             />
                                         </div>
@@ -229,7 +246,7 @@ export default function Marketplace({ auth, activeListings = [], activeOrders: i
                                                 </div>
                                             )}
 
-                                            {order.status === 'delivered' && (
+                                            {(order.status === 'delivered' || (order.logistics_type === 'self_pickup' && order.status === 'pending_dispatch')) && (
                                                 <DeliveryConfirmAction order={order} />
                                             )}
                                         </div>
@@ -240,6 +257,7 @@ export default function Marketplace({ auth, activeListings = [], activeOrders: i
                     </div>
                 )}
 
+                <MarketFilters filters={filters} ports={ports} />
                 {/* --- LIVE BIDDING GRID CARDS --- */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between pb-1 border-b isd-border">
@@ -248,14 +266,14 @@ export default function Marketplace({ auth, activeListings = [], activeOrders: i
                             Marketplace listings
                         </h3>
                         <span className="text-xs font-mono isd-text-muted">
-                            {isFisherman ? 'Buyer offers update automatically' : isRider ? 'Live listing updates' : 'Sub-second Reverb WebSocket Updates'}
+                            {marketRefreshing ? 'Market changed — refreshing results…' : pagination ? (pagination.total ? 'Showing ' + pagination.from + '–' + pagination.to + ' of ' + pagination.total : '0 matching listings') : listings.length + ' listings'}
                         </span>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {listings.length === 0 ? (
                             <div className="isd-empty col-span-full">
-                                No active listings are available right now.
+                                No catches match these selections. Try another fish name, widen the ranges, or clear the filters.
                             </div>
                         ) : (
                             listings.map(listing => (
@@ -263,10 +281,81 @@ export default function Marketplace({ auth, activeListings = [], activeOrders: i
                             ))
                         )}
                     </div>
+                    {pagination && <nav aria-label="Marketplace pages" className="flex flex-wrap justify-between items-center gap-3 border-t isd-border pt-5">
+                        {pagination.prev_url ? <Link href={pagination.prev_url} preserveScroll className="rounded-xl border isd-border px-4 py-3 isd-text-brand">Previous</Link> : <span className="px-4 py-3 isd-text-muted" aria-disabled="true">Previous</span>}
+                        <span className="text-sm isd-text-secondary">Page {pagination.current_page} of {pagination.last_page}</span>
+                        {pagination.next_url ? <Link href={pagination.next_url} preserveScroll className="rounded-xl border isd-border px-4 py-3 isd-text-brand">Next</Link> : <span className="px-4 py-3 isd-text-muted" aria-disabled="true">Next</span>}
+                    </nav>}
                 </div>
             </div>
         </AuthenticatedLayout>
     );
+}
+
+function SaveSearch({ filters }) {
+    const form = useForm({ name: '' });
+    function save(event) {
+        event.preventDefault();
+        form.transform(data => ({ ...filters, name: data.name }));
+        form.post(route('saved.search.store'), { preserveScroll: true, onSuccess: () => form.reset() });
+    }
+
+    return <form onSubmit={save} className="mt-4 border-t isd-border pt-4 space-y-2">
+        <label className="block text-sm isd-text-primary">Name this search
+            <input className="isd-ui-input block w-full max-w-sm mt-1" required maxLength={80}
+                value={form.data.name} onChange={event => form.setData('name', event.target.value)} />
+        </label>
+        <p className="text-xs isd-text-muted">Saves the applied filters. Using the same name updates that search.</p>
+        {Object.entries(form.errors).map(([key, error]) => <p key={key} role="alert">{error}</p>)}
+        <div className="flex flex-wrap items-center gap-3">
+            <button className="isd-ui-button" disabled={form.processing}>Save applied search</button>
+            <Link className="underline isd-text-brand" href={route('saved.index')}>Saved discovery</Link>
+            {form.recentlySuccessful && <span role="status">Search saved.</span>}
+        </div>
+    </form>;
+}
+
+function MarketFilters({ filters, ports }) {
+    const defaults = { q: '', port: '', min_price: '', max_price: '', min_weight: '', max_weight: '', sort: 'newest' };
+    const { data, setData, get, processing, errors } = useForm({ ...defaults, ...filters });
+    useEffect(() => { setData({ ...defaults, ...filters }); }, [JSON.stringify(filters)]);
+    const control = 'mt-1 block w-full rounded-lg border isd-border isd-surface isd-text-primary p-2.5 text-sm focus:ring-2 isd-focus-field';
+    const range = (name, label) => <label className="block text-sm isd-text-secondary" htmlFor={`market-${name}`} key={name}>
+        {label}<input id={`market-${name}`} type="number" min="0" step="0.01" value={data[name] ?? ''} onChange={event => setData(name, event.target.value)} className={control} aria-invalid={Boolean(errors[name])} aria-describedby={errors[name] ? `market-error-${name}` : undefined} />
+        {errors[name] && <span id={`market-error-${name}`} role="alert" className="block mt-1 isd-text-danger">{errors[name]}</span>}
+    </label>;
+    return <section className="rounded-2xl isd-surface border isd-border p-4 sm:p-6" aria-labelledby="market-filter-title">
+        <h3 id="market-filter-title" className="font-bold isd-text-primary">Find your next catch</h3>
+        <p className="text-sm isd-text-muted mt-1 mb-4">Search all available batches. Price filters compare pesos per kilogram, not whole-batch totals.</p>
+        <form onSubmit={event => { event.preventDefault(); get(route('marketplace.index'), { preserveState: true, preserveScroll: true }); }} className="space-y-4" aria-busy={processing}>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <label className="text-sm isd-text-secondary" htmlFor="market-search">Fish name
+                    <input id="market-search" type="search" maxLength={100} value={data.q ?? ''} onChange={event => setData('q', event.target.value)} placeholder="e.g. Bangus" className={control} />
+                    {errors.q && <span role="alert" className="isd-text-danger">{errors.q}</span>}
+                </label>
+                <label className="text-sm isd-text-secondary" htmlFor="market-port">Landing port
+                    <select id="market-port" value={data.port ?? ''} onChange={event => setData('port', event.target.value)} className={control}>
+                        <option value="">All ports</option>{ports.map(port => <option key={port} value={port}>{port}</option>)}
+                    </select>
+                    {errors.port && <span role="alert" className="isd-text-danger">{errors.port}</span>}
+                </label>
+                <label className="text-sm isd-text-secondary" htmlFor="market-sort">Sort by
+                    <select id="market-sort" value={data.sort} onChange={event => setData('sort', event.target.value)} className={control}>
+                        <option value="newest">Newest first</option><option value="price_asc">Lowest ₱/kg</option><option value="price_desc">Highest ₱/kg</option><option value="weight_asc">Lightest batch</option><option value="closing">Closing soon</option>
+                    </select>
+                </label>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {range('min_price', 'Minimum price (₱/kg)')}{range('max_price', 'Maximum price (₱/kg)')}
+                {range('min_weight', 'Minimum weight (kg)')}{range('max_weight', 'Maximum weight (kg)')}
+            </div>
+            <div className="flex flex-wrap gap-3">
+                <button type="submit" disabled={processing} className="rounded-xl isd-action isd-on-action px-5 py-3 font-semibold disabled:opacity-50">{processing ? 'Searching…' : 'Apply filters'}</button>
+                <Link href={route('marketplace.index')} preserveScroll className="rounded-xl border isd-border isd-text-brand px-5 py-3">Clear filters</Link>
+            </div>
+        </form>
+        <SaveSearch filters={filters} />
+    </section>;
 }
 
 function DeliveryConfirmAction({ order }) {
@@ -301,22 +390,7 @@ function LiveListingCard({ initialListing, auth }) {
         bid_amount: '',
     });
 
-    useEffect(() => {
-        if (window.Echo) {
-            const channel = window.Echo.channel(`marketplace.${listing.id}`);
-
-            channel.listen('CatchBidUpdated', (eventData) => {
-                setListing(prev => ({
-                    ...prev,
-                    current_bid: eventData.current_bid
-                }));
-                setIsFlashing(true);
-                setTimeout(() => setIsFlashing(false), 1000);
-            });
-
-            return () => window.Echo.leaveChannel(`marketplace.${listing.id}`);
-        }
-    }, [listing.id]);
+    useEffect(() => { setListing(initialListing); }, [initialListing]);
 
     const submitBid = (e) => {
         e.preventDefault();
@@ -364,9 +438,17 @@ function LiveListingCard({ initialListing, auth }) {
             </div>
 
             <div className="space-y-3">
+                <p className="text-sm font-semibold isd-text-brand">₱{Number(listing.unit_price).toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})} / kg <span className="text-xs font-normal isd-text-muted">current batch offer ÷ weight</span></p>
+                <MarketBenchmark benchmark={listing.benchmark} compact />
+                <FavoriteButton listingId={listing.id} saved={initialListing.is_favorite} />
+                <p className="text-xs isd-text-muted">
+                    {listing.ends_at
+                        ? `Offers close ${new Date(listing.ends_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', timeZoneName: 'short' })}`
+                        : 'No deadline recorded for this older listing.'}
+                </p>
                 <div className="flex justify-between items-start">
                     <div>
-                        <h4 className="font-black isd-text-primary text-lg capitalize tracking-tight">{listing.fish_name}</h4>
+                        <h4 className="font-black isd-text-primary text-lg capitalize tracking-tight"><Link href={route('catches.show', listing.id)} className="underline">{listing.fish_name}</Link></h4>
                         <div className="flex items-center gap-1 text-xs font-mono isd-text-muted mt-0.5">
                             <MapPinIcon className="w-3.5 h-3.5 isd-text-muted shrink-0" />
                             <span>{listing.location}</span>
@@ -390,6 +472,7 @@ function LiveListingCard({ initialListing, auth }) {
                 <AcceptBidAction listing={listing} />
             ) : isBuyer ? (
                 <form onSubmit={submitBid} className="space-y-2 pt-1">
+                    <p className="text-xs isd-text-muted">Minimum increase: ₱0.01. Offers are funded only when accepted.</p>
                     <div className="relative">
                         <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none isd-text-muted text-xs font-mono font-bold">₱</span>
                         <input
@@ -399,7 +482,8 @@ function LiveListingCard({ initialListing, auth }) {
                             aria-describedby={errors.bid_amount ? `bid-error-${listing.id}` : undefined}
                             type="number"
                             step="0.01"
-                            min={parseFloat(listing.current_bid) + 1}
+                            min={((Math.round(Number(listing.current_bid) * 100) + 1) / 100).toFixed(2)}
+                            max="99999999.99"
                             value={data.bid_amount}
                             onChange={(e) => setData("bid_amount", e.target.value)}
                             placeholder={`> ${listing.current_bid}`}

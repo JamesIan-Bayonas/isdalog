@@ -1,3 +1,4 @@
+// File: isdalog/resources/js/Pages/Auth/Register.jsx
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
@@ -12,13 +13,13 @@ import {
 const roles = {
     fisherman: { label: 'Fisherman', title: 'Fishermen', badge: 'Catch and auctions', description: 'Log catches, manage auctions, and track secured earnings.', icon: SparklesIcon, tone: 'brand' },
     buyer: { label: 'Buyer', title: 'Buyers', badge: 'Marketplace and delivery', description: 'Place offers, manage funds, and follow delivery progress.', icon: CircleStackIcon, tone: 'success' },
-    rider: { label: 'Rider', title: 'Riders', badge: 'Cold-chain delivery', description: 'Claim dispatches and record verified cold-chain handovers.', icon: TruckIcon, tone: 'info' },
+    rider: { label: 'Rider', title: 'Riders', badge: 'Courier delivery', description: 'Apply for rider access, claim available jobs, and record coded handovers.', icon: TruckIcon, tone: 'info' },
 };
 
-export default function Register() {
+export default function Register({ initialRole = 'fisherman' }) {
     const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
-        name: '', email: '', role: 'fisherman', password: '', password_confirmation: '',
+        name: '', email: '', role: initialRole, password: '', password_confirmation: '',
     });
 
     const submit = (event) => {

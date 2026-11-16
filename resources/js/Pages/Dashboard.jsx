@@ -1,11 +1,19 @@
-// File: resources/js/Pages/Dashboard.jsx
+// File: isdalog/resources/js/Pages/Dashboard.jsx
+import GettingStarted from '@/Components/GettingStarted';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Modal from '@/Components/Modal';
+import FishermanCatchCard from '@/Components/FishermanCatchCard';
+import FishermanSales from '@/Components/FishermanSales';
+import FishermanPaymentHistory from '@/Components/FishermanPaymentHistory';
+import FishermanCatchHistory from '@/Components/FishermanCatchHistory';
+import FishermanSectionNav from '@/Components/FishermanSectionNav';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
+import { FishermanAttention, FishermanMetrics } from '@/Components/FishermanOverview';
 import { Head, useForm, Link, router, usePage } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
+import { DialogDescription, DialogTitle } from '@headlessui/react';
 import { 
     ScaleIcon, 
     CircleStackIcon, 
@@ -33,96 +41,6 @@ import {
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 
-// ---------------------------------------------------------------------------
-// 1. SUB-COMPONENT: Active Catch Auction Card (Private Helper)
-// ---------------------------------------------------------------------------
-function ActiveCatchAuctionCard({ listing, onAccept, isProcessing, errorMessage }) {
-    const startingPrice = Number(listing.starting_price || 0);
-    const topOffer = Number(listing.current_bid || listing.highest_bid || startingPrice);
-    const bidderName = listing.highest_bidder_name || listing.top_bidder_name || 'No bids yet';
-    const bidsCount = listing.bids_count ?? (listing.bids ? listing.bids.length : (listing.has_bids ? 1 : 0));
-    const hasBids = listing.has_bids || bidsCount > 0;
-
-    return (
-        <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl shadow-xl flex flex-col justify-between space-y-4 hover:border-cyan-500/40 transition-all group">
-            <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-400 bg-cyan-950/70 px-2.5 py-0.5 rounded-full border border-cyan-800/60 font-bold">
-                        Auction #{listing.id}
-                    </span>
-                    <span className={`text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full border ${
-                        hasBids 
-                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
-                            : 'bg-slate-800 text-slate-400 border-slate-700'
-                    }`}>
-                        {bidsCount} {bidsCount === 1 ? 'Bid' : 'Bids'} Placed
-                    </span>
-                </div>
-
-                <h4 className="text-base font-black text-white tracking-tight">
-                    {listing.fish_name} · {listing.weight_kg} kg
-                </h4>
-
-                <div className="p-3.5 bg-slate-950/80 rounded-xl border border-slate-800/80 space-y-2 text-xs font-mono shadow-inner">
-                    <div className="flex justify-between text-slate-400">
-                        <span>Starting price</span>
-                        <span className="font-semibold text-slate-200">₱{startingPrice.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between items-center border-t border-slate-800/60 pt-1.5">
-                        <span className="text-slate-300 font-bold">Highest offer</span>
-                        <span className="font-black text-emerald-400 text-sm">₱{topOffer.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-[11px] text-slate-500 border-t border-slate-800/60 pt-1">
-                        <span>Leading buyer</span>
-                        <span className="font-bold text-cyan-400">{bidderName}</span>
-                    </div>
-                </div>
-
-                {errorMessage && (
-                    <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-mono flex items-start gap-2">
-                        <ExclamationTriangleIcon className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                        <div className="space-y-0.5">
-                            <p className="font-bold">Cannot Award Crate</p>
-                            <p className="text-[11px] text-rose-300/80 leading-snug">{errorMessage}</p>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {hasBids ? (
-                <button
-                    type="button"
-                    disabled={isProcessing}
-                    onClick={() => onAccept(listing.id)}
-                    className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs font-mono uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-600/20 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
-                >
-                    {isProcessing ? (
-                        <>
-                            <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                            </svg>
-                            <span>Locking Escrow...</span>
-                        </>
-                    ) : (
-                        <>
-                            <CheckBadgeIcon className="w-4 h-4" />
-                            <span>Accept ₱{topOffer.toFixed(2)} offer</span>
-                        </>
-                    )}
-                </button>
-            ) : (
-                <div className="text-center py-2.5 text-[11px] font-mono text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800/50">
-                    Waiting for buyer offers
-                </div>
-            )}
-        </div>
-    );
-}
-
-// ---------------------------------------------------------------------------
-// 2. MAIN DASHBOARD COMPONENT (Sole Default Export)
-// ---------------------------------------------------------------------------
 export default function Dashboard({ 
     auth, 
     role_context = null, 
@@ -130,6 +48,7 @@ export default function Dashboard({
     activeListings = null,
     recentActivity = null, 
     salesHistory = null,
+    withdrawalHistory = [],
     activeShipments = null, 
     biddingWatchlist = null 
 }) {
@@ -140,12 +59,14 @@ export default function Dashboard({
 
     // UI & Action States
     const [showFishermanForm, setShowFishermanForm] = useState(false);
+    const integrationState = usePage().props.integrations || {};
     const [showWalletModal, setShowWalletModal] = useState(false);
     const [showWithdrawModal, setShowWithdrawModal] = useState(false);
     const [selectedOrderToConfirm, setSelectedOrderToConfirm] = useState(null);
     const [counterBidItem, setCounterBidItem] = useState(null);
     const [watchlist, setWatchlist] = useState(biddingWatchlist || []);
     const [acceptingListingId, setAcceptingListingId] = useState(null);
+    const [lastAttemptedListingId, setLastAttemptedListingId] = useState(null);
 
     // Watchlist Synchronization
     useEffect(() => {
@@ -157,6 +78,13 @@ export default function Dashboard({
     useEffect(() => {
         if (window.Echo && userRole === 'buyer') {
             const channel = window.Echo.channel('marketplace');
+
+            channel.listen('ListingAvailabilityUpdated', ({ listing }) => {
+                if (listing.expired) {
+                    setWatchlist(current => current.map(item => item.listing_id === listing.id
+                        ? { ...item, listing_status: 'expired', bid_status: 'EXPIRED' } : item));
+                }
+            });
 
             channel.listen('CatchBidUpdated', (eventData) => {
                 setWatchlist((prevWatchlist) =>
@@ -246,6 +174,7 @@ export default function Dashboard({
 
     // Award Bid Handler with Active ID Tracking
     const handleAcceptBid = (listingId) => {
+        setLastAttemptedListingId(listingId);
         setAcceptingListingId(listingId);
         router.post(route('listings.accept-bid', listingId), {}, {
             preserveScroll: true,
@@ -383,9 +312,11 @@ export default function Dashboard({
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-end gap-2 sm:ml-auto">
+                    <div className="flex flex-wrap items-center justify-end gap-2 sm:ml-auto">
                         {userRole === 'fisherman' && (
                             <>
+                                <Link href={route('catches.create')} className="isd-ui-button isd-ui-button-primary">Sell your catch</Link>
+                                <Link href={route('catches.index')} className="isd-ui-button isd-ui-button-secondary">Manage catches</Link>
                                 <button
                                     onClick={() => setShowWithdrawModal(true)}
                                     className="isdalog-button-secondary inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-[0.98] cursor-pointer font-mono"
@@ -405,11 +336,12 @@ export default function Dashboard({
 
                         {userRole === 'buyer' && (
                             <button
+                                disabled={!integrationState.demoFundingEnabled}
                                 onClick={() => setShowWalletModal(true)}
                                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-600/20 transition-all active:scale-[0.98] cursor-pointer font-mono"
                             >
                                 <ArrowUpCircleIcon className="w-4 h-4" />
-                                <span>Add wallet funds</span>
+                                <span>{integrationState.demoFundingEnabled ? 'Add demo credit' : 'Funding unavailable'}</span>
                             </button>
                         )}
                     </div>
@@ -417,6 +349,7 @@ export default function Dashboard({
             }
         >
             <Head title={`${userRole.charAt(0).toUpperCase() + userRole.slice(1)} Dashboard — IsdaLog`} />
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6"><GettingStarted /></div>
 
             <div className={`${userRole === 'fisherman' ? 'isdalog-fisherman-dashboard' : userRole === 'rider' ? 'isdalog-rider-dashboard' : userRole === 'buyer' ? 'isdalog-buyer-dashboard' : ''} py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6`}>
                 
@@ -452,6 +385,10 @@ export default function Dashboard({
                                     <strong>User management</strong>
                                     <small>Review accounts and access requests</small>
                                 </span>
+                            </Link>
+                            <Link href={route('admin.withdrawals.index')} className="isd-app-quick-link">
+                                <BanknotesIcon className="h-6 w-6 shrink-0" aria-hidden="true" />
+                                <span><strong>Withdrawal review</strong><small>Review requests and return rejected funds</small></span>
                             </Link>
                         </div>
                     </section>
@@ -538,73 +475,11 @@ export default function Dashboard({
                 {/* ========================================================================= */}
                 {/* 2. DYNAMIC ROLE KPI METRIC CARDS (4 COLUMNS)                              */}
                 {/* ========================================================================= */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {userRole === 'fisherman' && <FishermanSectionNav />}
+                <div id={userRole === 'fisherman' ? 'fisherman-overview' : undefined} role={userRole === 'fisherman' ? 'region' : undefined} aria-label={userRole === 'fisherman' ? 'Fisherman overview' : undefined} tabIndex={userRole === 'fisherman' ? -1 : undefined} className={userRole === 'fisherman' ? 'isd-fisherman-metrics isd-fisherman-anchor' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'}>
                     
-                    {/* --- FISHERMAN 4 KPI METRIC CARDS --- */}
-                    {userRole === 'fisherman' && (
-                        <>
-                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-emerald-500/40 transition-all">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Available balance</span>
-                                    <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
-                                        <BanknotesIcon className="w-5 h-5" />
-                                    </div>
-                                </div>
-                                <div className="mt-4">
-                                    <h3 className="text-3xl font-black text-emerald-400 tracking-tight font-mono">
-                                        ₱{parseFloat(metrics.walletBalance || auth?.user?.wallet_balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                    </h3>
-                                    <p className="text-xs font-mono text-slate-400 mt-1">Ready for GCash or Maya withdrawal</p>
-                                </div>
-                            </div>
-
-                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-cyan-500/40 transition-all">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Net earnings</span>
-                                    <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
-                                        <ArrowTrendingUpIcon className="w-5 h-5" />
-                                    </div>
-                                </div>
-                                <div className="mt-4">
-                                    <h3 className="text-2xl font-black text-white tracking-tight font-mono">
-                                        ₱{parseFloat(metrics.netEarnings || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                    </h3>
-                                    <p className="text-xs font-mono text-slate-400 mt-1">97% net proceeds from closed sales</p>
-                                </div>
-                            </div>
-
-                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-amber-500/40 transition-all">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Pending escrow</span>
-                                    <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
-                                        <LockClosedIcon className="w-5 h-5" />
-                                    </div>
-                                </div>
-                                <div className="mt-4">
-                                    <h3 className="text-2xl font-black text-amber-400 tracking-tight font-mono">
-                                        ₱{parseFloat(metrics.pendingEscrow || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                    </h3>
-                                    <p className="text-xs font-mono text-slate-400 mt-1">Pending buyer delivery confirmation</p>
-                                </div>
-                            </div>
-
-                            <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-xl shadow-lg flex flex-col justify-between hover:border-purple-500/40 transition-all">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Recorded catch</span>
-                                    <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400">
-                                        <ScaleIcon className="w-5 h-5" />
-                                    </div>
-                                </div>
-                                <div className="mt-4">
-                                    <h3 className="text-2xl font-black text-white tracking-tight font-mono">
-                                        {parseFloat(metrics.totalWeight || 0).toLocaleString()} <span className="text-sm text-purple-400 font-bold">KG</span>
-                                    </h3>
-                                    <p className="text-xs font-mono text-slate-400 mt-1">{metrics.totalCatches || 0} catch batches recorded</p>
-                                </div>
-                            </div>
-                        </>
-                    )}
-
+                    {/* Fisherman summaries use the existing server-provided values. */}
+                    {userRole === 'fisherman' && <FishermanMetrics metrics={metrics} user={auth.user} />}
                     {/* --- BUYER 4 KPI METRIC CARDS --- */}
                     {userRole === 'buyer' && (
                         <>
@@ -645,8 +520,8 @@ export default function Dashboard({
                                     <h4 className="text-3xl font-black text-emerald-400 font-mono tracking-tight mt-1">
                                         ₱{Number(metrics.walletBalance ?? auth?.user?.wallet_balance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </h4>
-                                    <button onClick={() => setShowWalletModal(true)} className="text-[11px] font-mono text-emerald-400/90 font-bold hover:underline hover:text-emerald-300 flex items-center gap-1 mt-1 cursor-pointer">
-                                        <span>+ Add funds</span>
+                                    <button disabled={!integrationState.demoFundingEnabled} onClick={() => setShowWalletModal(true)} className="text-[11px] font-mono text-emerald-400/90 font-bold hover:underline hover:text-emerald-300 flex items-center gap-1 mt-1 cursor-pointer disabled:opacity-50">
+                                        <span>{integrationState.demoFundingEnabled ? '+ Add demo credit' : 'Funding unavailable'}</span>
                                     </button>
                                 </div>
                             </div>
@@ -717,7 +592,15 @@ export default function Dashboard({
                 {/* 3. ACTIVE CATCH AUCTIONS & BID ACCEPTANCE DESK (FISHERMAN)                */}
                 {/* ========================================================================= */}
                 {userRole === 'fisherman' && (
-                    <div className="bg-slate-900/70 rounded-2xl border border-slate-800 backdrop-blur-xl shadow-lg p-6 space-y-5">
+                    <FishermanAttention
+                        activeListings={activeListings}
+                        salesHistory={salesHistory}
+                        telegramConnected={Boolean(auth.user.telegram_chat_id)}
+                    />
+                )}
+
+                {userRole === 'fisherman' && (
+                    <div id="fisherman-catches" role="region" aria-label="My catch auctions" tabIndex={-1} className="isd-fisherman-anchor bg-slate-900/70 rounded-2xl border border-slate-800 backdrop-blur-xl shadow-lg p-6 space-y-5">
                         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
                             <div className="flex items-center gap-2.5">
                                 <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
@@ -735,17 +618,17 @@ export default function Dashboard({
 
                         {(!activeListings || activeListings.length === 0) ? (
                             <div className="text-center py-8 text-slate-500 text-xs font-mono">
-                                No active auctions. Log a catch through Telegram to create one.
+                                No active auctions. <Link href={route('catches.create')} className="isd-text-brand underline">Sell your catch</Link> to create one, or use your linked Telegram account.
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {activeListings.map((listing) => (
-                                    <ActiveCatchAuctionCard
+                                    <FishermanCatchCard
                                         key={listing.id}
                                         listing={listing}
                                         onAccept={handleAcceptBid}
                                         isProcessing={acceptingListingId === listing.id}
-                                        errorMessage={acceptingListingId === listing.id ? pageErrors.error : pageErrors.error}
+                                        errorMessage={lastAttemptedListingId === listing.id ? pageErrors.error : undefined}
                                     />
                                 ))}
                             </div>
@@ -756,79 +639,8 @@ export default function Dashboard({
                 {/* ========================================================================= */}
                 {/* 4. CONSIGNMENT SALES & ESCROW LEDGER (FISHERMAN)                          */}
                 {/* ========================================================================= */}
-                {userRole === 'fisherman' && (
-                    <div className="bg-slate-900/70 rounded-2xl border border-slate-800 backdrop-blur-xl shadow-lg overflow-hidden">
-                        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-                            <div>
-                                <h3 className="text-lg font-black text-white tracking-tight">Sales and escrow</h3>
-                                <p className="text-xs font-mono text-slate-400">Track buyer purchases, dispatch status, and secured payouts</p>
-                            </div>
-                            <span className="text-xs font-mono bg-slate-950 text-slate-400 px-3 py-1 rounded-full border border-slate-800 font-semibold">
-                                Platform Fee: 3.0%
-                            </span>
-                        </div>
-
-                        {(!salesHistory || salesHistory.length === 0) ? (
-                            <div className="text-center py-8 text-slate-500 text-xs font-mono">
-                                No completed consignment transactions recorded yet.
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-slate-800 text-left text-xs">
-                                    <thead>
-                                        <tr className="text-slate-400 font-mono uppercase tracking-wider bg-slate-950/40">
-                                            <th className="py-3 px-3">Order ID</th>
-                                            <th className="py-3 px-3">Species</th>
-                                            <th className="py-3 px-3">Weight</th>
-                                            <th className="py-3 px-3">Gross Sale</th>
-                                            <th className="py-3 px-3">Fee (3%)</th>
-                                            <th className="py-3 px-3">Net Payout (97%)</th>
-                                            <th className="py-3 px-3">Buyer</th>
-                                            <th className="py-3 px-3">Delivery status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-800/60 font-mono">
-                                        {salesHistory.map((order) => (
-                                            <tr key={order.order_id} className="hover:bg-slate-950/60 transition-colors">
-                                                <td className="py-3 px-3 font-bold text-white">#{order.order_id}</td>
-                                                <td className="py-3 px-3 font-sans font-bold text-slate-200">{order.fish_name}</td>
-                                                <td className="py-3 px-3 text-slate-400">{order.weight_kg} kg</td>
-                                                <td className="py-3 px-3 text-slate-300">₱{Number(order.gross_price || order.final_price).toFixed(2)}</td>
-                                                <td className="py-3 px-3 text-rose-400">-₱{Number(order.platform_fee).toFixed(2)}</td>
-                                                <td className="py-3 px-3 font-bold text-emerald-400">₱{Number(order.net_payout || order.seller_earnings).toFixed(2)}</td>
-                                                <td className="py-3 px-3 font-sans text-slate-300">{order.buyer_name}</td>
-                                                <td className="py-3 px-3 font-sans">
-                                                    {order.status === 'pending_dispatch' ? (
-                                                        <div className="flex flex-col gap-1 items-start">
-                                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                                                                PENDING_DISPATCH
-                                                            </span>
-                                                            {order.pickup_otp && (
-                                                                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-500/40">
-                                                                    <KeyIcon className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                                                                    <span className="text-[10px] font-mono font-semibold uppercase text-slate-400">OTP:</span>
-                                                                    <span className="text-xs font-mono font-black tracking-widest text-cyan-300">{order.pickup_otp}</span>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    ) : (
-                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${
-                                                            order.status === 'completed'
-                                                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                                                                : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
-                                                        }`}>
-                                                            {order.status.replace('_', ' ')}
-                                                        </span>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
-                )}
+                {userRole === 'fisherman' && <FishermanSales salesHistory={salesHistory} />}
+                {userRole === 'fisherman' && <FishermanPaymentHistory sales={salesHistory} withdrawals={withdrawalHistory} />}
 
                 {/* ========================================================================= */}
                 {/* 5. ACTIVE CARGO SHIPMENTS & ESCROW CLEARANCE (BUYER)                      */}
@@ -895,12 +707,16 @@ export default function Dashboard({
                                         </div>
 
                                         <button
+                                            disabled={order.status !== 'delivered'}
                                             onClick={() => setSelectedOrderToConfirm(order)}
                                             className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer"
                                         >
                                             <CheckBadgeIcon className="w-4 h-4" />
-                                            <span>Confirm Delivery & Release Payout</span>
+                                            <span>{order.status === 'delivered' ? 'Confirm Delivery & Release Payout' : 'Awaiting handover'}</span>
                                         </button>
+                                        {order.logistics_type === 'self_pickup' && order.status === 'pending_dispatch' && (
+                                            <Link href={route('marketplace.index')} className="block mt-2 text-sm underline">Confirm pickup with the fisherman's code in Marketplace</Link>
+                                        )}
                                     </div>
                                 );
                             })}
@@ -972,9 +788,9 @@ export default function Dashboard({
                                                         </span>
                                                     )}
 
-                                                    {item.bid_status === 'CLOSED' && (
+                                                    {['CLOSED', 'EXPIRED', 'WITHDRAWN', 'COMPLETED'].includes(item.bid_status) && (
                                                         <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-800 text-slate-400 border border-slate-700">
-                                                            Closed
+                                                            {item.bid_status === 'EXPIRED' ? 'Expired — no award' : item.bid_status === 'WITHDRAWN' ? 'Withdrawn' : 'Closed'}
                                                         </span>
                                                     )}
                                                 </div>
@@ -1032,6 +848,8 @@ export default function Dashboard({
                             </div>
                         )}
                     </div>
+                ) : userRole === 'fisherman' ? (
+                    <FishermanCatchHistory records={recentActivity} />
                 ) : (
                     <div className="bg-slate-900/70 rounded-2xl border border-slate-800 backdrop-blur-xl shadow-lg p-6 space-y-4">
                         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -1090,8 +908,8 @@ export default function Dashboard({
                                 <BanknotesIcon className="w-5 h-5" />
                             </div>
                             <div>
-                                <h3 className="text-base font-black text-white">Virtual Wallet Deposit</h3>
-                                <p className="text-xs font-mono text-slate-400">Instant Maritime Escrow Settlement</p>
+                                <h3 className="text-base font-black text-white">Demo wallet credit</h3>
+                                <p className="text-xs font-mono text-slate-400">No real payment is collected</p>
                             </div>
                         </div>
                         <button 
@@ -1173,7 +991,7 @@ export default function Dashboard({
 
                         <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/30 flex items-center gap-2 text-xs text-emerald-300">
                             <ShieldCheckIcon className="w-4 h-4 text-emerald-400 shrink-0" />
-                            <span>Funds are credited instantly to your secured escrow balance ledger.</span>
+                            <span>Demo balance only. No real payment is made and this is not proof of funded money.</span>
                         </div>
 
                         <div className="flex gap-2 pt-2">
@@ -1182,7 +1000,7 @@ export default function Dashboard({
                                 disabled={walletProcessing}
                                 className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-lg shadow-emerald-600/25 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer font-mono"
                             >
-                                {walletProcessing ? 'Authorizing Payment...' : `Confirm Deposit of ₱${Number(walletData.amount || 0).toLocaleString()}`}
+                                {walletProcessing ? 'Recording demo credit...' : `Add demo credit of ₱${Number(walletData.amount || 0).toLocaleString()}`}
                             </button>
                         </div>
                     </form>
@@ -1317,8 +1135,9 @@ export default function Dashboard({
                                         id="bid_amount"
                                         type="number"
                                         name="bid_amount"
-                                        min={parseFloat(counterBidItem.current_bid) + 1}
-                                        step="1"
+                                        min={((Math.round(Number(counterBidItem.current_bid) * 100) + 1) / 100).toFixed(2)}
+                                        step="0.01"
+                                        max="99999999.99"
                                         value={bidData.bid_amount}
                                         onChange={(e) => setBidData('bid_amount', e.target.value)}
                                         className="!pl-8 block w-full !bg-slate-900/90 !border-slate-800 !text-white font-mono font-black text-lg"
@@ -1347,18 +1166,18 @@ export default function Dashboard({
             {/* 10. WITHDRAWAL CASHOUT MODAL (FISHERMAN)                                  */}
             {/* ========================================================================= */}
             <Modal show={showWithdrawModal} onClose={() => setShowWithdrawModal(false)} maxWidth="md">
-                <form onSubmit={submitWithdraw} className="isdalog-light-modal p-6 space-y-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100">
+                <form onSubmit={submitWithdraw} className="isd-fisherman-withdraw isdalog-light-modal p-6 space-y-4 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100">
                     <div className="flex justify-between items-center pb-2 border-b border-slate-800">
                         <div className="flex items-center gap-2">
                             <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                                 <ArrowDownCircleIcon className="w-5 h-5" />
                             </div>
                             <div>
-                                <h3 className="text-base font-bold text-white">Withdraw funds</h3>
-                                <p className="text-xs font-mono text-slate-400">Transfer your available sales balance</p>
+                                <DialogTitle as="h3" className="text-base font-bold text-white">Withdraw funds</DialogTitle>
+                                <DialogDescription className="text-xs font-mono text-slate-400">Reserve funds for a withdrawal request. Payment requires review and is not immediate.</DialogDescription>
                             </div>
                         </div>
-                        <button type="button" onClick={() => setShowWithdrawModal(false)} className="text-slate-400 hover:text-white transition-colors cursor-pointer">
+                        <button type="button" aria-label="Close withdrawal dialog" onClick={() => setShowWithdrawModal(false)} className="isd-withdraw-close text-slate-400 hover:text-white transition-colors cursor-pointer">
                             <XMarkIcon className="w-5 h-5" />
                         </button>
                     </div>
@@ -1374,38 +1193,44 @@ export default function Dashboard({
                         <InputLabel htmlFor="withdraw_amount" value="Withdrawal Amount (₱)" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300 font-mono" />
                         <TextInput
                             id="withdraw_amount"
+                            aria-invalid={Boolean(withdrawErrors.amount)}
+                            aria-describedby={withdrawErrors.amount ? 'withdraw-amount-error' : undefined}
                             type="number"
                             step="0.01"
                             min="100"
-                            max={String(metrics.walletBalance || auth?.user?.wallet_balance || 500000)}
+                            max={String(metrics.walletBalance ?? auth?.user?.wallet_balance ?? 0)}
                             value={withdrawData.amount}
                             onChange={e => setWithdrawData('amount', e.target.value)}
                             placeholder="Min. ₱100.00"
                             className="mt-1 block w-full text-sm font-mono !bg-slate-900/90 !border-slate-800 !text-white"
                             required
                         />
-                        <InputError message={withdrawErrors.amount} className="mt-1" />
+                        <InputError id="withdraw-amount-error" message={withdrawErrors.amount} className="mt-1" />
                     </div>
 
                     <div>
                         <InputLabel htmlFor="payout_method" value="Payout Destination" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300 font-mono" />
                         <select
                             id="payout_method"
+                            aria-invalid={Boolean(withdrawErrors.payout_method)}
+                            aria-describedby={withdrawErrors.payout_method ? 'withdraw-method-error' : undefined}
                             value={withdrawData.payout_method}
                             onChange={e => setWithdrawData('payout_method', e.target.value)}
                             className="mt-1 block w-full rounded-xl border-slate-800 bg-slate-900 text-slate-200 shadow-sm text-sm focus:border-emerald-500 focus:ring-emerald-500 font-mono"
                         >
                             <option value="gcash">GCash E-Wallet</option>
                             <option value="maya">Maya Digital Wallet</option>
-                            <option value="bank_transfer">Direct Bank Transfer (PESONet)</option>
+                            <option value="bank_transfer" disabled>Bank transfer — not available</option>
                         </select>
-                        <InputError message={withdrawErrors.payout_method} className="mt-1" />
+                        <InputError id="withdraw-method-error" message={withdrawErrors.payout_method} className="mt-1" />
                     </div>
 
                     <div>
                         <InputLabel htmlFor="account_number" value="Account / Mobile Number" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300 font-mono" />
                         <TextInput
                             id="account_number"
+                            aria-invalid={Boolean(withdrawErrors.account_number)}
+                            aria-describedby={withdrawErrors.account_number ? 'withdraw-number-error' : undefined}
                             type="text"
                             value={withdrawData.account_number}
                             onChange={e => setWithdrawData('account_number', e.target.value)}
@@ -1413,13 +1238,15 @@ export default function Dashboard({
                             className="mt-1 block w-full text-sm font-mono !bg-slate-900/90 !border-slate-800 !text-white"
                             required
                         />
-                        <InputError message={withdrawErrors.account_number} className="mt-1" />
+                        <InputError id="withdraw-number-error" message={withdrawErrors.account_number} className="mt-1" />
                     </div>
 
                     <div>
                         <InputLabel htmlFor="account_name" value="Account Holder Name" className="!text-xs !font-bold !uppercase !tracking-wider !text-slate-300 font-mono" />
                         <TextInput
                             id="account_name"
+                            aria-invalid={Boolean(withdrawErrors.account_name)}
+                            aria-describedby={withdrawErrors.account_name ? 'withdraw-name-error' : undefined}
                             type="text"
                             value={withdrawData.account_name}
                             onChange={e => setWithdrawData('account_name', e.target.value)}
@@ -1427,7 +1254,7 @@ export default function Dashboard({
                             className="mt-1 block w-full text-sm !bg-slate-900/90 !border-slate-800 !text-white"
                             required
                         />
-                        <InputError message={withdrawErrors.account_name} className="mt-1" />
+                        <InputError id="withdraw-name-error" message={withdrawErrors.account_name} className="mt-1" />
                     </div>
 
                     <div className="pt-2 flex gap-3">
@@ -1443,7 +1270,7 @@ export default function Dashboard({
                             disabled={withdrawProcessing}
                             className="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/25 transition disabled:opacity-50 cursor-pointer font-mono"
                         >
-                            {withdrawProcessing ? 'Authorizing payout...' : 'Confirm withdrawal'}
+                            {withdrawProcessing ? 'Submitting request...' : 'Request withdrawal'}
                         </button>
                     </div>
                 </form>

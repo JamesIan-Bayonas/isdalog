@@ -1,13 +1,16 @@
+// File: isdalog/resources/js/Layouts/AuthenticatedLayout.jsx
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import ThemeToggle from '@/Components/ThemeToggle';
+import WithdrawalNotificationBell from '@/Components/WithdrawalNotificationBell';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
+    const integrations = usePage().props.integrations;
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
     const getRoleBadge = (role) => {
@@ -36,6 +39,25 @@ export default function AuthenticatedLayout({ header, children }) {
         }
     };
 
+    const navigation = [
+        { label: 'Dashboard', route: 'dashboard', active: 'dashboard' },
+        ...(user?.role === 'fisherman' ? [
+            { label: 'Sell your catch', route: 'catches.create', active: 'catches.create' },
+            { label: 'My catches', route: 'catches.index', active: 'catches.index' },
+        ] : []),
+        { label: 'Marketplace', route: 'marketplace.index', active: 'marketplace.*' },
+        { label: 'Saved discovery', route: 'saved.index', active: 'saved.*' },
+        { label: 'Help & support', route: 'support.index', active: 'support.*' },
+        { label: 'Orders & history', route: 'orders.index', active: 'orders.*' },
+        ...(['rider', 'admin'].includes(user?.role) ? [{ label: 'Dispatch', route: 'dispatch.index', active: 'dispatch.*' }] : []),
+        ...(user?.role === 'admin' ? [
+            { label: 'BFAR oversight', route: 'bfar.dashboard', active: 'bfar.dashboard' },
+            { label: 'Port & species names', route: 'admin.vocabulary', active: 'admin.vocabulary*' },
+            { label: 'Users', route: 'admin.users', active: 'admin.users' },
+            { label: 'Order issues', route: 'admin.order-issues', active: 'admin.order-issues' },
+            { label: 'Withdrawals', route: 'admin.withdrawals.index', active: 'admin.withdrawals.*' },
+        ] : []),
+    ];
     const roleBadge = getRoleBadge(user?.role);
 
     return (
@@ -64,51 +86,14 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
 
                             {/* Primary Navigation Links */}
-                            <div className="hidden space-x-2 xl:-my-px xl:flex items-center">
-                                <NavLink
-                                    href={route('dashboard')}
-                                    active={route().current('dashboard')}
-                                >
-                                    Dashboard
-                                </NavLink>
-
-                                <NavLink
-                                    href={route('marketplace.index')}
-                                    active={route().current('marketplace.*')}
-                                >
-                                    Marketplace
-                                </NavLink>
-
-                                {(user?.role === 'rider' || user?.role === 'admin') && (
-                                    <NavLink
-                                        href={route('dispatch.index')}
-                                        active={route().current('dispatch.*')}
-                                    >
-                                        Dispatch
-                                    </NavLink>
-                                )}
-
-                                {user?.role === 'admin' && (
-                                    <>
-                                        <NavLink
-                                            href={route('bfar.dashboard')}
-                                            active={route().current('bfar.dashboard')}
-                                        >
-                                            BFAR Oversight
-                                        </NavLink>
-                                        <NavLink
-                                            href={route('admin.users')}
-                                            active={route().current('admin.users')}
-                                        >
-                                            Users
-                                        </NavLink>
-                                    </>
-                                )}
-                            </div>
+                            <div role="navigation" aria-label="Main navigation" className="hidden gap-1 2xl:-my-px 2xl:flex items-center max-w-[560px] overflow-x-auto">{navigation.map(item => <NavLink className="shrink-0 whitespace-nowrap" key={item.route} href={route(item.route)} active={route().current(item.active)}>{item.label}</NavLink>)}</div>
                         </div>
 
+                        <div className="flex items-center gap-2">
+                        <WithdrawalNotificationBell />
+                        {user?.role === 'fisherman' && <ThemeToggle className="isd-fisherman-theme-toggle" />}
                         {/* Right Section: Role Badge + User Dropdown */}
-                        <div className="hidden xl:flex xl:items-center xl:gap-4">
+                        <div className="hidden 2xl:flex 2xl:items-center 2xl:gap-4">
                             {/* Role Badge */}
                             <span
                                 className={`isd-app-role-badge text-[10px] font-mono uppercase font-bold tracking-wider px-2.5 py-1 rounded-full border ${roleBadge.classes}`}
@@ -152,6 +137,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                     </Dropdown.Trigger>
 
                                     <Dropdown.Content contentClasses="py-1 bg-slate-950 border border-slate-800 shadow-2xl rounded-xl">
+                                        {user?.role === 'admin' && <Dropdown.Link href={route('admin.withdrawals.index')}>Withdrawal review</Dropdown.Link>}
                                         <Dropdown.Link
                                             href={route('profile.edit')}
                                             className="!text-xs !font-mono !text-slate-300 hover:!bg-slate-900 hover:!text-white"
@@ -172,7 +158,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
 
                         {/* Hamburger Button for Mobile */}
-                        <div className="-me-2 flex items-center xl:hidden">
+                        <div className="-me-2 flex items-center 2xl:hidden">
                             <button
                                 type="button"
                                 aria-label={showingNavigationDropdown ? 'Close navigation menu' : 'Open navigation menu'}
@@ -199,52 +185,13 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </svg>
                             </button>
                         </div>
+                        </div>
                     </div>
                 </div>
 
                 {/* Mobile Responsive Navigation Menu */}
-                <div id="isdalog-mobile-navigation" className={(showingNavigationDropdown ? 'block' : 'hidden') + ' xl:hidden border-t border-slate-800/80 bg-slate-950/95 backdrop-blur-2xl'}>
-                    <div className="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            href={route('dashboard')}
-                            active={route().current('dashboard')}
-                        >
-                            Dashboard
-                        </ResponsiveNavLink>
-
-                        <ResponsiveNavLink
-                            href={route('marketplace.index')}
-                            active={route().current('marketplace.*')}
-                        >
-                            Marketplace
-                        </ResponsiveNavLink>
-
-                        {(user?.role === 'rider' || user?.role === 'admin') && (
-                            <ResponsiveNavLink
-                                href={route('dispatch.index')}
-                                active={route().current('dispatch.*')}
-                            >
-                                Dispatch
-                            </ResponsiveNavLink>
-                        )}
-
-                        {user?.role === 'admin' && (
-                            <>
-                                <ResponsiveNavLink
-                                    href={route('bfar.dashboard')}
-                                    active={route().current('bfar.dashboard')}
-                                >
-                                    BFAR Oversight
-                                </ResponsiveNavLink>
-                                <ResponsiveNavLink
-                                    href={route('admin.users')}
-                                    active={route().current('admin.users')}
-                                >
-                                    User management
-                                </ResponsiveNavLink>
-                            </>
-                        )}
-                    </div>
+                <div id="isdalog-mobile-navigation" className={(showingNavigationDropdown ? 'block' : 'hidden') + ' 2xl:hidden border-t border-slate-800/80 bg-slate-950/95 backdrop-blur-2xl'}>
+                    <div className="space-y-1 pb-3 pt-2">{navigation.map(item => <ResponsiveNavLink key={item.route} href={route(item.route)} active={route().current(item.active)}>{item.label}</ResponsiveNavLink>)}</div>
 
                     <div className="border-t border-slate-800/80 pb-3 pt-4 px-4">
                         <div className="flex items-center justify-between mb-3">
@@ -286,9 +233,14 @@ export default function AuthenticatedLayout({ header, children }) {
                 </header>
             )}
 
+            {integrations && (
+                <p className="mx-auto max-w-7xl px-4 py-2 text-xs isd-text-muted" role="note">
+                    {integrations.fundingLabel}. SMS: {integrations.smsMode === 'simulation' ? 'simulation only; no texts sent' : 'unavailable'}.
+                </p>
+            )}
             {/* View Body */}
             <main className="relative z-10">{children}</main>
-            <ThemeToggle className="isd-auth-theme-fab" />
+            {user?.role !== 'fisherman' && <ThemeToggle className="isd-auth-theme-fab" />}
         </div>
     );
 }

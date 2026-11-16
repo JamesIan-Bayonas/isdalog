@@ -1,0 +1,81 @@
+/* File: isdalog/resources/css/public.css */
+.isd-public{background:var(--isd-canvas);color:var(--isd-text);font-family:inherit;line-height:1.65;overflow-wrap:anywhere}
+.public-wrap{max-width:1200px;margin:auto;padding-left:24px;padding-right:24px}
+.public-header{max-width:1440px;margin:auto;padding:22px 32px;display:flex;align-items:center;justify-content:space-between;gap:24px;border-bottom:1px solid var(--isd-border)}
+.public-brand{display:flex;align-items:center;gap:12px;font-size:22px;font-weight:800;line-height:1.2}
+.public-brand img{width:44px;height:44px;background:#fff;border-radius:50%;padding:4px}
+.public-brand small{display:block;font-size:11px;font-weight:500;letter-spacing:.06em;margin-top:5px;color:var(--isd-text-secondary)}
+.public-header nav{display:flex;flex-wrap:wrap;align-items:center;gap:22px;font-size:14px;font-weight:600}
+.isd-public a:hover{text-decoration:underline}
+.isd-public :focus-visible{outline:3px solid var(--isd-brand-strong);outline-offset:4px}
+.public-skip{position:absolute;left:12px;top:-100px;padding:10px;background:var(--isd-surface);z-index:20}
+.public-skip:focus{top:12px}
+.public-hero{padding-top:78px;padding-bottom:80px;display:grid;grid-template-columns:1.1fr 1fr;align-items:center;gap:60px}
+.public-eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--isd-brand-strong);margin-bottom:16px}
+.isd-public h1{font-size:clamp(44px,5.5vw,76px);font-weight:750;line-height:1.05;letter-spacing:-.045em;margin-bottom:24px}
+.isd-public h1 em{font-style:normal;color:var(--isd-brand-strong)}
+.isd-public h2{font-size:clamp(30px,3vw,42px);font-weight:700;letter-spacing:-.035em;line-height:1.18;margin-bottom:24px}
+.isd-public h3{font-size:21px;font-weight:700;line-height:1.3;margin-bottom:12px}
+.isd-public p{color:var(--isd-text-secondary);margin-bottom:16px}
+.public-intro{font-size:19px;max-width:470px}
+.public-actions{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0 20px}
+.public-button{display:inline-flex;justify-content:center;align-items:center;gap:20px;min-height:46px;border:1px solid var(--isd-border-strong);border-radius:8px;padding:10px 20px;font-weight:650;font-size:14px;background:var(--isd-surface);color:var(--isd-text)}
+.public-button.primary{background:var(--isd-brand-strong);color:var(--isd-surface);border-color:var(--isd-brand-strong)}
+.public-button:disabled{opacity:.65}
+.public-note{font-size:12px!important;color:var(--isd-text-muted)!important}
+.public-illustration{color:var(--isd-brand-strong);text-align:center;border:1px solid var(--isd-border);background:var(--isd-surface);border-radius:140px 140px 12px 12px;padding:20px 16px}
+.public-illustration svg{width:100%;max-height:360px}
+.public-illustration span{font-size:22px;font-weight:650}
+.public-illustration p{font-size:13px}
+.public-section{padding-top:64px;padding-bottom:64px}
+.public-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.public-card{background:var(--isd-surface);border:1px solid var(--isd-border);border-radius:10px;padding:26px;min-width:0;display:flex;flex-direction:column}
+.public-card a{margin-top:auto;padding-top:20px;font-weight:650;color:var(--isd-brand-strong)}
+.public-number{font-size:13px;color:var(--isd-text-muted);margin-bottom:35px}
+.public-market{background:var(--isd-surface-subtle);border-top:1px solid var(--isd-border);border-bottom:1px solid var(--isd-border)}
+.public-section-top{display:flex;align-items:center;justify-content:space-between;gap:24px}
+.public-filters{display:flex;flex-wrap:wrap;gap:14px;align-items:end;margin:26px 0 14px}
+.public-filters label{flex:1;min-width:180px;font-size:13px;font-weight:650}
+.public-filters input,.public-filters select{display:block;width:100%;margin-top:6px;border:1px solid var(--isd-border-strong);background:var(--isd-surface);color:var(--isd-text);border-radius:8px;min-height:46px;font-weight:400}
+.public-reset{padding:10px;font-size:14px;text-decoration:underline}
+.public-catch-top{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--isd-text-muted);margin-bottom:24px}
+.isd-public .public-catch-title{font-size:21px;line-height:1.3;letter-spacing:normal;margin-bottom:12px}
+.public-price{font-size:26px;font-weight:700;letter-spacing:-.025em;margin-top:12px}
+.public-price small{font-size:12px;font-weight:400;color:var(--isd-text-muted)}
+.public-empty{padding:50px 24px;background:var(--isd-surface);border:1px dashed var(--isd-border-strong);border-radius:10px;text-align:center}
+.public-empty a{color:var(--isd-brand-strong);text-decoration:underline}
+.public-pagination{display:flex;justify-content:center;gap:22px;padding:26px 0;font-size:14px}
+.public-pagination a{text-decoration:underline}
+.isd-public details{border-bottom:1px solid var(--isd-border);padding:20px 0}
+.isd-public summary{cursor:pointer;font-weight:650}
+.isd-public details p{margin:14px 0 0;font-size:14px}
+.public-help{display:grid;grid-template-columns:1fr 1.2fr;gap:70px}
+.public-help a{color:var(--isd-brand-strong);text-decoration:underline}
+.public-footer{padding-top:30px;padding-bottom:30px;display:flex;justify-content:space-between;gap:20px;align-items:center;border-top:1px solid var(--isd-border);font-size:13px}
+.public-footer p{margin:0}
+.public-footer>a:first-child{font-size:22px;font-weight:800}
+
+@media(max-width:900px){.public-header{padding:18px 24px;align-items:flex-start}
+.public-header nav{gap:12px}
+.public-hero{gap:28px;padding-top:50px;padding-bottom:50px}
+.public-grid{gap:14px}
+.public-card{padding:20px}
+.public-help{gap:30px}
+}
+
+@media(max-width:640px){.public-wrap{padding-left:20px;padding-right:20px}
+.public-header{padding:18px 20px;flex-direction:column;gap:18px}
+.public-header nav{width:100%;gap:14px;font-size:12px}
+.public-header .isd-theme-toggle{margin-left:auto}
+.public-hero{grid-template-columns:1fr;padding-top:40px;gap:30px}
+.public-illustration{border-radius:100px 100px 10px 10px;max-width:360px;width:100%;margin:auto}
+.public-illustration svg{max-height:240px}
+.public-grid{grid-template-columns:1fr}
+.public-section{padding-top:42px;padding-bottom:42px}
+.public-section-top{align-items:flex-start;flex-direction:column;gap:4px}
+.public-filters label{min-width:100%}
+.public-help{grid-template-columns:1fr;gap:0}
+.public-footer{flex-wrap:wrap}
+.public-number{margin-bottom:18px}
+}
+

@@ -6,6 +6,13 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
+        <script>
+            (function () {
+                var savedTheme = localStorage.getItem('isdalog-theme');
+                document.documentElement.dataset.theme = savedTheme === 'dark' ? 'dark' : 'light';
+            })();
+        </script>
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />

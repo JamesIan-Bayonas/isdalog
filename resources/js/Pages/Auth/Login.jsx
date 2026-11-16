@@ -40,121 +40,72 @@ export default function Login({ status, canResetPassword }) {
             title: 'Fishermen',
             desc: 'Log catches, manage auctions, and track secured earnings.',
             badge: 'Catch and auctions',
-            color: 'text-[#0B6B75]',
-            fill: 'fill-[#0B6B75]',
-            bg: 'bg-[#E6F3F4] border-[#B9DFE2]',
-            angle: 55,
+            tone: 'brand',
             icon: SparklesIcon
         },
         buyer: {
             title: 'Buyers',
             desc: 'Place offers, manage funds, and follow delivery progress.',
             badge: 'Marketplace and delivery',
-            color: 'text-[#16794F]',
-            fill: 'fill-[#16794F]',
-            bg: 'bg-[#EAF7F0] border-[#BFE5CF]',
-            angle: 145,
+            tone: 'success',
             icon: CircleStackIcon
         },
         rider: {
             title: 'Riders',
             desc: 'Claim dispatches and record verified cold-chain handovers.',
             badge: 'Cold-chain delivery',
-            color: 'text-[#475569]',
-            fill: 'fill-[#475569]',
-            bg: 'bg-[#F1F5F9] border-[#DCE3E8]',
-            angle: 235,
+            tone: 'info',
             icon: TruckIcon
         },
         admin: {
             title: 'BFAR supervision',
             desc: 'Review compliance signals and operational activity.',
             badge: 'Compliance oversight',
-            color: 'text-[#A66316]',
-            fill: 'fill-[#A66316]',
-            bg: 'bg-[#FFF6E8] border-[#EFD7B2]',
-            angle: 325,
+            tone: 'warning',
             icon: ChartBarIcon
         }
     };
 
-    const CurrentRoleIcon = roleData[selectedRolePreview].icon;
-    const contactPoint = (angleDeg) => {
-        const rad = (angleDeg * Math.PI) / 180;
-        return { x: 110 + 76 * Math.cos(rad), y: 110 + 76 * Math.sin(rad) };
-    };
+    const currentRole = roleData[selectedRolePreview];
+    const CurrentRoleIcon = currentRole.icon;
 
     return (
         <>
             <Head title="Sign In — IsdaLog Maritime Hub" />
-            <style>{`
-                @keyframes isdalog-radar-sweep { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-                @keyframes isdalog-radar-ping { 0% { transform: scale(.9); opacity: .5; } 70%, 100% { transform: scale(1.8); opacity: 0; } }
-                .isdalog-radar-sweep { transform-origin: 110px 110px; animation: isdalog-radar-sweep 5s linear infinite; }
-                .isdalog-radar-ping { animation: isdalog-radar-ping 2.5s cubic-bezier(0,0,.2,1) infinite; transform-origin: center; }
-                @media (prefers-reduced-motion: reduce) { .isdalog-radar-sweep, .isdalog-radar-ping { animation: none; } }
-            `}</style>
             <div className="isd-login-page min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-[#F4F7F9] text-[#0F172A] selection:bg-[#0B6B75] selection:text-white">
                 <ThemeToggle className="isd-auth-theme-fab" />
-                <aside className="isd-login-showcase hidden lg:grid lg:col-span-5 border-r border-[#DCE3E8] bg-white p-12 xl:p-16">
-                    <Link href="/" className="inline-flex items-center gap-3.5 w-fit">
-                        <div className="w-11 h-11 rounded-xl bg-[#E6F3F4] flex items-center justify-center shadow-sm">
-                            <img src="/images/isdalog-logo-mark.png" alt="IsdaLog" className="h-8 w-8 object-contain" />
-                        </div>
-                        <div>
-                            <span className="text-xl font-black tracking-tight text-[#0F172A]">IsdaLog</span>
-                            <p className="text-xs text-[#64748B] mt-0.5">Maritime marketplace and logistics</p>
-                        </div>
+                <aside className="isd-auth-showcase hidden lg:grid lg:col-span-5">
+                    <Link href="/" className="isd-auth-brand">
+                        <span className="isd-auth-brand-mark"><img src="/images/isdalog-logo-mark.png" alt="" /></span>
+                        <span><strong>IsdaLog</strong><small>Maritime marketplace and logistics</small></span>
                     </Link>
 
-                    <div className="isd-login-showcase-content">
-                        <div className="max-w-md">
-                            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#0B6B75]">One connected port</p>
-                            <h2 className="mt-3 text-4xl font-black tracking-tight leading-tight text-[#0F172A]">A clearer way to trade, deliver, and oversee fresh catch.</h2>
-                            <p className="mt-4 text-base leading-relaxed text-[#475569]">Explore the workspace for each role before signing in. Your account access and permissions remain unchanged.</p>
+                    <div className="isd-auth-showcase-content">
+                        <div className="isd-auth-showcase-copy">
+                            <p className="isd-auth-eyebrow">One connected port</p>
+                            <h2>A clearer way to trade, deliver, and oversee fresh catch.</h2>
+                            <p>Explore the workspace for each role before signing in. Your account access and permissions remain unchanged.</p>
+                        </div>
 
-                            <div className="mt-8 flex items-center gap-6">
-                            <svg viewBox="0 0 220 220" className="h-40 w-40 shrink-0" aria-hidden="true" focusable="false">
-                                <circle cx="110" cy="110" r="100" className="fill-[#F8FAFC] stroke-[#C7D2DA]" strokeWidth="1" />
-                                <circle cx="110" cy="110" r="76" className="fill-none stroke-[#DCE3E8]" strokeWidth="1" />
-                                <circle cx="110" cy="110" r="42" className="fill-none stroke-[#DCE3E8]" strokeWidth="1" />
-                                <line x1="10" y1="110" x2="210" y2="110" className="stroke-[#DCE3E8]" strokeWidth="1" />
-                                <line x1="110" y1="10" x2="110" y2="210" className="stroke-[#DCE3E8]" strokeWidth="1" />
-                                <g className="isdalog-radar-sweep"><path d="M110 110 L110 10 A100 100 0 0 1 178 42 Z" fill="#0B6B75" opacity="0.14" /></g>
-                                {Object.keys(roleData).map((role) => {
-                                    const { x, y } = contactPoint(roleData[role].angle);
-                                    const active = selectedRolePreview === role;
-                                    return (
-                                        <g key={role} onClick={() => setSelectedRolePreview(role)} className="cursor-pointer">
-                                            {active && <circle cx={x} cy={y} r="7" className={`${roleData[role].fill} isdalog-radar-ping`} />}
-                                            <circle cx={x} cy={y} r={active ? 5.5 : 3.5} className={`${roleData[role].fill} transition-all duration-300`} stroke="#FFFFFF" strokeWidth="1.5" />
-                                        </g>
-                                    );
-                                })}
-                                <circle cx="110" cy="110" r="3" className="fill-[#0F172A]" />
-                            </svg>
-
-                            <div className="flex-1 space-y-1.5">
-                                {Object.keys(roleData).map((role) => {
-                                    const isActive = selectedRolePreview === role;
-                                    return <button key={role} type="button" onClick={() => setSelectedRolePreview(role)} aria-pressed={isActive} className={`w-full rounded-lg border px-3 py-2 text-left text-xs font-bold capitalize transition-colors ${isActive ? 'border-[#B9DFE2] bg-[#E6F3F4] text-[#0F172A]' : 'border-transparent text-[#64748B] hover:border-[#DCE3E8] hover:bg-[#F8FAFC]'}`}><span className={`mr-2 inline-block h-1.5 w-1.5 rounded-full align-middle ${roleData[role].fill}`} />{roleData[role].title}</button>;
-                                })}
+                        <div className="isd-role-preview">
+                            <div className="isd-role-compass" aria-hidden="true">
+                                <span className="isd-compass-sweep" aria-hidden="true" />
+                                <span className="isd-compass-ring isd-ring-one" /><span className="isd-compass-ring isd-ring-two" />
+                                <span className="isd-compass-line isd-line-horizontal" /><span className="isd-compass-line isd-line-vertical" />
+                                {Object.entries(roleData).map(([key, role]) => <button key={key} type="button" tabIndex={-1} onClick={() => setSelectedRolePreview(key)} className={`isd-compass-point isd-compass-${key} ${selectedRolePreview === key ? 'is-active' : ''}`} aria-label={`Preview ${role.title}`} />)}
+                                <span className="isd-compass-center" />
                             </div>
-                            </div>
-
-                            <div className="mt-5 rounded-xl border border-[#DCE3E8] bg-[#F8FAFC] p-4" aria-live="polite">
-                            <div className="flex items-start gap-3">
-                                <div className={`shrink-0 rounded-lg border p-2 ${roleData[selectedRolePreview].bg}`}><CurrentRoleIcon className={`w-5 h-5 ${roleData[selectedRolePreview].color}`} /></div>
-                                <div>
-                                    <h3 className="text-sm font-bold text-[#0F172A]">{roleData[selectedRolePreview].title}</h3>
-                                    <p className="mt-1 text-xs leading-relaxed text-[#475569]">{roleData[selectedRolePreview].desc}</p>
-                                </div>
-                            </div>
+                            <div className="isd-role-list">
+                                {Object.entries(roleData).map(([key, role]) => <button key={key} type="button" onClick={() => setSelectedRolePreview(key)} aria-pressed={selectedRolePreview === key} className={selectedRolePreview === key ? 'is-active' : ''}><span className={`isd-role-dot isd-tone-${role.tone}`} />{role.title}</button>)}
                             </div>
                         </div>
-                    </div>
 
-                    <div className="flex items-center gap-2 text-xs text-[#64748B]"><ShieldCheckIcon className="w-4 h-4 text-[#16794F]" /><span>Built for secure, traceable catch operations</span></div>
+                        <div className={`isd-role-summary isd-tone-${currentRole.tone}`} aria-live="polite">
+                            <span className="isd-role-summary-icon"><CurrentRoleIcon aria-hidden="true" /></span>
+                            <span><strong>{currentRole.title}</strong><small>{currentRole.badge}</small><p>{currentRole.desc}</p></span>
+                        </div>
+                    </div>
+                    <p className="isd-auth-assurance isd-auth-desktop-assurance"><ShieldCheckIcon aria-hidden="true" /> Built for secure, traceable catch operations</p>
                 </aside>
 
                 <main className="col-span-1 lg:col-span-7 flex items-center justify-center p-5 sm:p-10 lg:p-12">
